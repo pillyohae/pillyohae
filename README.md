@@ -24,3 +24,4 @@
 
 ---
 ## 😭 아쉬운점
+![image](https://github.com/user-attachments/assets/00acf6b7-6460-4c35-8c6e-0412e25a2d8a)
