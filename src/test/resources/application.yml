@@ -1,0 +1,49 @@
+spring:
+  application:
+    name: trello
+
+  servlet:
+    multipart:
+      max-file-size: 5MB  # 파일 하나의 최대 크기
+
+  datasource:
+    driver-class-name: ${TEST_DATABASE}
+    url: ${TEST_DATABASE_URL}
+    username: ${TEST_DATABASE_USERNAME}
+    password: ${TEST_DATABASE_PASSWORD}
+
+  jpa:
+    show-sql: true
+    database-platform: org.hibernate.dialect.H2Dialect
+    database: h2
+    hibernate:
+      ddl-auto: create-drop
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
+    generate-ddl: false
+    properties:
+      hibernate:
+        format_sql: true
+        enable_lazy_load_no_trans: true
+        globally_quoted_identifiers: true
+
+  config:
+    import: optional:file:.env[.properties]
+
+
+
+cloud:
+  aws:
+    s3:
+      bucket : ${BUCKET_NAME}
+      base-url: ${BASE_URL}
+    region:
+      static: ${AWS_REGION:us-east-1}
+    stack:
+      auto: false
+    credentials:
+      access-key: ${ACCESS_KEY}
+      secret-key: ${SECRET_KEY}
+
+config:
+  import: optional:file:.env[.properti

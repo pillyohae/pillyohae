@@ -1,0 +1,52 @@
+
+
+spring:
+  application:
+    name: trello
+
+  servlet:
+    multipart:
+      max-file-size: 5MB  # 파일 하나의 최대 크기
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${DATABASE_URL}
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
+
+  jpa:
+    show-sql: true
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    database: mysql
+    hibernate:
+      ddl-auto: create-drop
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
+    generate-ddl: false
+    properties:
+      hibernate:
+        format_sql: true
+        enable_lazy_load_no_trans: true
+        globally_quoted_identifiers: true
+
+  config:
+    import: optional:file:.env[.properties]
+
+
+
+
+
+
+cloud:
+  aws:
+    stack:
+      auto: false
+    s3:
+      bucket: ${BUCKET_NAME} # BUCKET_NAME 없으면 default-bucket-name 사용
+    region:
+      static: ${AWS_REGION:us-east-1} # AWS_REGION 없으면 ap-northeast-2 사용
+    credentials:
+      access-key: ${ACCESS_KEY} # ACCESS_KEY 없으면 default-access-key 사용
+      secret-key: ${SECRET_KEY} # SECRET_KEY 없으면 default-secret-key 사용
+
+
