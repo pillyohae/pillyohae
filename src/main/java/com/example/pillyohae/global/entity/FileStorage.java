@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import javax.smartcardio.Card;
 import java.time.LocalDateTime;
 
 @Getter
@@ -36,17 +37,14 @@ public class FileStorage {
     @Column
     private LocalDateTime uploadedAt;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "card_id")
-    private Card card;
 
     @Builder
-    public FileStorage(String fileUrl, String fileKey, String contentType, Long fileSize, Card card) {
+    public FileStorage(String fileUrl, String fileKey, String contentType, Long fileSize) {
         this.fileUrl = fileUrl;
         this.fileKey = fileKey;
         this.contentType = contentType;
         this.fileSize = fileSize;
-        this.card = card;
+
 
     }
 }
