@@ -1,6 +1,9 @@
 package com.example.pillyohae.global.config.auth;
 
 import com.example.pillyohae.user.entity.User;
+import com.example.pillyohae.user.entity.type.Role;
+import com.example.pillyohae.user.entity.type.Status;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import lombok.Getter;
@@ -16,36 +19,38 @@ public class UserDetailsImpl implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
+        Role role = this.user.getRole();
+
+        return new ArrayList<>(role.getAuthorities());
     }
 
     @Override
     public String getPassword() {
-        return "";
+        return user.getPassword();
     }
 
     @Override
     public String getUsername() {
-        return "";
+        return user.getEmail();
     }
 
     @Override
     public boolean isAccountNonExpired() {
-        return UserDetails.super.isAccountNonExpired();
+        return true;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return UserDetails.super.isAccountNonLocked();
+        return true;
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return UserDetails.super.isCredentialsNonExpired();
+        return true;
     }
 
     @Override
     public boolean isEnabled() {
-        return UserDetails.super.isEnabled();
+        return user.getStatus() == Status.ACTIVE;
     }
 }
