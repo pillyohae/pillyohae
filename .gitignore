@@ -38,6 +38,8 @@ out/
 
 .env
 
+.gitmessage.txt
+
 jacoco/
 
 AWS_TEST.http
