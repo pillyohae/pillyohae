@@ -45,4 +45,8 @@ public class User extends BaseTimeEntity {
     public User() {
 
     }
+
+    public void deleteUser() {
+        this.status = Status.WITHDRAW;
+    }
 }

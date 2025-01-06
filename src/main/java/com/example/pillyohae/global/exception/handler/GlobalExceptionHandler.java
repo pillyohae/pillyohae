@@ -1,23 +1,23 @@
 package com.example.pillyohae.global.exception.handler;
 
-import com.example.pillyohae.global.exception.AuthenticationException;
 import com.example.pillyohae.global.exception.BaseException;
+import com.example.pillyohae.global.exception.CustomResponseStatusException;
 import com.example.pillyohae.global.exception.code.ErrorCode;
 import com.example.pillyohae.global.response.CommonResponse;
-import io.jsonwebtoken.JwtException;
-import java.nio.file.AccessDeniedException;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.Objects;
+import org.springframework.web.server.ResponseStatusException;
 
 @Slf4j
 @RestControllerAdvice
@@ -54,7 +54,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<CommonResponse<String>> handleAuthenticationException(AuthenticationException ex) {
-        return CommonResponse.fail(ErrorCode.INVALID_AUTHENTICATION, ex.getMessage());
+        return CommonResponse.fail(ErrorCode.BAD_REQUEST_TOKEN, ex.getMessage());
     }
 
     @ExceptionHandler(AccessDeniedException.class)
@@ -62,9 +62,10 @@ public class GlobalExceptionHandler {
         return CommonResponse.fail(ErrorCode.NOT_ALLOW_USER, ex.getMessage());
     }
 
-    @ExceptionHandler(JwtException.class)
-    public ResponseEntity<CommonResponse<String>> handleJwtException(JwtException ex) {
-        return CommonResponse.fail(ErrorCode.BAD_REQUEST_TOKEN, ex.getMessage());
+    @ExceptionHandler(CustomResponseStatusException.class)
+    public ResponseEntity<CommonResponse<String>> handleCustomResponseStatusException(
+        CustomResponseStatusException ex) {
+        return CommonResponse.fail(ex.getErrorCode(), ex.getMessage());
     }
 
 }

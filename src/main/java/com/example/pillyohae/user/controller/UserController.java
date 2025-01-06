@@ -3,6 +3,7 @@ package com.example.pillyohae.user.controller;
 import com.example.pillyohae.global.dto.JwtAuthResponse;
 import com.example.pillyohae.user.dto.UserCreateRequestDto;
 import com.example.pillyohae.user.dto.UserCreateResponseDto;
+import com.example.pillyohae.user.dto.UserDeleteRequestDto;
 import com.example.pillyohae.user.dto.UserLoginRequestDto;
 import com.example.pillyohae.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -14,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -53,5 +55,17 @@ public class UserController {
         }
 
         throw new UsernameNotFoundException("로그인이 먼저 필요합니다.");
+    }
+
+    @DeleteMapping
+    public ResponseEntity<Void> deleteUser(
+        @RequestBody UserDeleteRequestDto requestDto, Authentication authentication,
+        HttpServletRequest request, HttpServletResponse response
+    ) {
+        userService.deleteUser(requestDto, authentication);
+
+        new SecurityContextLogoutHandler().logout(request, response, authentication);
+
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }
