@@ -4,7 +4,7 @@ import com.example.pillyohae.product.entity.type.ProductStatus;
 import lombok.Getter;
 
 @Getter
-public class ProductCreateRequestDto {
+public class ProductUpdateRequestDto {
     private String productName;
     private String category;
     private String description;

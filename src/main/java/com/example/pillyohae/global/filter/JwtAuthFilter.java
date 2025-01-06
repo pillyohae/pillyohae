@@ -7,6 +7,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -26,9 +27,20 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final UserDetailsService userDetailsService;
 
+    // 화이트리스트 경로 정의
+    private static final List<String> WHITE_LIST = List.of("/users/login", "/users/signup", "/users/products/**");
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
         FilterChain filterChain) throws ServletException, IOException {
+
+        String requestUri = request.getRequestURI();
+
+        // 화이트리스트 경로인 경우 필터링을 건너뜀
+        if (WHITE_LIST.contains(requestUri)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         this.authenticate(request);
         filterChain.doFilter(request, response);
