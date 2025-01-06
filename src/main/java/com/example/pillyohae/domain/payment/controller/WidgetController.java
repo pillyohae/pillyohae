@@ -8,6 +8,7 @@ import com.example.pillyohae.domain.payment.service.PaymentService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -36,7 +37,8 @@ public class WidgetController {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final PaymentService paymentService;
-
+    @Value("${toss.secret-key}")
+    private String TOSS_SECRET_KEY;
 
 
     @GetMapping("/checkout")
@@ -69,7 +71,7 @@ public class WidgetController {
 
         // 토스페이먼츠 API는 시크릿 키를 사용자 ID로 사용하고, 비밀번호는 사용하지 않습니다.
         // 비밀번호가 없다는 것을 알리기 위해 시크릿 키 뒤에 콜론을 추가합니다.
-        String widgetSecretKey = "test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6";
+        String widgetSecretKey = TOSS_SECRET_KEY;
         Base64.Encoder encoder = Base64.getEncoder();
         byte[] encodedBytes = encoder.encode((widgetSecretKey + ":").getBytes(StandardCharsets.UTF_8));
         String authorizations = "Basic " + new String(encodedBytes);
