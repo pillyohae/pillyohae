@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class DataInitializer {
 
+    //아무거나
     /**
      * 어플리케이션이 실행할때 동작하는 메소드
      */
