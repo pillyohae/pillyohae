@@ -7,6 +7,8 @@ import com.example.pillyohae.user.dto.UserCreateRequestDto;
 import com.example.pillyohae.user.dto.UserCreateResponseDto;
 import com.example.pillyohae.user.dto.UserDeleteRequestDto;
 import com.example.pillyohae.user.dto.UserLoginRequestDto;
+import com.example.pillyohae.user.dto.UserProfileResponseDto;
+import com.example.pillyohae.user.dto.UserProfileUpdateRequestDto;
 import com.example.pillyohae.user.entity.User;
 import com.example.pillyohae.user.entity.type.Role;
 import com.example.pillyohae.user.entity.type.Status;
@@ -97,8 +99,59 @@ public class UserService {
         user.deleteUser();
     }
 
+    public UserProfileResponseDto getProfile(Authentication authentication) {
+        String email = authentication.getName();
+
+        User user = findByEmail(email);
+
+        return new UserProfileResponseDto(
+            user.getId(),
+            user.getName(),
+            user.getEmail(),
+            user.getAddress(),
+            user.getCreatedAt(),
+            user.getUpdatedAt()
+        );
+    }
+
+    @Transactional
+    public UserProfileResponseDto updateProfile(UserProfileUpdateRequestDto requestDto,
+        Authentication authentication) {
+
+        String email = authentication.getName();
+
+        User user = findByEmail(email);
+
+        if (!passwordEncoder.matches(requestDto.getPassword(), user.getPassword())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "비밀번호가 일치하지 않습니다");
+        }
+
+        if (requestDto.getNewName() != null) {
+            user.updateName(requestDto.getNewName());
+        }
+
+        if (requestDto.getNewAddress() != null) {
+            user.updateAddress(requestDto.getNewAddress());
+        }
+
+        if (requestDto.getNewPassword() != null) {
+            user.updatePassword(passwordEncoder.encode(requestDto.getNewPassword()));
+        }
+
+        return new UserProfileResponseDto(
+            user.getId(),
+            user.getName(),
+            user.getEmail(),
+            user.getAddress(),
+            user.getCreatedAt(),
+            user.getUpdatedAt()
+        );
+    }
+
     private User findByEmail(String email) {
         return userRepository.findByEmail(email)
             .orElseThrow(() -> new UsernameNotFoundException("이메일에 해당하는 사용자가 존재하지 않습니다."));
     }
+
+
 }
