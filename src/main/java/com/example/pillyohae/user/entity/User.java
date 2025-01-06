@@ -49,4 +49,19 @@ public class User extends BaseTimeEntity {
     public void deleteUser() {
         this.status = Status.WITHDRAW;
     }
+
+    public void updateName(String newName) {
+        this.name = newName;
+    }
+    public void updateEmail(String newEmail) {
+        this.email = newEmail;
+    }
+
+    public void updateAddress(String newAddress) {
+        this.address = newAddress;
+    }
+
+    public void updatePassword(String newPassword) {
+        this.password = newPassword;
+    }
 }

@@ -5,6 +5,8 @@ import com.example.pillyohae.user.dto.UserCreateRequestDto;
 import com.example.pillyohae.user.dto.UserCreateResponseDto;
 import com.example.pillyohae.user.dto.UserDeleteRequestDto;
 import com.example.pillyohae.user.dto.UserLoginRequestDto;
+import com.example.pillyohae.user.dto.UserProfileResponseDto;
+import com.example.pillyohae.user.dto.UserProfileUpdateRequestDto;
 import com.example.pillyohae.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -15,13 +17,23 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @Controller
 @RequestMapping("/users")
 @RequiredArgsConstructor
 public class UserController {
+
     private final UserService userService;
 
     @GetMapping("/login")
@@ -43,7 +55,8 @@ public class UserController {
     ) {
         String accessToken = userService.loginTokenGenerate(requestDto);
 
-        return ResponseEntity.ok().header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken).build();
+        return ResponseEntity.ok().header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+            .build();
     }
 
     @PostMapping("/logout")
@@ -69,5 +82,24 @@ public class UserController {
         new SecurityContextLogoutHandler().logout(request, response, authentication);
 
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @GetMapping("/profile")
+    public ResponseEntity<UserProfileResponseDto> getProfile(
+        Authentication authentication
+    ) {
+
+        return new ResponseEntity<>(userService.getProfile(authentication), HttpStatus.OK);
+    }
+
+    @PutMapping("/profile")
+    public ResponseEntity<UserProfileResponseDto> updateProfile(
+        @RequestBody UserProfileUpdateRequestDto requestDto,
+        Authentication authentication
+    ) {
+        UserProfileResponseDto responseDto = userService.updateProfile(requestDto,
+            authentication);
+
+        return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
 }
