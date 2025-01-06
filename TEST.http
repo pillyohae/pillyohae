@@ -11,26 +11,6 @@ Content-Type: application/json
   "role": "user"
 }
 
-> {%
-    console.log("Response Headers:", response.headers);
-    // 응답 헤더에서 "Authorization" 또는 토큰 키를 가져옴
-    const accessToken = response.headers["Authorization"];
-
-
-    // 토큰이 있는 경우만 처리
-    if (accessToken) {
-        // Bearer 토큰 형식이 포함되어 있다면 분리
-        const token = accessToken.replace("Bearer ", "").trim();
-
-        // 환경 변수에 저장
-        client.global.set("accessToken", token);
-        console.log("Access Token:", token); // 디버깅용 로그
-    } else {
-        console.warn("Authorization header not found in response.");
-    }
-
-%}
-
 ###
 POST http://localhost:8080/users/login
 Content-Type: application/json
