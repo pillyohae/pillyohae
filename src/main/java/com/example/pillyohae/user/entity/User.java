@@ -1,15 +1,14 @@
 package com.example.pillyohae.user.entity;
 
+import com.example.pillyohae.domain.order.entity.Order;
 import com.example.pillyohae.global.entity.BaseTimeEntity;
 import com.example.pillyohae.user.entity.type.Role;
 import com.example.pillyohae.user.entity.type.Status;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Getter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Entity
@@ -32,6 +31,9 @@ public class User extends BaseTimeEntity {
 
     @Enumerated(value = EnumType.STRING)
     private Status status;
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private List<Order> orders = new ArrayList<>();
 
     public User(String name, String email, String password, String address, Role role) {
         this.name = name;
