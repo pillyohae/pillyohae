@@ -142,8 +142,27 @@ public class ProductService {
                 product.getProductId(),
                 product.getProductName(),
                 product.getCompanyName(),
-                product.getCategory()
+                product.getCategory(),
+                product.getPrice()
             ))
             .toList();
+    }
+
+    public List<ProductSearchResponseDto> findSellersProducts(String email) {
+
+        User user = userService.findByEmail(email);
+
+        List<Product> products = productRepository.findProductsByUserId(user.getId());
+
+        return products.stream()
+            .map(product -> new ProductSearchResponseDto(
+                product.getProductId(),
+                product.getProductName(),
+                product.getCompanyName(),
+                product.getCategory(),
+                product.getPrice()
+            ))
+            .toList();
+
     }
 }
