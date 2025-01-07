@@ -152,7 +152,7 @@ public class ProductService {
 
         User user = userService.findByEmail(email);
 
-        List<ProductSearchResponseDto> products = productRepository.findProductsByUserId(user.getId());
+        List<Product> products = productRepository.findProductsByUserId(user.getId());
 
         return products.stream()
             .map(product -> new ProductSearchResponseDto(
