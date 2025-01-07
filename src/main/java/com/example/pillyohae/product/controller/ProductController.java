@@ -13,12 +13,12 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/products")
+@RequestMapping
 @RequiredArgsConstructor
 public class ProductController {
     private final ProductService productService;
 
-    @PostMapping
+    @PostMapping("/products")
     public ResponseEntity<ProductCreateResponseDto> createProduct(
         @AuthenticationPrincipal UserDetails userDetails,
         @RequestBody ProductCreateRequestDto requestDto
@@ -30,7 +30,7 @@ public class ProductController {
         return new ResponseEntity<>(responseDto, HttpStatus.CREATED);
     }
 
-    @PutMapping("/{productId}")
+    @PutMapping("/products/{productId}")
     public ResponseEntity<ProductUpdateResponseDto> updateProduct(
         @PathVariable Long productId,
         @RequestBody ProductUpdateRequestDto requestDto
@@ -39,7 +39,7 @@ public class ProductController {
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
 
-    @GetMapping("/{productId}")
+    @GetMapping("/products/{productId}")
     public ResponseEntity<ProductGetResponseDto> getProduct(
         @PathVariable Long productId
     ) {
@@ -48,7 +48,7 @@ public class ProductController {
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
 
-    @DeleteMapping("/{productId}")
+    @DeleteMapping("/products/{productId}")
     public ResponseEntity<Void> deleteProduct(
         @PathVariable Long productId,
         @AuthenticationPrincipal UserDetails userDetails
@@ -57,7 +57,7 @@ public class ProductController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @GetMapping("/search")
+    @GetMapping("/products/search")
     public ResponseEntity<List<ProductSearchResponseDto>> getAllProduct(
         @RequestParam(required = false) String productName,
         @RequestParam(required = false) String companyName,
@@ -65,6 +65,14 @@ public class ProductController {
     ) {
         List<ProductSearchResponseDto> searchProducts = productService.searchAndConvertProducts(productName, companyName, category);
         return new ResponseEntity<>(searchProducts, HttpStatus.OK);
+    }
+
+    @GetMapping("/users/sellers/products")
+    public ResponseEntity<List<ProductSearchResponseDto>> getSellersProducts(
+        @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        List<ProductSearchResponseDto> findSellersProducts = productService.findSellersProducts(userDetails.getUsername());
+        return new ResponseEntity<>(findSellersProducts, HttpStatus.OK);
     }
 
 

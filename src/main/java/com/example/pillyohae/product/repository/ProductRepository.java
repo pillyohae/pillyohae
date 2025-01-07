@@ -1,5 +1,6 @@
 package com.example.pillyohae.product.repository;
 
+import com.example.pillyohae.product.dto.ProductSearchResponseDto;
 import com.example.pillyohae.product.entity.Product;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -19,6 +20,9 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findByCompanyName(String companyName);
 
     List<Product> findByCategory(String category);
+
+    List<ProductSearchResponseDto> findProductsByUserId(Long userId);
+
 }
 
 
