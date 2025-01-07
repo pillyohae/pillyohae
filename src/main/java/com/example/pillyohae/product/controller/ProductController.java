@@ -1,9 +1,7 @@
 package com.example.pillyohae.product.controller;
 
-import com.example.pillyohae.product.dto.ProductCreateRequestDto;
-import com.example.pillyohae.product.dto.ProductCreateResponseDto;
-import com.example.pillyohae.product.dto.ProductUpdateRequestDto;
-import com.example.pillyohae.product.dto.ProductUpdateResponseDto;
+import com.example.pillyohae.product.dto.*;
+import com.example.pillyohae.product.entity.Product;
 import com.example.pillyohae.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -30,6 +28,15 @@ public class ProductController {
             @RequestBody ProductUpdateRequestDto requestDto
     ) {
         ProductUpdateResponseDto responseDto = productService.updateProduct(productId, requestDto);
+        return new ResponseEntity<>(responseDto, HttpStatus.OK);
+    }
+
+    @GetMapping("/{productId}")
+    public ResponseEntity<ProductGetResponseDto> getProduct(
+            @PathVariable Long productId
+    ) {
+        ProductGetResponseDto responseDto = productService.getProduct(productId);
+
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
 

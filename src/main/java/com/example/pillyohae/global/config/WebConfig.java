@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -30,7 +31,7 @@ public class WebConfig {
 
     private final AccessDeniedHandler accessDeniedHandler;
 
-    private static final String[] WHITE_LIST = {"/users/login", "/users/signup", "/users/products/**", "/toss/success","/toss/fail", "/toss/confirm"};
+    private static final String[] WHITE_LIST = {"/users/login", "/users/signup", "/toss/success", "/toss/fail", "/toss/confirm"};
 
     private static final String[] SELLER_AUTH_LIST = {"/users/sellers/**", "/products", "/products/**"};
 
@@ -40,6 +41,7 @@ public class WebConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(auth ->
                 auth.requestMatchers(WHITE_LIST).permitAll()
+                    .requestMatchers(HttpMethod.GET, "/products/*").permitAll()
                     // static 리소스 경로
                     .requestMatchers(PathRequest.toStaticResources().atCommonLocations())
                     .permitAll()
