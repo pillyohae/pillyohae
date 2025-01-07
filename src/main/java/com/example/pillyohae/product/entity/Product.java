@@ -2,6 +2,7 @@ package com.example.pillyohae.product.entity;
 
 import com.example.pillyohae.global.entity.BaseTimeEntity;
 import com.example.pillyohae.product.entity.type.ProductStatus;
+import com.example.pillyohae.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 
@@ -28,7 +29,11 @@ public class Product extends BaseTimeEntity {
     @Enumerated(value = EnumType.STRING)
     private ProductStatus status;
 
-    public Product(String productName, String category,String description, String companyName, Long price, String imageUrl, ProductStatus status) {
+    @ManyToOne(fetch = FetchType.LAZY)
+    private User user;
+
+    public Product(User user, String productName, String category, String description, String companyName, Long price, String imageUrl, ProductStatus status) {
+        this.user = user;
         this.productName = productName;
         this.category = category;
         this.description = description;
@@ -38,7 +43,7 @@ public class Product extends BaseTimeEntity {
         this.status = status;
     }
 
-    public void updateProduct(String productName, String category,String description, String companyName, Long price, String imageUrl, ProductStatus status) {
+    public void updateProduct(String productName, String category, String description, String companyName, Long price, String imageUrl, ProductStatus status) {
         this.productName = productName;
         this.category = category;
         this.description = description;
@@ -48,7 +53,11 @@ public class Product extends BaseTimeEntity {
         this.status = status;
     }
 
-    public Product(){
+    public void deleteProduct() {
+        this.status = ProductStatus.DELETED;
+    }
+
+    public Product() {
 
     }
 }
