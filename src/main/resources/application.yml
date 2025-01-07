@@ -32,7 +32,7 @@ spring:
     import: optional:file:.env[.properties]
 
 toss:
-  secret-key: ${TOSS_SECURITY_KEY}
+  secret-key: ${TOSS_SECRET_KEY}
 
 
 

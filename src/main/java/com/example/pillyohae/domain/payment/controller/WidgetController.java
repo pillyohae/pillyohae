@@ -46,10 +46,20 @@ public class WidgetController {
         return "toss/checkout"; // templates/toss/checkout.html 파일을 반환
     }
 
+    @GetMapping("/success")
+    public String successPage() {
+        return "success"; // templates/toss/checkout.html 파일을 반환
+    }
+
+    @GetMapping("/fail")
+    public String failPage() {
+        return "fail"; // templates/toss/checkout.html 파일을 반환
+    }
+
 
     @RequestMapping(value = "/confirm")
     public ResponseEntity<JSONObject> confirmPayment(@RequestBody String jsonBody) throws Exception {
-
+        System.out.println(TOSS_SECRET_KEY);
         JSONParser parser = new JSONParser();
         String orderId;
         String amount;
