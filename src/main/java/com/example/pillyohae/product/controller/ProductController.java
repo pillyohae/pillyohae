@@ -10,6 +10,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/products")
 @RequiredArgsConstructor
@@ -53,6 +55,16 @@ public class ProductController {
     ) {
         productService.deleteProduct(productId, userDetails.getUsername());
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<ProductSearchResponseDto>> getAllProduct(
+        @RequestParam(required = false) String productName,
+        @RequestParam(required = false) String companyName,
+        @RequestParam(required = false) String category
+    ) {
+        List<ProductSearchResponseDto> searchProducts = productService.searchAndConvertProducts(productName, companyName, category);
+        return new ResponseEntity<>(searchProducts, HttpStatus.OK);
     }
 
 
