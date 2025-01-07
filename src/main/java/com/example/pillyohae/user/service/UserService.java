@@ -44,22 +44,14 @@ public class UserService {
             throw new DuplicateKeyException("중복된 이메일 입니다.");
         }
 
-        User user = new User(
-            requestDto.getName(), requestDto.getEmail(),
-            passwordEncoder.encode(requestDto.getPassword()),
-            requestDto.getAddress(),
-            Role.of(requestDto.getRole())
-        );
+        User user = new User(requestDto.getName(), requestDto.getEmail(),
+            passwordEncoder.encode(requestDto.getPassword()), requestDto.getAddress(),
+            Role.of(requestDto.getRole()));
 
         User savedUser = userRepository.save(user);
 
-        return new UserCreateResponseDto(
-            savedUser.getId(),
-            savedUser.getName(),
-            savedUser.getEmail(),
-            savedUser.getAddress(),
-            savedUser.getCreatedAt()
-        );
+        return new UserCreateResponseDto(savedUser.getId(), savedUser.getName(),
+            savedUser.getEmail(), savedUser.getAddress(), savedUser.getCreatedAt());
     }
 
     public String loginTokenGenerate(UserLoginRequestDto requestDto) {
@@ -72,11 +64,8 @@ public class UserService {
 
         // 이 과정에서 Provider 가 인증 처리를 진행 (사용자 정보 조회, 비밀번호 검증)
         Authentication authentication = authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(
-                requestDto.getEmail(),
-                requestDto.getPassword()
-            )
-        );
+            new UsernamePasswordAuthenticationToken(requestDto.getEmail(),
+                requestDto.getPassword()));
 
         // 인증 객체를 SecurityContext에 저장
         SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -104,14 +93,8 @@ public class UserService {
 
         User user = findByEmail(email);
 
-        return new UserProfileResponseDto(
-            user.getId(),
-            user.getName(),
-            user.getEmail(),
-            user.getAddress(),
-            user.getCreatedAt(),
-            user.getUpdatedAt()
-        );
+        return new UserProfileResponseDto(user.getId(), user.getName(), user.getEmail(),
+            user.getAddress(), user.getCreatedAt(), user.getUpdatedAt());
     }
 
     @Transactional
@@ -138,14 +121,8 @@ public class UserService {
             user.updatePassword(passwordEncoder.encode(requestDto.getNewPassword()));
         }
 
-        return new UserProfileResponseDto(
-            user.getId(),
-            user.getName(),
-            user.getEmail(),
-            user.getAddress(),
-            user.getCreatedAt(),
-            user.getUpdatedAt()
-        );
+        return new UserProfileResponseDto(user.getId(), user.getName(), user.getEmail(),
+            user.getAddress(), user.getCreatedAt(), user.getUpdatedAt());
     }
 
     public User findByEmail(String email) {
