@@ -28,8 +28,16 @@ spring:
         format_sql: true
         enable_lazy_load_no_trans: true
         globally_quoted_identifiers: true
+        ## batch 전략
+        jdbc:
+          batch_size: 30
+          order_inserts: true
+          order_updates: true
+          generate_statistics: true
   config:
     import: optional:file:.env[.properties]
+
+
 
 toss:
   secret-key: ${TOSS_SECRET_KEY}

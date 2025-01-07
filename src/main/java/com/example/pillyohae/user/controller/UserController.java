@@ -1,5 +1,6 @@
 package com.example.pillyohae.user.controller;
 
+import com.example.pillyohae.domain.order.dto.BuyerOrderDetailInfo;
 import com.example.pillyohae.domain.order.dto.BuyerOrderSearchResponseDto;
 import com.example.pillyohae.domain.order.service.OrderService;
 import com.example.pillyohae.global.dto.JwtAuthResponse;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Controller
 @RequestMapping("/users")
@@ -115,5 +117,12 @@ public class UserController {
                 pageNumber,
                 pageSize
         ));
+    }
+
+    @GetMapping("/orders/{orderId}/orderItems/")
+    public ResponseEntity<BuyerOrderDetailInfo> findOrderDetailInfo(
+            Authentication authentication, @PathVariable(name = "orderId") UUID orderId
+    ){
+        return ResponseEntity.ok(orderService.getOrderDetail(authentication.getName(), orderId));
     }
 }

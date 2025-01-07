@@ -24,11 +24,11 @@ public enum OrderStatus {
         }
     };
 
-    private final String description;
+    private final String value;
 
     // Constructor
-    OrderStatus(String description) {
-        this.description = description;
+    OrderStatus(String value) {
+        this.value = value;
     }
 
     // Abstract method for allowed transitions
@@ -40,7 +40,7 @@ public enum OrderStatus {
     }
 
     // Getter for description
-    public String getDescription() {
-        return description;
+    public String getValue() {
+        return value;
     }
 }

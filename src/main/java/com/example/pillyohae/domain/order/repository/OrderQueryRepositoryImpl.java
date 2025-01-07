@@ -1,6 +1,8 @@
 package com.example.pillyohae.domain.order.repository;
 
+import com.example.pillyohae.domain.order.dto.BuyerOrderDetailInfo;
 import com.example.pillyohae.domain.order.dto.BuyerOrderInfo;
+import com.example.pillyohae.domain.order.dto.QBuyerOrderDetailInfo_BuyerOrderItemInfo;
 import com.example.pillyohae.domain.order.dto.QBuyerOrderInfo;
 import com.example.pillyohae.domain.order.entity.QOrder;
 import com.example.pillyohae.domain.order.entity.QOrderItem;
@@ -9,6 +11,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 public class OrderQueryRepositoryImpl implements OrderQueryRepository {
     private static final QOrder order = QOrder.order;
@@ -34,6 +37,16 @@ public class OrderQueryRepositoryImpl implements OrderQueryRepository {
                 .fetch();
     }
 
+    @Override
+    public List<BuyerOrderDetailInfo.BuyerOrderItemInfo> findBuyerOrderDetail(UUID orderId){
+        if (queryFactory == null) {
+            throw new IllegalStateException("QueryFactory is not initialized");
+        }
+
+        return queryFactory.select(new QBuyerOrderDetailInfo_BuyerOrderItemInfo(orderItem.id, orderItem.productName, orderItem.quantity, order.totalPrice, orderItem.status))
+                .where(orderItem.order.id.eq(orderId))
+                .fetch();
+    }
 
     private BooleanExpression dateEq(LocalDateTime startAt, LocalDateTime endAt) {
         if (startAt == null && endAt == null) {

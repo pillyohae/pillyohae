@@ -2,6 +2,8 @@ package com.example.pillyohae.domain.order.controller;
 
 import com.example.pillyohae.domain.order.dto.OrderCreateByProductRequestDto;
 import com.example.pillyohae.domain.order.dto.OrderCreateResponseDto;
+import com.example.pillyohae.domain.order.dto.SellerOrderItemStatusChangeResponseDto;
+import com.example.pillyohae.domain.order.entity.status.OrderItemStatus;
 import com.example.pillyohae.domain.order.service.OrderService;
 import jakarta.validation.Valid;
 import lombok.Getter;
@@ -9,10 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
 @RequestMapping("/api/v1/orders")
@@ -26,5 +25,16 @@ public class OrderController {
         return ResponseEntity.ok(orderService.createOrderByProduct(authentication.getName(), requestDto));
     }
 
+    @PostMapping("/carts/create")
+    public ResponseEntity<OrderCreateResponseDto> createOrderByCart(Authentication authentication){
+        return ResponseEntity.ok(orderService.createOrderByCart(authentication.getName()));
+    }
+
+    @PutMapping("/orderItems/{orderItemId}/status")
+    public ResponseEntity<SellerOrderItemStatusChangeResponseDto> changeOrderItemStatus(Authentication authentication,
+                                                                                        @PathVariable(name = "orderItemId") Long orderItemId,
+                                                                                        @RequestParam OrderItemStatus orderItemStatus) {
+        return ResponseEntity.ok(orderService.changeOrderItemStatus(authentication.getName(), orderItemId, orderItemStatus));
+    }
 
 }

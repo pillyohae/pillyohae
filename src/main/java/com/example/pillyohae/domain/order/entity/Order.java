@@ -57,10 +57,9 @@ public class Order extends BaseTimeEntity {
     public void updateStatus(OrderStatus newStatus) {
         if (status.canTransitionTo(newStatus)) {
             this.status = newStatus;
-            System.out.println("주문 상태가 " + newStatus.getDescription() + "로 변경되었습니다.");
         } else {
             throw new IllegalStateException(
-                    "현재 상태(" + status.getDescription() + ")에서 " + newStatus.getDescription() + " 상태로 변경할 수 없습니다."
+                    "현재 상태(" + status.getValue() + ")에서 " + newStatus.getValue() + " 상태로 변경할 수 없습니다."
             );
         }
     }

@@ -1,11 +1,12 @@
 package com.example.pillyohae.domain.order.service;
 
-import com.example.pillyohae.domain.order.dto.BuyerOrderInfo;
-import com.example.pillyohae.domain.order.dto.BuyerOrderSearchResponseDto;
-import com.example.pillyohae.domain.order.dto.OrderCreateByProductRequestDto;
-import com.example.pillyohae.domain.order.dto.OrderCreateResponseDto;
+import com.example.pillyohae.cart.entity.Cart;
+import com.example.pillyohae.cart.repository.CartRepository;
+import com.example.pillyohae.domain.order.dto.*;
 import com.example.pillyohae.domain.order.entity.Order;
 import com.example.pillyohae.domain.order.entity.OrderItem;
+import com.example.pillyohae.domain.order.entity.status.OrderItemStatus;
+import com.example.pillyohae.domain.order.repository.OrderItemRepository;
 import com.example.pillyohae.domain.order.repository.OrderRepository;
 import com.example.pillyohae.product.entity.Product;
 import com.example.pillyohae.product.repository.ProductRepository;
@@ -17,7 +18,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -26,11 +31,18 @@ public class OrderService {
     private final UserRepository userRepository;
     private final UserService userService;
     private final ProductRepository productRepository;
-    // cart 정보를 주문 정보로 변환 후 저장
-//    public OrderCreateResponseDto createOrderByCart(Long userId, Long cartId){
-//        // cart 가져옴
-//
-//    }
+    private final CartRepository cartRepository;
+    private final OrderItemRepository orderItemRepository;
+
+    //cart 정보를 주문 정보로 변환 후 저장
+    @Transactional
+    public OrderCreateResponseDto createOrderByCart(String email){
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        Order order = convertCartToOrder(user);
+        return new OrderCreateResponseDto(order.getId());
+
+    }
 
 
     // 상품 단건 구매
@@ -46,10 +58,11 @@ public class OrderService {
                 , requestDto.getQuantity(), requestDto.getProductId(), order);
         order.updateTotalPrice();
         Order savedOrder = orderRepository.save(order);
+        orderItemRepository.save(orderItem);
         return new OrderCreateResponseDto(savedOrder.getId());
     }
 
-    // user의 order 조회
+    // buyer의 order 내역 조회
     @Transactional
     public BuyerOrderSearchResponseDto findOrder(String email, LocalDateTime startAt, LocalDateTime endAt, Long pageNumber, Long pageSize) {
         User user = userService.findByEmail(email);
@@ -64,13 +77,63 @@ public class OrderService {
         return new BuyerOrderSearchResponseDto(orderInfoList, pageInfo);
 
     }
-    // order 내역 조회
+    // order 단건 조회
+    @Transactional
+    public BuyerOrderDetailInfo getOrderDetail(String email, UUID orderId) {
+        User user = userService.findByEmail(email);
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+        if(order.getUser() != user){
+            throw new IllegalArgumentException("Order is not owned by user");
+        }
+        List<BuyerOrderDetailInfo.BuyerOrderItemInfo> itemInfos = orderRepository.findBuyerOrderDetail(orderId);
+        return new BuyerOrderDetailInfo(itemInfos);
+    }
 
-    // order 수정
+    // seller orderItem 상태 수정
+    @Transactional
+    public SellerOrderItemStatusChangeResponseDto changeOrderItemStatus(String email, Long orderItemId, OrderItemStatus newStatus) {
+        User seller = userService.findByEmail(email);
+        OrderItem orderItem = orderItemRepository.findById(orderItemId)
+                .orElseThrow(() -> new RuntimeException("Order item not found"));
+        if(!seller.equals(orderItem.getSeller()) ){
+            throw new IllegalArgumentException("Order item is not owned by user");
+        }
+        orderItem.updateStatus(newStatus);
 
-    // order Item 조회
+        return new SellerOrderItemStatusChangeResponseDto(orderItem.getId(),orderItem.getStatus().getValue());
+    }
+
 
     private Double calculateOrderItemPrice(Double price, Long quantity) {
         return price * quantity;
+    }
+
+    @Transactional
+    protected Order convertCartToOrder(User user) {
+        // fetch join으로 product도 같이 갖고옴
+        List<Cart> carts = cartRepository.findCartsWithProductsByUserId(user.getId());
+        // Order 생성 및 저장
+        Order order = new Order(user);
+        orderRepository.save(order);
+
+        // OrderItem 생성
+        List<OrderItem> orderItems = new ArrayList<>();
+        for (Cart cart : carts) {
+            Product product = cart.getProduct();
+            OrderItem orderItem = new OrderItem(
+                    product.getProductName(),
+                    Double.valueOf(product.getPrice()),
+                    Long.valueOf(cart.getQuantity()),
+                    product.getProductId(),
+                    order
+            );
+            orderItems.add(orderItem);
+        }
+
+        // OrderItem 저장
+        orderItemRepository.saveAll(orderItems);
+
+        return order;
     }
 }

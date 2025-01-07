@@ -2,6 +2,7 @@ package com.example.pillyohae.domain.order.entity;
 
 import com.example.pillyohae.domain.order.entity.status.OrderItemStatus;
 import com.example.pillyohae.domain.order.entity.status.OrderStatus;
+import com.example.pillyohae.user.entity.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Positive;
@@ -36,6 +37,11 @@ public class OrderItem {
     @Enumerated(EnumType.STRING)
     private OrderItemStatus status;
 
+
+    @Column(nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "seller_id")
+    private User seller;
 
     // 상점 주인의 주문 조회용
     // 연관 관계가 필요한지 고민

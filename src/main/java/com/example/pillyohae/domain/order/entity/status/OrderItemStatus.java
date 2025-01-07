@@ -55,11 +55,11 @@ public enum OrderItemStatus {
         }
     };
 
-    private final String description;
+    private final String value;
 
     // Constructor
-    OrderItemStatus(String description) {
-        this.description = description;
+    OrderItemStatus(String value) {
+        this.value = value;
     }
 
     // Abstract method for allowed next statuses
@@ -71,7 +71,7 @@ public enum OrderItemStatus {
     }
 
     // Getter for description
-    public String getDescription() {
-        return description;
+    public String getValue() {
+        return value;
     }
 }
