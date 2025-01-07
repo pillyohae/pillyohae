@@ -9,16 +9,16 @@ import com.example.pillyohae.user.entity.User;
 import com.example.pillyohae.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class ProductService {
 
     private final ProductRepository productRepository;
-    private final PasswordEncoder passwordEncoder;
     private final UserService userService;
 
     public ProductCreateResponseDto createProduct(ProductCreateRequestDto requestDto, String email) {
@@ -107,5 +107,43 @@ public class ProductService {
         }
 
         findProduct.deleteProduct();
+    }
+
+    public List<ProductSearchResponseDto> searchAndConvertProducts(String productName, String companyName, String category) {
+
+        List<Product> products = getAllProduct(productName, companyName, category);
+
+        return convertToDto(products);
+    }
+
+    public List<Product> getAllProduct(String productName, String companyName, String category) {
+        if (productName != null && companyName != null && category != null) {
+            return productRepository.findByProductNameAndCompanyNameAndCategory(productName, companyName, category);
+        } else if (productName != null && companyName != null) {
+            return productRepository.findByProductNameAndCompanyName(productName, companyName);
+        } else if (productName != null && category != null) {
+            return productRepository.findByProductNameAndCategory(productName, category);
+        } else if (companyName != null && category != null) {
+            return productRepository.findByCompanyNameAndCategory(companyName, category);
+        } else if (productName != null) {
+            return productRepository.findByProductName(productName);
+        } else if (companyName != null) {
+            return productRepository.findByCompanyName(companyName);
+        } else if (category != null) {
+            return productRepository.findByCategory(category);
+        } else {
+            return productRepository.findAll();
+        }
+    }
+
+    private List<ProductSearchResponseDto> convertToDto(List<Product> products) {
+        return products.stream()
+            .map(product -> new ProductSearchResponseDto(
+                product.getProductId(),
+                product.getProductName(),
+                product.getCompanyName(),
+                product.getCategory()
+            ))
+            .toList();
     }
 }
