@@ -1,12 +1,12 @@
 package com.example.pillyohae.product.service;
 
+import com.example.pillyohae.global.exception.CustomResponseStatusException;
+import com.example.pillyohae.global.exception.code.ErrorCode;
 import com.example.pillyohae.product.dto.*;
 import com.example.pillyohae.product.entity.Product;
 import com.example.pillyohae.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
@@ -39,9 +39,7 @@ public class ProductService {
 
     public ProductUpdateResponseDto updateProduct(Long productId, ProductUpdateRequestDto requestDto) {
 
-        Product findProduct = productRepository.findById(productId).orElseThrow(
-            () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "product doesn't exist")
-        );
+        Product findProduct = findById(productId);
         findProduct.updateProduct(
             requestDto.getProductName(),
             requestDto.getCategory(),
@@ -67,9 +65,7 @@ public class ProductService {
     }
 
     public ProductGetResponseDto getProduct(Long productId) {
-        Product findProduct = productRepository.findById(productId).orElseThrow(
-            () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "product doesn't exist")
-        );
+        Product findProduct = findById(productId);
 
         return new ProductGetResponseDto(
             findProduct.getProductId(),
@@ -85,6 +81,6 @@ public class ProductService {
 
     public Product findById(Long productId) {
         return productRepository.findById(productId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "아이디에 해당하는 상품이 존재하지 않습니다."));
+            .orElseThrow(() -> new CustomResponseStatusException(ErrorCode.NOT_FOUND_PRODUCT));
     }
 }
