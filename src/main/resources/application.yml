@@ -28,9 +28,13 @@ spring:
         format_sql: true
         enable_lazy_load_no_trans: true
         globally_quoted_identifiers: true
-
   config:
     import: optional:file:.env[.properties]
+
+toss:
+  secret-key: ${TOSS_SECRET_KEY}
+
+
 
 jwt:
   secret: ${JWT_SECRET_KEY}
