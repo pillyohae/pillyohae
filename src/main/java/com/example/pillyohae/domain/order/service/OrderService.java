@@ -33,7 +33,6 @@ public class OrderService {
 //    }
 
 
-
     // 상품 단건 구매
     @Transactional
     public OrderCreateResponseDto createOrderByProduct(String email, OrderCreateByProductRequestDto requestDto) {
@@ -43,20 +42,26 @@ public class OrderService {
         // 재고 처리 및 품절 로직 필요
         Order order = new Order(user);
         OrderItem orderItem = new OrderItem(product.getProductName()
-                ,calculateOrderItemPrice(Double.valueOf(product.getPrice()), requestDto.getQuantity())
-                ,requestDto.getQuantity(),requestDto.getProductId(), order);
+                , calculateOrderItemPrice(Double.valueOf(product.getPrice()), requestDto.getQuantity())
+                , requestDto.getQuantity(), requestDto.getProductId(), order);
         order.updateTotalPrice();
-
-        return new OrderCreateResponseDto(order.getId());
+        Order savedOrder = orderRepository.save(order);
+        return new OrderCreateResponseDto(savedOrder.getId());
     }
 
     // user의 order 조회
     @Transactional
     public BuyerOrderSearchResponseDto findOrder(String email, LocalDateTime startAt, LocalDateTime endAt, Long pageNumber, Long pageSize) {
         User user = userService.findByEmail(email);
-        List<BuyerOrderInfo> orderInfoList = orderRepository.findBuyerOrderInfoListByUserIdAndDate(user.getId(),startAt,endAt,pageNumber,pageSize);
-        BuyerOrderSearchResponseDto.PageInfo pageInfo = new BuyerOrderSearchResponseDto.PageInfo(pageNumber,pageSize);
-        return new BuyerOrderSearchResponseDto(orderInfoList,pageInfo);
+        if (startAt.isAfter(endAt)) {
+            throw new IllegalArgumentException("Start date must be before end date");
+        }
+        if (pageNumber < 0 || pageSize <= 0) {
+            throw new IllegalArgumentException("Invalid pagination parameters");
+        }
+        List<BuyerOrderInfo> orderInfoList = orderRepository.findBuyerOrders(user.getId(), startAt, endAt, pageNumber, pageSize);
+        BuyerOrderSearchResponseDto.PageInfo pageInfo = new BuyerOrderSearchResponseDto.PageInfo(pageNumber, pageSize);
+        return new BuyerOrderSearchResponseDto(orderInfoList, pageInfo);
 
     }
     // order 내역 조회

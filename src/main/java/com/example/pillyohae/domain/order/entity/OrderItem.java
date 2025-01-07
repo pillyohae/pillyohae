@@ -4,6 +4,7 @@ import com.example.pillyohae.domain.order.entity.status.OrderItemStatus;
 import com.example.pillyohae.domain.order.entity.status.OrderStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Positive;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,23 +20,26 @@ public class OrderItem {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column
+    @Column(nullable = false)
     private String productName;
 
-    @Column
+    @Column(nullable = false)
+    @Positive
     private Double price;
 
-    @Column
+    @Column(nullable = false)
+    @Positive
     private Long quantity;
 
     // 물품마다 다른 status를 갖는다
-    @Column
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private OrderItemStatus status;
 
 
     // 상점 주인의 주문 조회용
     // 연관 관계가 필요한지 고민
-    @Column
+    @Column(nullable = false)
     private Long productId;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -53,27 +57,15 @@ public class OrderItem {
         this.status = OrderItemStatus.PENDING;
     }
 
+    // Update status with validation
     public void updateStatus(OrderItemStatus newStatus) {
-        this.status = newStatus;
-    }
-
-    private boolean canTransitionTo(OrderItemStatus newStatus) {
-        switch (this.status) {
-            case PENDING:
-                return newStatus == OrderItemStatus.READY_FOR_SHIPMENT || newStatus == OrderItemStatus.CANCELLED;
-            case READY_FOR_SHIPMENT:
-                return newStatus == OrderItemStatus.SHIPPED;
-            case SHIPPED:
-                return newStatus == OrderItemStatus.DELIVERED || newStatus == OrderItemStatus.DELIVERY_FAILED;
-            case DELIVERED:
-                return newStatus == OrderItemStatus.RETURN_REQUESTED;
-            case RETURN_REQUESTED:
-                return newStatus == OrderItemStatus.RETURNED;
-            case DELIVERY_FAILED:
-            case CANCELLED:
-                return false; // 최종 상태는 변경 불가
-            default:
-                return false;
+        if (status.canTransitionTo(newStatus)) {
+            this.status = newStatus;
+        } else {
+            throw new IllegalStateException(
+                    "현재 상태(" + status.getDescription() + ")에서 " + newStatus.getDescription() + " 상태로 변경할 수 없습니다."
+            );
         }
     }
+
 }

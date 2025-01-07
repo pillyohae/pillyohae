@@ -25,16 +25,18 @@ public class Order extends BaseTimeEntity {
     private UUID id;
 
     @Column(nullable = false)
-    private Double totalPrice;
+    private Double totalPrice = 0.0;
 
     // order 전반적인 status
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private OrderStatus status;
 
     @Column(nullable = false)
     private String orderName;
 
-    @Column(nullable = false)
+    // 주문 생성 후 실제 결제가 되고나서 값이 지정됨
+    @Column
     private LocalDateTime payTime;
 
     @OneToMany(mappedBy = "order", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
@@ -50,14 +52,17 @@ public class Order extends BaseTimeEntity {
         // 초기 상태 결제 대기중
         this.status = OrderStatus.PENDING;
     }
+
     // order에 대한 status 업데이트
-    public OrderStatus updateStatus(OrderStatus newStatus) {
-        if (canTransitionTo(newStatus)) {
+    public void updateStatus(OrderStatus newStatus) {
+        if (status.canTransitionTo(newStatus)) {
             this.status = newStatus;
+            System.out.println("주문 상태가 " + newStatus.getDescription() + "로 변경되었습니다.");
         } else {
-            throw new IllegalStateException("현재 상태에서는 " + newStatus.getDescription() + " 상태로 변경할 수 없습니다.");
+            throw new IllegalStateException(
+                    "현재 상태(" + status.getDescription() + ")에서 " + newStatus.getDescription() + " 상태로 변경할 수 없습니다."
+            );
         }
-        return status;
     }
 
     // order 품목별 status 업데이트
@@ -73,20 +78,8 @@ public class Order extends BaseTimeEntity {
     }
 
 
-    // 주문은 결제와 취소만 존재 상세 주문 및 배송상태는 각 아이템별로 존재
-    private boolean canTransitionTo(OrderStatus newStatus) {
-        switch (this.status) {
-            case PENDING:
-                return newStatus == OrderStatus.PAYMENT_CONFIRMED || newStatus == OrderStatus.CANCELLED;
-            case PAYMENT_CONFIRMED:
-            case CANCELLED:
-                return false; // 최종 상태는 변경 불가
-            default:
-                return false;
-        }
-    }
-
     public Double updateTotalPrice() {
+        this.totalPrice = 0.0;
         for (OrderItem item : this.orderItems) {
             this.totalPrice += item.getPrice();
         }

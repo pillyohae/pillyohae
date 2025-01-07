@@ -7,5 +7,5 @@ import java.util.Date;
 import java.util.List;
 
 public interface OrderQueryRepository {
-    List<BuyerOrderInfo> findBuyerOrderInfoListByUserIdAndDate(Long userId, LocalDateTime startAt, LocalDateTime endAt, Long pageNum, Long pageSize);
+    List<BuyerOrderInfo> findBuyerOrders(Long userId, LocalDateTime startAt, LocalDateTime endAt, Long pageNumber, Long pageSize);
 }

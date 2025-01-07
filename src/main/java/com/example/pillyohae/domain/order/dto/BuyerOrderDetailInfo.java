@@ -2,15 +2,16 @@ package com.example.pillyohae.domain.order.dto;
 
 import com.example.pillyohae.domain.order.entity.status.OrderItemStatus;
 import com.querydsl.core.annotations.QueryProjection;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(force = true)
 public class BuyerOrderDetailInfo {
-    List<BuyerOrderItemInfo> orderItemInfos;
+    private final List<BuyerOrderItemInfo> orderItemInfos;
 
     public BuyerOrderDetailInfo(List<BuyerOrderItemInfo> orderItemInfos) {
         this.orderItemInfos = orderItemInfos;

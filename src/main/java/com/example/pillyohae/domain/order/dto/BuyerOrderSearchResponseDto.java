@@ -1,16 +1,17 @@
 package com.example.pillyohae.domain.order.dto;
 
 import com.querydsl.core.annotations.QueryProjection;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @Getter
-@NoArgsConstructor
 public class BuyerOrderSearchResponseDto {
-    List<BuyerOrderInfo> orderInfos;
-    PageInfo pageInfo;
+
+    private final List<BuyerOrderInfo> orderInfos;
+    private final PageInfo pageInfo;
 
     public BuyerOrderSearchResponseDto(List<BuyerOrderInfo> orderInfos, PageInfo pageInfo) {
         this.orderInfos = orderInfos;

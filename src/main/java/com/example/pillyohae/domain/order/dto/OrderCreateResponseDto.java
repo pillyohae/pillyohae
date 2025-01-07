@@ -6,9 +6,9 @@ import lombok.NoArgsConstructor;
 import java.util.UUID;
 
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(force = true)
 public class OrderCreateResponseDto {
-    private UUID id;
+    private final UUID id;
 
     public OrderCreateResponseDto(UUID id) {
         this.id = id;

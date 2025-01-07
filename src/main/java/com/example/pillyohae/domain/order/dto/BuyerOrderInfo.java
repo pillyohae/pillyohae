@@ -9,12 +9,12 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(force = true)
 public class BuyerOrderInfo {
-    private UUID orderId;
-    private OrderStatus orderStatus;
-    private String orderName;
-    private LocalDateTime orderTime;
+    private final UUID orderId;
+    private final OrderStatus orderStatus;
+    private final String orderName;
+    private final LocalDateTime orderTime;
 
     @QueryProjection
     public BuyerOrderInfo(UUID orderId, OrderStatus orderStatus, String orderName, LocalDateTime orderTime) {
