@@ -5,18 +5,29 @@ import com.example.pillyohae.global.exception.code.ErrorCode;
 import com.example.pillyohae.product.dto.*;
 import com.example.pillyohae.product.entity.Product;
 import com.example.pillyohae.product.repository.ProductRepository;
+import com.example.pillyohae.user.entity.User;
+import com.example.pillyohae.user.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class ProductService {
 
     private final ProductRepository productRepository;
+    private final UserService userService;
 
-    public ProductCreateResponseDto createProduct(ProductCreateRequestDto requestDto) {
+    public ProductCreateResponseDto createProduct(ProductCreateRequestDto requestDto, String email) {
+
+        User findUser = userService.findByEmail(email);
+
 
         Product savedProduct = productRepository.save(new Product(
+            findUser,
             requestDto.getProductName(),
             requestDto.getCategory(),
             requestDto.getDescription(),
@@ -82,5 +93,57 @@ public class ProductService {
     public Product findById(Long productId) {
         return productRepository.findById(productId)
             .orElseThrow(() -> new CustomResponseStatusException(ErrorCode.NOT_FOUND_PRODUCT));
+    }
+
+    @Transactional
+    public void deleteProduct(Long productId, String email) {
+
+        Product findProduct = findById(productId);
+
+        User user = userService.findByEmail(email);
+
+        if (!findProduct.getUser().getId().equals(user.getId())) {
+            throw new AccessDeniedException("권한이 없습니다.");
+        }
+
+        findProduct.deleteProduct();
+    }
+
+    public List<ProductSearchResponseDto> searchAndConvertProducts(String productName, String companyName, String category) {
+
+        List<Product> products = getAllProduct(productName, companyName, category);
+
+        return convertToDto(products);
+    }
+
+    public List<Product> getAllProduct(String productName, String companyName, String category) {
+        if (productName != null && companyName != null && category != null) {
+            return productRepository.findByProductNameAndCompanyNameAndCategory(productName, companyName, category);
+        } else if (productName != null && companyName != null) {
+            return productRepository.findByProductNameAndCompanyName(productName, companyName);
+        } else if (productName != null && category != null) {
+            return productRepository.findByProductNameAndCategory(productName, category);
+        } else if (companyName != null && category != null) {
+            return productRepository.findByCompanyNameAndCategory(companyName, category);
+        } else if (productName != null) {
+            return productRepository.findByProductName(productName);
+        } else if (companyName != null) {
+            return productRepository.findByCompanyName(companyName);
+        } else if (category != null) {
+            return productRepository.findByCategory(category);
+        } else {
+            return productRepository.findAll();
+        }
+    }
+
+    private List<ProductSearchResponseDto> convertToDto(List<Product> products) {
+        return products.stream()
+            .map(product -> new ProductSearchResponseDto(
+                product.getProductId(),
+                product.getProductName(),
+                product.getCompanyName(),
+                product.getCategory()
+            ))
+            .toList();
     }
 }
