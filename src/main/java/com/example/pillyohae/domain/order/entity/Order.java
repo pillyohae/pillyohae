@@ -10,6 +10,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicUpdate;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -30,6 +31,11 @@ public class Order extends BaseTimeEntity {
     @Column(nullable = false)
     private OrderStatus status;
 
+    @Column(nullable = false)
+    private String orderName;
+
+    @Column(nullable = false)
+    private LocalDateTime payTime;
 
     @OneToMany(mappedBy = "order", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> orderItems = new ArrayList<>();
@@ -66,20 +72,13 @@ public class Order extends BaseTimeEntity {
         throw new IllegalArgumentException("해당 ID의 품목을 찾을 수 없습니다: " + itemId);
     }
 
+
+    // 주문은 결제와 취소만 존재 상세 주문 및 배송상태는 각 아이템별로 존재
     private boolean canTransitionTo(OrderStatus newStatus) {
         switch (this.status) {
             case PENDING:
                 return newStatus == OrderStatus.PAYMENT_CONFIRMED || newStatus == OrderStatus.CANCELLED;
             case PAYMENT_CONFIRMED:
-                return newStatus == OrderStatus.PROCESSING || newStatus == OrderStatus.CANCELLED;
-            case PROCESSING:
-                return newStatus == OrderStatus.READY_FOR_SHIPMENT;
-            case READY_FOR_SHIPMENT:
-                return newStatus == OrderStatus.SHIPPED;
-            case SHIPPED:
-                return newStatus == OrderStatus.DELIVERED || newStatus == OrderStatus.DELIVERY_FAILED;
-            case DELIVERED:
-            case DELIVERY_FAILED:
             case CANCELLED:
                 return false; // 최종 상태는 변경 불가
             default:

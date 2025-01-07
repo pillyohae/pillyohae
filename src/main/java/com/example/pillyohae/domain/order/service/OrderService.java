@@ -1,5 +1,7 @@
 package com.example.pillyohae.domain.order.service;
 
+import com.example.pillyohae.domain.order.dto.BuyerOrderInfo;
+import com.example.pillyohae.domain.order.dto.BuyerOrderSearchResponseDto;
 import com.example.pillyohae.domain.order.dto.OrderCreateByProductRequestDto;
 import com.example.pillyohae.domain.order.dto.OrderCreateResponseDto;
 import com.example.pillyohae.domain.order.entity.Order;
@@ -13,6 +15,9 @@ import com.example.pillyohae.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -45,8 +50,15 @@ public class OrderService {
         return new OrderCreateResponseDto(order.getId());
     }
 
-    // order 조회
+    // user의 order 조회
+    @Transactional
+    public BuyerOrderSearchResponseDto findOrder(String email, LocalDateTime startAt, LocalDateTime endAt, Long pageNumber, Long pageSize) {
+        User user = userService.findByEmail(email);
+        List<BuyerOrderInfo> orderInfoList = orderRepository.findBuyerOrderInfoListByUserIdAndDate(user.getId(),startAt,endAt,pageNumber,pageSize);
+        BuyerOrderSearchResponseDto.PageInfo pageInfo = new BuyerOrderSearchResponseDto.PageInfo(pageNumber,pageSize);
+        return new BuyerOrderSearchResponseDto(orderInfoList,pageInfo);
 
+    }
     // order 내역 조회
 
     // order 수정

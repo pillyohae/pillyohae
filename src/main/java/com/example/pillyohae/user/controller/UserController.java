@@ -1,5 +1,7 @@
 package com.example.pillyohae.user.controller;
 
+import com.example.pillyohae.domain.order.dto.BuyerOrderSearchResponseDto;
+import com.example.pillyohae.domain.order.service.OrderService;
 import com.example.pillyohae.global.dto.JwtAuthResponse;
 import com.example.pillyohae.user.dto.UserCreateRequestDto;
 import com.example.pillyohae.user.dto.UserCreateResponseDto;
@@ -29,12 +31,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDateTime;
+
 @Controller
 @RequestMapping("/users")
 @RequiredArgsConstructor
 public class UserController {
 
     private final UserService userService;
+    private final OrderService orderService;
 
     @GetMapping("/login")
     public String loginPage() {
@@ -101,5 +106,13 @@ public class UserController {
             authentication);
 
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
+    }
+
+    @GetMapping("/orders")
+    public ResponseEntity<BuyerOrderSearchResponseDto> findAllOrdersByBuyer(
+            Authentication authentication, @RequestParam(name = "startAt")LocalDateTime startAt, @RequestParam(name = "endAt") LocalDateTime endAt
+            , @RequestParam(name = "pageNumber") Long pageNumber, @RequestParam(name = "pageSize") Long pageSize
+            ){
+        return ResponseEntity.ok(orderService.findOrder(authentication.getName(),startAt,endAt,pageNumber,pageSize));
     }
 }

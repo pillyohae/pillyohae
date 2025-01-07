@@ -1,5 +1,11 @@
 package com.example.pillyohae.domain.order.repository;
 
-public interface OrderQueryRepository {
+import com.example.pillyohae.domain.order.dto.BuyerOrderInfo;
 
+import java.time.LocalDateTime;
+import java.util.Date;
+import java.util.List;
+
+public interface OrderQueryRepository {
+    List<BuyerOrderInfo> findBuyerOrderInfoListByUserIdAndDate(Long userId, LocalDateTime startAt, LocalDateTime endAt, Long pageNum, Long pageSize);
 }
