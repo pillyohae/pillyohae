@@ -39,7 +39,8 @@ public class CartController {
     @PostMapping("/add")
     public ResponseEntity<CartCreateResponseDto> createCart(
         @AuthenticationPrincipal UserDetails userDetails,
-        @Valid @RequestBody CartCreateRequestDto requestDto) {
+        @Valid @RequestBody CartCreateRequestDto requestDto
+    ) {
 
         SecurityContextHolder.getContext();
 
@@ -56,8 +57,7 @@ public class CartController {
      * @return 정상 처리 시 응답 DTO
      */
     @GetMapping
-    public ResponseEntity<CartListResponseDto> findCart(
-        @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<CartListResponseDto> findCart(@AuthenticationPrincipal UserDetails userDetails) {
 
         return ResponseEntity.ok(cartService.findCart(userDetails.getUsername()));
     }
@@ -74,10 +74,10 @@ public class CartController {
     public ResponseEntity<CartUpdateResponseDto> updateCart(
         @PathVariable Long cartId,
         @AuthenticationPrincipal UserDetails userDetails,
-        @Valid @RequestBody CartUpdateRequestDto requestDto) {
+        @Valid @RequestBody CartUpdateRequestDto requestDto
+    ) {
 
-        return ResponseEntity.ok(
-            cartService.updateCart(cartId, userDetails.getUsername(), requestDto));
+        return ResponseEntity.ok(cartService.updateCart(cartId, userDetails.getUsername(), requestDto));
     }
 
     /**
@@ -90,7 +90,8 @@ public class CartController {
     @DeleteMapping("/{cartId}")
     public ResponseEntity<Void> deleteCart(
         @PathVariable Long cartId,
-        @AuthenticationPrincipal UserDetails userDetails) {
+        @AuthenticationPrincipal UserDetails userDetails
+    ) {
 
         cartService.deleteCart(cartId, userDetails.getUsername());
 

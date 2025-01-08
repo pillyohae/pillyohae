@@ -65,10 +65,11 @@ public class CartService {
 
         User user = userService.findByEmail(email);
 
-        List<CartProductDetailResponseDto> products = cartRepository.findCartDtoListByUserId(
-            user.getId());
+        List<CartProductDetailResponseDto> products = cartRepository.findCartDtoListByUserId(user.getId());
 
-        Long totalPrice = products.stream().mapToLong(CartProductDetailResponseDto::getPrice).sum();
+        Long totalPrice = products.stream()
+            .mapToLong(product -> product.getPrice() * product.getQuantity())
+            .sum();
 
         return new CartListResponseDto(totalPrice, products);
     }
@@ -127,6 +128,12 @@ public class CartService {
 
         cartRepository.delete(cart);
     }
+
+    /*
+     * TODO: 장바구니 한번에 비우는 기능 추가하기
+     *  쿼리한번에 전부 불러와서 삭제해버리는 방법 ?
+     *
+     */
 
     /**
      * 사용자의 장바구니 목록 조회
