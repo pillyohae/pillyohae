@@ -47,7 +47,8 @@ public class Order extends BaseTimeEntity {
     @JoinColumn(name = "user_id")
     private User user;
 
-    public Order(User user) {
+    public Order(String orderName, User user) {
+        this.orderName = orderName;
         this.user = user;
         // 초기 상태 결제 대기중
         this.status = OrderStatus.PENDING;

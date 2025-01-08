@@ -26,6 +26,7 @@
 <script th:inline="javascript">
     /* JavaScript 코드 */
 
+    let globalCartData;
 
     // 아이템 예시 나중에 db랑 연동
     const items = [
@@ -42,7 +43,6 @@
         window.location.href = 'http://localhost:8080/users/login';
     }
     updateCart();
-
 
     function createItemCards() {
         const container = document.getElementById('itemContainer');
@@ -103,7 +103,10 @@
         })
             .then(response => response.json())
             .then(cartData => {
+                globalCartData = cartData.products;
                 const cartItems = document.getElementById('cartItems'); // cart-items를 표시할 컨테이너
+                // 초기화
+                cartItems.innerHTML = '';
                 let total = 0;
 
                 cartData.products.forEach((item, index) => {
@@ -120,33 +123,86 @@
                 });
 
                 // 총 가격 표시 (서버에서 받아온 totalPrice 사용)
-                document.getElementById('total').textContent = `총 가격: ${cartData.totalPrice}원`;
+                document.getElementById('cartTotal').textContent = `총 가격: ${cartData.totalPrice}원`;
             })
             .catch(error => {
                 console.error('장바구니 데이터 로딩 실패:', error);
             });
-
-// 삭제 함수도 productId를 사용하도록 수정
-        function removeFromCart(productId) {
-            // 상품 삭제 로직 구현
-            console.log(`상품 ID ${productId} 삭제`);
-        }
-
-        function purchase() {
-            if (cart.length === 0) {
-                alert('Your cart is empty!');
-                return;
-            }
-
-            const total = cart.reduce((sum, item) => sum + item.price, 0);
-            alert(`Thank you for your purchase!\nTotal: $${total.toFixed(2)}`);
-            cart = [];
-            updateCart();
-        }
-
-        // Initialize the page
-        createItemCards();
     }
+
+    // 삭제 함수도 productId를 사용하도록 수정
+    function removeFromCart(productId) {
+        // 상품 삭제 로직 구현
+        console.log(`상품 ID ${productId} 삭제`);
+    }
+
+    function purchase() {
+        if (globalCartData.length === 0) {
+            alert('Your cart is empty!');
+            return;
+        }
+        createOrderFromCart();
+        // cart 삭제 필요
+        updateCart();
+    }
+
+
+    function createOrderFromCart() {
+        fetch('/api/v1/orders/carts/create', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('주문 생성 실패');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('주문이 생성되었습니다. 주문 ID:', data.id);
+                // 주문 성공 후 추가 작업
+                // 예: 성공 메시지 표시, 주문 완료 페이지로 이동 등
+                alert('주문이 성공적으로 생성되었습니다.');
+                // 장바구니 비우기
+                checkout(data.id);
+                updateCart();  // 장바구니 UI 업데이트
+            })
+            .catch(error => {
+                console.error('주문 생성 중 오류 발생:', error);
+                alert('주문 생성 중 오류가 발생했습니다.');
+            });
+
+
+
+        updateCart()
+        // Initialize the page
+
+    }
+    function checkout(orderId) {
+        // 주문 생성 후 성공하면 결제로 이동
+        fetch(`http://localhost:8080/orders/${orderId}/toss/checkout`,{headers : {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }})  // HTML 파일 URL 요청
+            .then(response => response.text())  // HTML 콘텐츠를 텍스트로 변환
+            .then(html => {
+                // 새 창을 열고 HTML을 표시
+                const newWindow = window.open();
+                newWindow.document.write(html);  // 새 창에 HTML 내용 삽입
+                newWindow.document.close();  // 창 닫기 (필수)
+            })
+            .catch(error => {
+                console.error('Error:', error);  // 오류 처리
+            });
+    }
+    createItemCards();
+
+
 </script>
 </body>
 </html>

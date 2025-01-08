@@ -52,7 +52,8 @@ public class OrderService {
         Product product = productRepository.findById(requestDto.getProductId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"Product not found"));
         // 재고 처리 및 품절 로직 필요
-        Order order = new Order(user);
+        String orderName = product.getProductName() + " " + requestDto.getQuantity() + " 개";
+        Order order = new Order(orderName,user);
         OrderItem orderItem = new OrderItem(product.getProductName()
                 , calculateOrderItemPrice(Double.valueOf(product.getPrice()), requestDto.getQuantity())
                 , requestDto.getQuantity(), requestDto.getProductId(), order);
@@ -114,7 +115,8 @@ public class OrderService {
         // fetch join으로 product도 같이 갖고옴
         List<Cart> carts = cartRepository.findCartsWithProductsByUserId(user.getId());
         // Order 생성 및 저장
-        Order order = new Order(user);
+        String orderName = carts.get(0).getProduct().getProductName() +" " + carts.get(0).getQuantity() +"개"+" 외 " + (carts.size() - 1) + " 건";
+        Order order = new Order(orderName,user);
         orderRepository.save(order);
 
         // OrderItem 생성
@@ -130,10 +132,10 @@ public class OrderService {
             );
             orderItems.add(orderItem);
         }
-
         // OrderItem 저장
         orderItemRepository.saveAll(orderItems);
-
+        order.getOrderItems().addAll(orderItems);
+        order.updateTotalPrice();
         return order;
     }
 }

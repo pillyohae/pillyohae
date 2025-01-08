@@ -46,12 +46,16 @@ jobs:
           AWS_REGION: ${{secrets.AWS_REGION}}
           ACCESS_KEY: ${{secrets.AWS_ACCESS_KEY}}
           SECRET_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+          TOSS_SECRET_KEY: ${{secrets.TOSS_SECRET_KEY}}
+          JWT_SECRET_KEY: ${{secrets.JWT_SECRET_KEY}}
         run: |
           echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
           docker build \
             --build-arg DATABASE_URL="$DATABASE_URL" \
             --build-arg DATABASE_ID="$DATABASE_ID" \
             --build-arg DATABASE_PASSWORD="$DATABASE_PASSWORD" \
+            --build-arg TOSS_SECRET_KEY = "$TOSS_SECRET_KEY"\
+            --build-arg JWT_SECRET_KEY = "$JWT_SECRET_KEY"\
             -t "$DOCKER_HUB_REPOSITORY":main .
           docker push "$DOCKER_HUB_REPOSITORY":main
       
@@ -81,7 +85,8 @@ jobs:
           AWS_REGION: ${{secrets.AWS_REGION}}
           ACCESS_KEY: ${{secrets.AWS_ACCESS_KEY}}
           SECRET_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
-
+          TOSS_SECRET_KEY: ${{secrets.TOSS_SECRET_KEY}}
+          JWT_SECRET_KEY: ${{secrets.JWT_SECRET_KEY}}
           script: |
             echo "$DOCKER_PASS" | sudo docker login -u "$DOCKER_USER" --password-stdin
             sudo docker rm -f server 
@@ -96,5 +101,7 @@ jobs:
               -e AWS_REGION=${{secrets.AWS_REGION}} \
               -e ACCESS_KEY=${{secrets.AWS_ACCESS_KEY}} \
               -e SECRET_KEY=${{secrets.AWS_SECRET_ACCESS_KEY}} \
+              -e TOSS_SECRET_KEY=${{secrets.TOSS_SECRET_KEY}}\
+              -e JWT_SECRET_KEY=${{secrets.JWT_SECRET_KEY}}\
               -p 8080:8080 "${{secrets.DOCKER_HUB_REPOSITORY}}":main
           
