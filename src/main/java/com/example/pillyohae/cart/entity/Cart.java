@@ -37,6 +37,9 @@ public class Cart extends BaseCreatedTimeEntity {
     }
 
     public void updateQuantity(Integer quantity) {
+        if (quantity < 1) {
+            this.quantity = 1;
+        }
         this.quantity = quantity;
     }
 }

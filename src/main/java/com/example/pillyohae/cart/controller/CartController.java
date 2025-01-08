@@ -11,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,16 +35,13 @@ public class CartController {
      * @param userDetails 사용자 정보
      * @return 정상 처리 시 응답 DTO
      */
-    @PostMapping("/add")
+    @PostMapping
     public ResponseEntity<CartCreateResponseDto> createCart(
         @AuthenticationPrincipal UserDetails userDetails,
         @Valid @RequestBody CartCreateRequestDto requestDto
     ) {
 
-        SecurityContextHolder.getContext();
-
-        CartCreateResponseDto responseDto = cartService.createCart(requestDto,
-            userDetails.getUsername());
+        CartCreateResponseDto responseDto = cartService.createCart(requestDto, userDetails.getUsername());
 
         return ResponseEntity.ok(responseDto);
     }

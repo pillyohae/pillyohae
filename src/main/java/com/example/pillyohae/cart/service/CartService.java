@@ -10,7 +10,6 @@ import com.example.pillyohae.cart.dto.CartUpdateResponseDto;
 import com.example.pillyohae.cart.entity.Cart;
 import com.example.pillyohae.cart.repository.CartRepository;
 import com.example.pillyohae.product.entity.Product;
-import com.example.pillyohae.product.repository.ProductRepository;
 import com.example.pillyohae.product.service.ProductService;
 import com.example.pillyohae.user.entity.User;
 import com.example.pillyohae.user.service.UserService;
@@ -27,9 +26,6 @@ import org.springframework.web.server.ResponseStatusException;
 public class CartService {
 
     private final CartRepository cartRepository;
-    private final ProductRepository productRepository;
-
-
     private final UserService userService;
     private final ProductService productService;
 
@@ -91,20 +87,14 @@ public class CartService {
 
         User user = userService.findByEmail(email);
 
-        Cart cart = cartRepository.findById(cartId).orElseThrow(() ->
-            new ResponseStatusException(HttpStatus.NOT_FOUND, "장바구니에서 상품을 찾을 수 없습니다.")
-        );
+        Cart cart = cartRepository.findById(cartId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "장바구니에서 상품을 찾을 수 없습니다."));
 
         if (!cart.getUser().getId().equals(user.getId())) {
             throw new AccessDeniedException("권한이 없습니다.");
         }
 
-        // 수량이 0 이하면 1로 업데이트
-        if (requestDto.getQuantity() > 0) {
-            cart.updateQuantity(requestDto.getQuantity());
-        } else {
-            cart.updateQuantity(1);
-        }
+        cart.updateQuantity(requestDto.getQuantity());
 
         return new CartUpdateResponseDto(cart.getProduct().getProductId(), cart.getQuantity());
     }
@@ -120,7 +110,8 @@ public class CartService {
 
         User user = userService.findByEmail(email);
 
-        Cart cart = cartRepository.findById(cartId).orElseThrow();
+        Cart cart = cartRepository.findById(cartId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "장바구니에서 상품을 찾을 수 없습니다."));
 
         if (!cart.getUser().getId().equals(user.getId())) {
             throw new AccessDeniedException("권한이 없습니다.");
@@ -128,12 +119,6 @@ public class CartService {
 
         cartRepository.delete(cart);
     }
-
-    /*
-     * TODO: 장바구니 한번에 비우는 기능 추가하기
-     *  쿼리한번에 전부 불러와서 삭제해버리는 방법 ?
-     *
-     */
 
     /**
      * 사용자의 장바구니 목록 조회
