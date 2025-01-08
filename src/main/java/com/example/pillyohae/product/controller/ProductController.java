@@ -3,16 +3,21 @@ package com.example.pillyohae.product.controller;
 import com.example.pillyohae.product.dto.*;
 import com.example.pillyohae.product.entity.Product;
 import com.example.pillyohae.product.service.ProductService;
+import jakarta.persistence.Column;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/products")
 @RequiredArgsConstructor
 public class ProductController {
     private final ProductService productService;
+
 
     @PostMapping
     public ResponseEntity<ProductCreateResponseDto> createProduct(

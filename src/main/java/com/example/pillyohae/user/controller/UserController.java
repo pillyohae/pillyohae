@@ -1,8 +1,8 @@
 package com.example.pillyohae.user.controller;
 
-import com.example.pillyohae.domain.order.dto.BuyerOrderDetailInfo;
-import com.example.pillyohae.domain.order.dto.BuyerOrderSearchResponseDto;
-import com.example.pillyohae.domain.order.service.OrderService;
+import com.example.pillyohae.order.dto.BuyerOrderDetailInfo;
+import com.example.pillyohae.order.dto.BuyerOrderSearchResponseDto;
+import com.example.pillyohae.order.service.OrderService;
 import com.example.pillyohae.global.dto.JwtAuthResponse;
 import com.example.pillyohae.user.dto.*;
 import com.example.pillyohae.user.service.UserService;
@@ -24,18 +24,13 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Controller
+@RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
 public class UserController {
 
     private final UserService userService;
     private final OrderService orderService;
-
-    @GetMapping("/login")
-    public String loginPage() {
-        return "login";
-    }
 
     @PostMapping("/signup")
     public ResponseEntity<UserCreateResponseDto> createUser(
@@ -119,7 +114,7 @@ public class UserController {
         ));
     }
 
-    @GetMapping("/orders/{orderId}/orderItems/")
+    @GetMapping("/orders/{orderId}/orderItems")
     public ResponseEntity<BuyerOrderDetailInfo> findOrderDetailInfo(
             Authentication authentication, @PathVariable(name = "orderId") UUID orderId
     ){

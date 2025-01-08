@@ -136,7 +136,7 @@ public class CartService {
      */
     public List<Cart> findByUserId(Long userId) {
 
-        List<Cart> carts = cartRepository.findAllByUserId(userId);
+        List<Cart> carts = cartRepository.findCartsWithProductsByUserId(userId);
 
         if (carts.isEmpty()) {
             throw new NotFoundException("장바구니가 비어있습니다.");

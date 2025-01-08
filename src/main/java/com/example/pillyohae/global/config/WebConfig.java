@@ -31,7 +31,7 @@ public class WebConfig {
 
     private final AccessDeniedHandler accessDeniedHandler;
 
-    private static final String[] WHITE_LIST = {"/users/login", "/users/signup", "/toss/success", "/toss/fail", "/toss/confirm"};
+    private static final String[] WHITE_LIST = {"/users/login", "/users/signup", "/toss/success", "/toss/fail", "/toss/confirm", "/products"};
 
     private static final String[] SELLER_AUTH_LIST = {"/users/sellers/**", "/products", "/products/**"};
 

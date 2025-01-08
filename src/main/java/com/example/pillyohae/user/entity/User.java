@@ -1,7 +1,7 @@
 package com.example.pillyohae.user.entity;
 
-import com.example.pillyohae.domain.order.entity.Order;
-import com.example.pillyohae.domain.order.entity.OrderItem;
+import com.example.pillyohae.order.entity.Order;
+import com.example.pillyohae.order.entity.OrderItem;
 import com.example.pillyohae.global.entity.BaseTimeEntity;
 import com.example.pillyohae.user.entity.type.Role;
 import com.example.pillyohae.user.entity.type.Status;
