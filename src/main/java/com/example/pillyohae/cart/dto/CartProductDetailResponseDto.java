@@ -9,7 +9,7 @@ public class CartProductDetailResponseDto {
 
     private final Long productId;
     private final String name;
-    private final String ImageUrl;
+    private final String imageUrl;
     private final Long price;
     private final Integer quantity;
 }

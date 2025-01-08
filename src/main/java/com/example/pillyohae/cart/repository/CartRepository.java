@@ -10,12 +10,12 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface CartRepository extends JpaRepository<Cart, Long> {
 
-    @Query("SELECT " +
+    @Query("SELECT new com.example.pillyohae.cart.dto.CartProductDetailResponseDto(" +
         "c.product.productId," +
         "c.product.productName," +
         "c.product.imageUrl," +
         "c.product.price," +
-        "c.quantity " +
+        "c.quantity) " +
         "FROM Cart c " +
         "WHERE c.user.id = :userId")
     List<CartProductDetailResponseDto> findCartDtoListByUserId(Long userId);
