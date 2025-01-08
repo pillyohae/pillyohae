@@ -14,6 +14,7 @@ import com.example.pillyohae.user.entity.type.Role;
 import com.example.pillyohae.user.entity.type.Status;
 import com.example.pillyohae.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
@@ -109,17 +110,9 @@ public class UserService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "비밀번호가 일치하지 않습니다");
         }
 
-        if (requestDto.getNewName() != null) {
-            user.updateName(requestDto.getNewName());
-        }
+        Map<String, Object> nonNullFields = requestDto.toNonNullFields();
 
-        if (requestDto.getNewAddress() != null) {
-            user.updateAddress(requestDto.getNewAddress());
-        }
-
-        if (requestDto.getNewPassword() != null) {
-            user.updatePassword(passwordEncoder.encode(requestDto.getNewPassword()));
-        }
+        user.updateFields(nonNullFields, passwordEncoder);
 
         return new UserProfileResponseDto(user.getId(), user.getName(), user.getEmail(),
             user.getAddress(), user.getCreatedAt(), user.getUpdatedAt());
