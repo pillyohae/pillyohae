@@ -1,5 +1,3 @@
-
-
 spring:
   application:
     name: pillyohae
@@ -19,7 +17,7 @@ spring:
     database-platform: org.hibernate.dialect.MySQL8Dialect
     database: mysql
     hibernate:
-      ddl-auto: validate
+      ddl-auto: create-drop
       naming:
         physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
     generate-ddl: false
@@ -61,4 +59,17 @@ cloud:
       access-key: ${ACCESS_KEY} # ACCESS_KEY 없으면 default-access-key 사용
       secret-key: ${SECRET_KEY} # SECRET_KEY 없으면 default-secret-key 사용
 
-
+security: # SecurityProperties의 prefix와 일치
+  white-list: # SecurityProperties의 whiteList 필드와 매핑
+    - "/users/login"
+    - "/users/signup"
+    - "/toss/fail"
+    - "/toss/success"
+    - "/toss/confirm"
+  seller-auth-list:
+    - "/users/sellers/**"
+    - "/products"
+    - "/products/**"
+  method-specific-patterns:
+    GET:
+      - "/products/*"
