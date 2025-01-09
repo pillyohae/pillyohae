@@ -62,11 +62,14 @@
             }
             console.log(token);
             // login -> 상품창으로 이동 후 cart에 물품 추가 -> cart에서 주문 -> 주문 -> 결제
-            fetch('http://localhost:8080/products',{headers : {
-                        'Content-Type': 'application/json',
-                            'Accept': 'application/json',
-                            'Authorization': `Bearer ${token}`
-                        }})
+            const API_BASE_URL = window.location.origin;
+            fetch(`${API_BASE_URL}/products`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            })
                 .then(response => {
                     if (response.ok) {
                         // 성공적인 응답이면 URL 리다이렉트

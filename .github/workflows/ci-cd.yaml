@@ -46,6 +46,8 @@ jobs:
           DATABASE_ID: ${{ secrets.DATABASE_ID }}
           DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
           DOCKER_HUB_REPOSITORY: ${{ secrets.DOCKER_HUB_REPOSITORY }}
+          TOSS_SECRET_KEY: ${{secrets.TOSS_SECRET_KEY}}
+          JWT_SECRET_KEY: ${{secrets.JWT_SECRET_KEY}}
         run: |
           echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
           
@@ -57,6 +59,8 @@ jobs:
             --build-arg DATABASE_URL="$DATABASE_URL" \
             --build-arg DATABASE_ID="$DATABASE_ID" \
             --build-arg DATABASE_PASSWORD="$DATABASE_PASSWORD" \
+            --build-arg TOSS_SECRET_KEY="$TOSS_SECRET_KEY"\
+            --build-arg JWT_SECRET_KEY="$JWT_SECRET_KEY"\
             -t "$DOCKER_HUB_REPOSITORY:$DOCKER_TAG" .
           docker push "$DOCKER_HUB_REPOSITORY:$DOCKER_TAG"
       

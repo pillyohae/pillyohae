@@ -36,9 +36,9 @@ public class OrderService {
 
     //cart 정보를 주문 정보로 변환 후 저장
     @Transactional
-    public OrderCreateResponseDto createOrderByCart(String email){
+    public OrderCreateResponseDto createOrderByCart(String email) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"User not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
         Order order = convertCartToOrder(user);
         return new OrderCreateResponseDto(order.getId());
 
@@ -50,10 +50,10 @@ public class OrderService {
     public OrderCreateResponseDto createOrderByProduct(String email, OrderCreateByProductRequestDto requestDto) {
         User user = userService.findByEmail(email);
         Product product = productRepository.findById(requestDto.getProductId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"Product not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
         // 재고 처리 및 품절 로직 필요
         String orderName = product.getProductName() + " " + requestDto.getQuantity() + " 개";
-        Order order = new Order(orderName,user);
+        Order order = new Order(orderName, user);
         OrderItem orderItem = new OrderItem(product.getProductName()
                 , calculateOrderItemPrice(Double.valueOf(product.getPrice()), requestDto.getQuantity())
                 , requestDto.getQuantity(), requestDto.getProductId(), order);
@@ -68,24 +68,25 @@ public class OrderService {
     public BuyerOrderSearchResponseDto findOrder(String email, LocalDateTime startAt, LocalDateTime endAt, Long pageNumber, Long pageSize) {
         User user = userService.findByEmail(email);
         if (startAt.isAfter(endAt)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Start date must be before end date");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Start date must be before end date");
         }
         if (pageNumber < 0 || pageSize <= 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Invalid pagination parameters");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid pagination parameters");
         }
         List<BuyerOrderInfo> orderInfoList = orderRepository.findBuyerOrders(user.getId(), startAt, endAt, pageNumber, pageSize);
         BuyerOrderSearchResponseDto.PageInfo pageInfo = new BuyerOrderSearchResponseDto.PageInfo(pageNumber, pageSize);
         return new BuyerOrderSearchResponseDto(orderInfoList, pageInfo);
 
     }
+
     // order 단건 조회
     @Transactional
     public BuyerOrderDetailInfo getOrderDetail(String email, UUID orderId) {
         User user = userService.findByEmail(email);
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"Order not found"));
-        if(order.getUser() != user){
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"Order is not owned by user");
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
+        if(!order.getUser().equals(user)) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Order is not owned by user");
         }
         List<BuyerOrderDetailInfo.BuyerOrderItemInfo> itemInfos = orderRepository.findBuyerOrderDetail(orderId);
         return new BuyerOrderDetailInfo(itemInfos);
@@ -96,13 +97,13 @@ public class OrderService {
     public SellerOrderItemStatusChangeResponseDto changeOrderItemStatus(String email, Long orderItemId, OrderItemStatus newStatus) {
         User seller = userService.findByEmail(email);
         OrderItem orderItem = orderItemRepository.findById(orderItemId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"Order item not found"));
-        if(!seller.equals(orderItem.getSeller()) ){
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"Order item is not owned by user");
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order item not found"));
+        if (!seller.equals(orderItem.getSeller())) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Order item is not owned by user");
         }
         orderItem.updateStatus(newStatus);
 
-        return new SellerOrderItemStatusChangeResponseDto(orderItem.getId(),orderItem.getStatus().getValue());
+        return new SellerOrderItemStatusChangeResponseDto(orderItem.getId(), orderItem.getStatus().getValue());
     }
 
 
@@ -114,9 +115,14 @@ public class OrderService {
     protected Order convertCartToOrder(User user) {
         // fetch join으로 product도 같이 갖고옴
         List<Cart> carts = cartRepository.findCartsWithProductsByUserId(user.getId());
+
+        if (carts.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cart is empty");
+        }
+
         // Order 생성 및 저장
-        String orderName = carts.get(0).getProduct().getProductName() +" " + carts.get(0).getQuantity() +"개"+" 외 " + (carts.size() - 1) + " 건";
-        Order order = new Order(orderName,user);
+        String orderName = carts.get(0).getProduct().getProductName() + " " + carts.get(0).getQuantity() + "개" + " 외 " + (carts.size() - 1) + " 건";
+        Order order = new Order(orderName, user);
         orderRepository.save(order);
 
         // OrderItem 생성
@@ -134,7 +140,6 @@ public class OrderService {
         }
         // OrderItem 저장
         orderItemRepository.saveAll(orderItems);
-        order.getOrderItems().addAll(orderItems);
         order.updateTotalPrice();
         return order;
     }

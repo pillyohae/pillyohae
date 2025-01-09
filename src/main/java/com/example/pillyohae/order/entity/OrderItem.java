@@ -57,6 +57,8 @@ public class OrderItem {
         this.order = order;
         // 초기 상태
         this.status = OrderItemStatus.PENDING;
+
+        order.getOrderItems().add(this);
     }
 
     // Update status with validation
@@ -67,6 +69,14 @@ public class OrderItem {
             throw new IllegalStateException(
                     "현재 상태(" + status.getValue() + ")에서 " + newStatus.getValue() + " 상태로 변경할 수 없습니다."
             );
+        }
+    }
+
+
+    public void setSeller(User seller) {
+        this.seller = seller;
+        if (seller != null && !seller.getSellerOrders().contains(this)) {
+            seller.getSellerOrders().add(this);
         }
     }
 

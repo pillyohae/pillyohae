@@ -54,8 +54,8 @@ jobs:
             --build-arg DATABASE_URL="$DATABASE_URL" \
             --build-arg DATABASE_ID="$DATABASE_ID" \
             --build-arg DATABASE_PASSWORD="$DATABASE_PASSWORD" \
-            --build-arg TOSS_SECRET_KEY = "$TOSS_SECRET_KEY"\
-            --build-arg JWT_SECRET_KEY = "$JWT_SECRET_KEY"\
+            --build-arg TOSS_SECRET_KEY="$TOSS_SECRET_KEY"\
+            --build-arg JWT_SECRET_KEY="$JWT_SECRET_KEY"\
             -t "$DOCKER_HUB_REPOSITORY":main .
           docker push "$DOCKER_HUB_REPOSITORY":main
       

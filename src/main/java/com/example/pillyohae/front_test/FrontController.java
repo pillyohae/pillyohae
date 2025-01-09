@@ -56,12 +56,12 @@ public class FrontController {
 
     @GetMapping("/toss/success")
     public String successPage() {
-        return "success"; // templates/toss/checkout.html 파일을 반환
+        return "success"; // templates/toss/success.html 파일을 반환
     }
 
     @GetMapping("/toss/fail")
     public String failPage() {
-        return "fail"; // templates/toss/checkout.html 파일을 반환
+        return "fail"; // templates/toss/fail.html 파일을 반환
     }
 
     @GetMapping("/products")
