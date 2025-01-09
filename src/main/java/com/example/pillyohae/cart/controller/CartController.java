@@ -11,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,15 +35,13 @@ public class CartController {
      * @param userDetails 사용자 정보
      * @return 정상 처리 시 응답 DTO
      */
-    @PostMapping("/add")
+    @PostMapping
     public ResponseEntity<CartCreateResponseDto> createCart(
         @AuthenticationPrincipal UserDetails userDetails,
-        @Valid @RequestBody CartCreateRequestDto requestDto) {
+        @Valid @RequestBody CartCreateRequestDto requestDto
+    ) {
 
-        SecurityContextHolder.getContext();
-
-        CartCreateResponseDto responseDto = cartService.createCart(requestDto,
-            userDetails.getUsername());
+        CartCreateResponseDto responseDto = cartService.createCart(requestDto, userDetails.getUsername());
 
         return ResponseEntity.ok(responseDto);
     }
@@ -56,8 +53,7 @@ public class CartController {
      * @return 정상 처리 시 응답 DTO
      */
     @GetMapping
-    public ResponseEntity<CartListResponseDto> findCart(
-        @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<CartListResponseDto> findCart(@AuthenticationPrincipal UserDetails userDetails) {
 
         return ResponseEntity.ok(cartService.findCart(userDetails.getUsername()));
     }
@@ -74,10 +70,10 @@ public class CartController {
     public ResponseEntity<CartUpdateResponseDto> updateCart(
         @PathVariable Long cartId,
         @AuthenticationPrincipal UserDetails userDetails,
-        @Valid @RequestBody CartUpdateRequestDto requestDto) {
+        @Valid @RequestBody CartUpdateRequestDto requestDto
+    ) {
 
-        return ResponseEntity.ok(
-            cartService.updateCart(cartId, userDetails.getUsername(), requestDto));
+        return ResponseEntity.ok(cartService.updateCart(cartId, userDetails.getUsername(), requestDto));
     }
 
     /**
@@ -90,10 +86,23 @@ public class CartController {
     @DeleteMapping("/{cartId}")
     public ResponseEntity<Void> deleteCart(
         @PathVariable Long cartId,
-        @AuthenticationPrincipal UserDetails userDetails) {
+        @AuthenticationPrincipal UserDetails userDetails
+    ) {
 
         cartService.deleteCart(cartId, userDetails.getUsername());
 
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    /**
+     * 장바구니에서 전체 상품 삭제
+     *
+     * @param userDetails 사용자 정보
+     * @return 정상 처리 시 200 OK
+     */
+    @DeleteMapping
+    public ResponseEntity<Void> deleteAll(@AuthenticationPrincipal UserDetails userDetails) {
+        cartService.deleteAll(userDetails.getUsername());
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

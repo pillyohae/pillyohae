@@ -46,6 +46,8 @@ jobs:
           DATABASE_ID: ${{ secrets.DATABASE_ID }}
           DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
           DOCKER_HUB_REPOSITORY: ${{ secrets.DOCKER_HUB_REPOSITORY }}
+          TOSS_SECRET_KEY: ${{secrets.TOSS_SECRET_KEY}}
+          JWT_SECRET_KEY: ${{secrets.JWT_SECRET_KEY}}
         run: |
           echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
           

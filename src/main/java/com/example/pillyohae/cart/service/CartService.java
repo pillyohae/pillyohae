@@ -10,7 +10,6 @@ import com.example.pillyohae.cart.dto.CartUpdateResponseDto;
 import com.example.pillyohae.cart.entity.Cart;
 import com.example.pillyohae.cart.repository.CartRepository;
 import com.example.pillyohae.product.entity.Product;
-import com.example.pillyohae.product.repository.ProductRepository;
 import com.example.pillyohae.product.service.ProductService;
 import com.example.pillyohae.user.entity.User;
 import com.example.pillyohae.user.service.UserService;
@@ -27,9 +26,6 @@ import org.springframework.web.server.ResponseStatusException;
 public class CartService {
 
     private final CartRepository cartRepository;
-    private final ProductRepository productRepository;
-
-
     private final UserService userService;
     private final ProductService productService;
 
@@ -65,10 +61,11 @@ public class CartService {
 
         User user = userService.findByEmail(email);
 
-        List<CartProductDetailResponseDto> products = cartRepository.findCartDtoListByUserId(
-            user.getId());
+        List<CartProductDetailResponseDto> products = cartRepository.findCartDtoListByUserId(user.getId());
 
-        Long totalPrice = products.stream().mapToLong(CartProductDetailResponseDto::getPrice).sum();
+        Long totalPrice = products.stream()
+            .mapToLong(product -> product.getPrice() * product.getQuantity())
+            .sum();
 
         return new CartListResponseDto(totalPrice, products);
     }
@@ -90,20 +87,14 @@ public class CartService {
 
         User user = userService.findByEmail(email);
 
-        Cart cart = cartRepository.findById(cartId).orElseThrow(() ->
-            new ResponseStatusException(HttpStatus.NOT_FOUND, "장바구니에서 상품을 찾을 수 없습니다.")
-        );
+        Cart cart = cartRepository.findById(cartId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "장바구니에서 상품을 찾을 수 없습니다."));
 
         if (!cart.getUser().getId().equals(user.getId())) {
             throw new AccessDeniedException("권한이 없습니다.");
         }
 
-        // 수량이 0 이하면 1로 업데이트
-        if (requestDto.getQuantity() > 0) {
-            cart.updateQuantity(requestDto.getQuantity());
-        } else {
-            cart.updateQuantity(1);
-        }
+        cart.updateQuantity(requestDto.getQuantity());
 
         return new CartUpdateResponseDto(cart.getProduct().getProductId(), cart.getQuantity());
     }
@@ -119,7 +110,8 @@ public class CartService {
 
         User user = userService.findByEmail(email);
 
-        Cart cart = cartRepository.findById(cartId).orElseThrow();
+        Cart cart = cartRepository.findById(cartId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "장바구니에서 상품을 찾을 수 없습니다."));
 
         if (!cart.getUser().getId().equals(user.getId())) {
             throw new AccessDeniedException("권한이 없습니다.");
@@ -136,12 +128,25 @@ public class CartService {
      */
     public List<Cart> findByUserId(Long userId) {
 
-        List<Cart> carts = cartRepository.findAllByUserId(userId);
+        List<Cart> carts = cartRepository.findCartsWithProductsByUserId(userId);
 
         if (carts.isEmpty()) {
             throw new NotFoundException("장바구니가 비어있습니다.");
         }
 
         return carts;
+    }
+
+    /**
+     * 사용자의 장바구니 내 상품을 전부 제거
+     *
+     * @param email 사용자 이메일
+     */
+    @Transactional
+    public void deleteAll(String email) {
+
+        User findUser = userService.findByEmail(email);
+
+        cartRepository.deleteAllByUserId(findUser.getId());
     }
 }

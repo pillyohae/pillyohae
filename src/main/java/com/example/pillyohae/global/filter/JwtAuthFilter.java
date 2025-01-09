@@ -28,7 +28,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private final UserDetailsService userDetailsService;
 
     // 화이트리스트 경로 정의
-    private static final List<String> WHITE_LIST = List.of("/users/login", "/users/signup", "/users/products/**", "/toss/fail", "/toss/success", "/toss/confirm");
+    private static final List<String> WHITE_LIST = List.of("/users/login", "/users/signup", "/users/products/**", "/toss/fail", "/toss/success", "/toss/confirm", "/products");
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,

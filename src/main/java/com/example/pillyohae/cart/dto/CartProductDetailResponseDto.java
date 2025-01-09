@@ -11,13 +11,7 @@ public class CartProductDetailResponseDto {
     private final Long price;
     private final Integer quantity;
 
-    public CartProductDetailResponseDto(
-        Long productId,
-        String productName,
-        String imageUrl,
-        Long price,
-        Integer quantity
-    ) {
+    public CartProductDetailResponseDto(Long productId, String productName, String imageUrl, Long price, Integer quantity) {
         this.productId = productId;
         this.productName = productName;
         this.imageUrl = imageUrl;
