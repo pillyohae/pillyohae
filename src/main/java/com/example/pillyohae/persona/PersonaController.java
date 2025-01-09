@@ -13,14 +13,14 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/persona")
+@RequestMapping("/persona")
 public class PersonaController {
 
     @Autowired
     private PersonaService personaService;
 
     @PostMapping("/generate")
-    public ResponseEntity<List<Image>> generatePersona(@RequestParam("imageUrl") String productImageUrl) {
+    public ResponseEntity<Image> generatePersona(@RequestParam("imageUrl") String productImageUrl) {
         try {
             var personaImageUrl = personaService.generatePersonaFromProduct(productImageUrl);
             return ResponseEntity.ok(personaImageUrl);

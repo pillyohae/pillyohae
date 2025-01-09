@@ -1,11 +1,11 @@
 package com.example.pillyohae.persona;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.image.Image;
-import org.springframework.ai.image.ImageGeneration;
 import org.springframework.ai.image.ImagePrompt;
 import org.springframework.ai.image.ImageResponse;
 import org.springframework.ai.model.Media;
@@ -19,9 +19,8 @@ import org.springframework.util.MimeTypeUtils;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.List;
-import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PersonaService {
@@ -29,12 +28,14 @@ public class PersonaService {
     private final OpenAiImageModel openAiImageModel;
     private final OpenAiChatModel chatModel;
 
-    public List<Image> generatePersonaFromProduct(String productImageUrl) {
+    public Image generatePersonaFromProduct(String productImageUrl) {
         // 1. 상품 이미지 분석
         String productDescription = analyzeProductImage(productImageUrl);
+        log.info("productDescription : {}, productImageUrl: {}", productDescription, productImageUrl);
 
         // 2. 페르소나 프롬프트 생성
         String prompt = createPersonaPrompt(productDescription);
+        log.info("persona prompt : {}, productImageUrl: {}", productDescription, productImageUrl);
 
         // 3. 이미지 생성 요청
         return generatePersonaImages(prompt);
@@ -66,20 +67,17 @@ public class PersonaService {
         );
     }
 
-    private List<Image> generatePersonaImages(String prompt) {
+    private Image generatePersonaImages(String prompt) {
         OpenAiImageOptions options = OpenAiImageOptions.builder()
                                 .quality("hd")
-                                .N(4)
-                                .height(512)
-                                .width(512).build();
+                                .N(1)
+                                .height(1024)
+                                .width(1024).build();
 
         ImageResponse response = openAiImageModel.call(
                 new ImagePrompt(prompt, options)
         );
 
-        return response.getResults()
-                .stream()
-                .map(ImageGeneration::getOutput)
-                .collect(Collectors.toList());
+        return response.getResults().get(0).getOutput();
     }
 }
