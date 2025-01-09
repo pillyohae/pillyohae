@@ -40,6 +40,7 @@ public class WebConfig {
                 .requestMatchers(securityProperties.getWhiteList().toArray(new String[0]))
                 .permitAll()
                 .requestMatchers(HttpMethod.GET, "/products/*").permitAll()
+                .requestMatchers(HttpMethod.GET, "/products").permitAll()
                 .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
                 .dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.INCLUDE,
                     DispatcherType.ERROR).permitAll()
