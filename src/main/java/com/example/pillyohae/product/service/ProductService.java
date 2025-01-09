@@ -8,11 +8,13 @@ import com.example.pillyohae.product.repository.ProductRepository;
 import com.example.pillyohae.user.entity.User;
 import com.example.pillyohae.user.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -109,60 +111,47 @@ public class ProductService {
         findProduct.deleteProduct();
     }
 
-    public List<ProductSearchResponseDto> searchAndConvertProducts(String productName, String companyName, String category) {
+    public Page<ProductSearchResponseDto> searchAndConvertProducts(String productName, String companyName, String category, int page, int size, String sortBy, Boolean isAsc) {
 
-        List<Product> products = getAllProduct(productName, companyName, category);
+        //정렬 방향과 속성 지정
+        Sort.Direction direction = isAsc ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Sort sort = Sort.by(direction, sortBy);
+        //페이징 객체 생성
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<Product> productsPage = productRepository.getAllProduct(productName, companyName, category, pageable);
 
-        return convertToDto(products);
+        return productsPage.map(product -> new ProductSearchResponseDto(
+            product.getProductId(),
+            product.getProductName(),
+            product.getCompanyName(),
+            product.getCategory(),
+            product.getPrice()
+        ));
     }
 
-    public List<Product> getAllProduct(String productName, String companyName, String category) {
-        if (productName != null && companyName != null && category != null) {
-            return productRepository.findByProductNameAndCompanyNameAndCategory(productName, companyName, category);
-        } else if (productName != null && companyName != null) {
-            return productRepository.findByProductNameAndCompanyName(productName, companyName);
-        } else if (productName != null && category != null) {
-            return productRepository.findByProductNameAndCategory(productName, category);
-        } else if (companyName != null && category != null) {
-            return productRepository.findByCompanyNameAndCategory(companyName, category);
-        } else if (productName != null) {
-            return productRepository.findByProductName(productName);
-        } else if (companyName != null) {
-            return productRepository.findByCompanyName(companyName);
-        } else if (category != null) {
-            return productRepository.findByCategory(category);
-        } else {
-            return productRepository.findAll();
-        }
-    }
-
-    private List<ProductSearchResponseDto> convertToDto(List<Product> products) {
-        return products.stream()
-            .map(product -> new ProductSearchResponseDto(
-                product.getProductId(),
-                product.getProductName(),
-                product.getCompanyName(),
-                product.getCategory(),
-                product.getPrice()
-            ))
-            .toList();
-    }
-
-    public List<ProductSearchResponseDto> findSellersProducts(String email) {
+    public Page<ProductSearchResponseDto> findSellersProducts(String email, int page, int size, String sortBy, Boolean isAsc) {
 
         User user = userService.findByEmail(email);
 
-        List<Product> products = productRepository.findProductsByUserId(user.getId());
+        //정렬 방향과 속성 지정
+        Sort.Direction direction = isAsc ? Sort.Direction.ASC : Sort.Direction.DESC;
+//        if (sortBy == null || sortBy.isEmpty()) {
+//            Sort.by(direction, "productId");
+//        }
+        Sort sort = Sort.by(direction, sortBy);
+        //페이징 객체 생성
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<Product> productsPage = productRepository.findProductsByUserId(user.getId(), pageable);
 
-        return products.stream()
+        return productsPage
             .map(product -> new ProductSearchResponseDto(
                 product.getProductId(),
                 product.getProductName(),
                 product.getCompanyName(),
                 product.getCategory(),
                 product.getPrice()
-            ))
-            .toList();
+            ));
 
     }
 }
+
