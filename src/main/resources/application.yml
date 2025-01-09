@@ -17,7 +17,7 @@ spring:
     database-platform: org.hibernate.dialect.MySQL8Dialect
     database: mysql
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: ${JPA_HIBERNATE_DDL}
       naming:
         physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
     generate-ddl: false
