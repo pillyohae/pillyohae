@@ -2,6 +2,7 @@ package com.example.pillyohae.product.controller;
 
 import com.example.pillyohae.product.dto.*;
 import com.example.pillyohae.product.service.ProductService;
+import jakarta.persistence.Column;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

@@ -1,6 +1,7 @@
 package com.example.pillyohae.user.entity;
 
-import com.example.pillyohae.domain.order.entity.Order;
+import com.example.pillyohae.order.entity.Order;
+import com.example.pillyohae.order.entity.OrderItem;
 import com.example.pillyohae.global.entity.BaseTimeEntity;
 import com.example.pillyohae.user.entity.type.Role;
 import com.example.pillyohae.user.entity.type.Status;
@@ -43,6 +44,9 @@ public class User extends BaseTimeEntity {
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<Order> orders = new ArrayList<>();
+
+    @OneToMany(mappedBy = "seller", fetch = FetchType.LAZY)
+    private List<OrderItem> sellerOrders = new ArrayList<>();
 
     public User(String name, String email, String password, String address, Role role) {
         this.name = name;
