@@ -136,4 +136,17 @@ public class CartService {
 
         return carts;
     }
+
+    /**
+     * 사용자의 장바구니 내 상품을 전부 제거
+     *
+     * @param email 사용자 이메일
+     */
+    @Transactional
+    public void deleteAll(String email) {
+
+        User findUser = userService.findByEmail(email);
+
+        cartRepository.deleteAllByUserId(findUser.getId());
+    }
 }

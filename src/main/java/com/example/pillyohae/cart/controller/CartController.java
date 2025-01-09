@@ -94,4 +94,16 @@ public class CartController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    /**
+     * 장바구니에서 전체 상품 삭제
+     *
+     * @param userDetails 사용자 정보
+     * @return 정상 처리 시 200 OK
+     */
+    @DeleteMapping
+    public ResponseEntity<Void> deleteAll(@AuthenticationPrincipal UserDetails userDetails) {
+        cartService.deleteAll(userDetails.getUsername());
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
 }
