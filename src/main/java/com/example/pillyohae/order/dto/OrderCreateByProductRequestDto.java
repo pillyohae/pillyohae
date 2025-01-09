@@ -12,9 +12,9 @@ public class OrderCreateByProductRequestDto {
     private final Long productId;
     @NotNull
     @Positive @Max(20)
-    private final Long quantity;
+    private final Integer quantity;
 
-    public OrderCreateByProductRequestDto(Long productId, Long quantity) {
+    public OrderCreateByProductRequestDto(Long productId, Integer quantity) {
         this.productId = productId;
         this.quantity = quantity;
     }

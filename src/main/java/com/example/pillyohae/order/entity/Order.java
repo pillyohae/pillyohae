@@ -37,7 +37,7 @@ public class Order extends BaseTimeEntity {
 
     // 주문 생성 후 실제 결제가 되고나서 값이 지정됨
     @Column
-    private LocalDateTime payTime;
+    private LocalDateTime paidAt;
 
     @OneToMany(mappedBy = "order", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> orderItems = new ArrayList<>();

@@ -21,11 +21,11 @@ public class BuyerOrderDetailInfo {
     public static class BuyerOrderItemInfo{
         private Long orderItemId;
         private String orderItemName;
-        private Long orderItemQuantity;
+        private Integer orderItemQuantity;
         private Double orderItemPrice;
         private OrderItemStatus orderItemStatus;
         @QueryProjection
-        public BuyerOrderItemInfo(Long orderItemId, String orderItemName, Long orderItemQuantity, Double orderItemPrice, OrderItemStatus orderItemStatus) {
+        public BuyerOrderItemInfo(Long orderItemId, String orderItemName, Integer orderItemQuantity, Double orderItemPrice, OrderItemStatus orderItemStatus) {
             this.orderItemId = orderItemId;
             this.orderItemName = orderItemName;
             this.orderItemQuantity = orderItemQuantity;

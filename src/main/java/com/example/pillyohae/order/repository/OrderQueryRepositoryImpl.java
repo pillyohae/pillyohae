@@ -28,11 +28,11 @@ public class OrderQueryRepositoryImpl implements OrderQueryRepository {
         if (queryFactory == null) {
             throw new IllegalStateException("QueryFactory is not initialized");
         }
-        return queryFactory.select(new QBuyerOrderInfo(order.id, order.status, order.orderName, order.payTime))
+        return queryFactory.select(new QBuyerOrderInfo(order.id, order.status, order.orderName, order.paidAt))
                 .from(order)
                 .leftJoin(order.user)
                 .where(dateEq(startAt, endAt), order.user.id.eq(userId))
-                .orderBy(order.payTime.desc())
+                .orderBy(order.paidAt.desc())
                 .offset(pageNumber * pageSize)
                 .limit(pageSize)
                 .fetch();
@@ -47,6 +47,7 @@ public class OrderQueryRepositoryImpl implements OrderQueryRepository {
         return queryFactory.select(new QBuyerOrderDetailInfo_BuyerOrderItemInfo(orderItem.id, orderItem.productName, orderItem.quantity, order.totalPrice, orderItem.status))
                 .where(orderItem.order.id.eq(orderId))
                 .fetch();
+
     }
 
     private BooleanExpression dateEq(LocalDateTime startAt, LocalDateTime endAt) {
@@ -54,12 +55,12 @@ public class OrderQueryRepositoryImpl implements OrderQueryRepository {
             return null;
         }
         if (startAt == null) {
-            return order.payTime.before(endAt);
+            return order.paidAt.before(endAt);
         }
         if (endAt == null) {
-            return order.payTime.after(startAt);
+            return order.paidAt.after(startAt);
         }
-        return order.payTime.between(startAt, endAt);
+        return order.paidAt.between(startAt, endAt);
     }
 
 

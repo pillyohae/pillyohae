@@ -107,7 +107,7 @@ public class OrderService {
     }
 
 
-    private Double calculateOrderItemPrice(Double price, Long quantity) {
+    private Double calculateOrderItemPrice(Double price, Integer quantity) {
         return price * quantity;
     }
 
@@ -135,7 +135,7 @@ public class OrderService {
             OrderItem orderItem = new OrderItem(
                     product.getProductName(),
                     Double.valueOf(product.getPrice()),
-                    Long.valueOf(cart.getQuantity()),
+                    cart.getQuantity(),
                     product.getProductId(),
                     order
             );

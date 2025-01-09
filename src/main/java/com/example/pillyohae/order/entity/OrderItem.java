@@ -27,7 +27,7 @@ public class OrderItem {
 
     @Column(nullable = false)
     @Positive
-    private Long quantity;
+    private Integer quantity;
 
     // 물품마다 다른 status를 갖는다
     @Column(nullable = false)
@@ -49,7 +49,7 @@ public class OrderItem {
     private Order order;
 
 
-    public OrderItem(String productName, Double price, Long quantity, Long productId, Order order) {
+    public OrderItem(String productName, Double price, Integer quantity, Long productId, Order order) {
         this.productName = productName;
         this.price = price;
         this.quantity = quantity;
