@@ -1,0 +1,31 @@
+package com.example.pillyohae.persona;
+
+
+import org.springframework.ai.image.Image;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/persona")
+public class PersonaController {
+
+    @Autowired
+    private PersonaService personaService;
+
+    @PostMapping("/generate")
+    public ResponseEntity<List<Image>> generatePersona(@RequestParam("imageUrl") String productImageUrl) {
+        try {
+            var personaImageUrl = personaService.generatePersonaFromProduct(productImageUrl);
+            return ResponseEntity.ok(personaImageUrl);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+}
