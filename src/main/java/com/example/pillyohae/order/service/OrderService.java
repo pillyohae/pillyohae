@@ -128,6 +128,9 @@ public class OrderService {
         // OrderItem 생성
         List<OrderItem> orderItems = new ArrayList<>();
         for (Cart cart : carts) {
+            if (cart == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cart is empty");
+            }
             Product product = cart.getProduct();
             OrderItem orderItem = new OrderItem(
                     product.getProductName(),
