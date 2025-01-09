@@ -3,14 +3,13 @@ package com.example.pillyohae.product.controller;
 import com.example.pillyohae.product.dto.*;
 import com.example.pillyohae.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping
@@ -58,20 +57,30 @@ public class ProductController {
     }
 
     @GetMapping("/products/search")
-    public ResponseEntity<List<ProductSearchResponseDto>> getAllProduct(
+    public ResponseEntity<Page<ProductSearchResponseDto>> getAllProduct(
         @RequestParam(required = false) String productName,
         @RequestParam(required = false) String companyName,
-        @RequestParam(required = false) String category
+        @RequestParam(required = false) String category,
+        @RequestParam(value = "page", required = false, defaultValue = "1") int page,
+        @RequestParam(value = "size", required = false, defaultValue = "20") int size,
+        @RequestParam(value = "sortBy", required = false, defaultValue = "productId") String sortBy,
+        @RequestParam(value = "isAsc", required = false, defaultValue = "false") boolean isAsc
     ) {
-        List<ProductSearchResponseDto> searchProducts = productService.searchAndConvertProducts(productName, companyName, category);
+        page = page - 1;
+        Page<ProductSearchResponseDto> searchProducts = productService.searchAndConvertProducts(productName, companyName, category, page, size, sortBy, isAsc);
         return new ResponseEntity<>(searchProducts, HttpStatus.OK);
     }
 
     @GetMapping("/users/sellers/products")
-    public ResponseEntity<List<ProductSearchResponseDto>> getSellersProducts(
-        @AuthenticationPrincipal UserDetails userDetails
+    public ResponseEntity<Page<ProductSearchResponseDto>> getSellersProducts(
+        @AuthenticationPrincipal UserDetails userDetails,
+        @RequestParam(value = "page", required = false, defaultValue = "1") int page,
+        @RequestParam(value = "size", required = false, defaultValue = "20") int size,
+        @RequestParam(value = "sortBy", required = false, defaultValue = "productId") String sortBy,
+        @RequestParam(value = "isAsc", required = false) boolean isAsc
     ) {
-        List<ProductSearchResponseDto> findSellersProducts = productService.findSellersProducts(userDetails.getUsername());
+        page = page - 1;
+        Page<ProductSearchResponseDto> findSellersProducts = productService.findSellersProducts(userDetails.getUsername(), page, size, sortBy, isAsc);
         return new ResponseEntity<>(findSellersProducts, HttpStatus.OK);
     }
 

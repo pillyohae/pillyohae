@@ -31,6 +31,7 @@ public enum ErrorCode {
     NOT_FOUND_USER(HttpStatus.NOT_FOUND, "User를 찾을 수 없습니다"),
     NOT_FOUND_File(HttpStatus.NOT_FOUND, "File을 찾을 수 없습니다"),
     NOT_FOUND_PRODUCT(HttpStatus.NOT_FOUND, "Product를 찾을 수 없습니다"),
+    NOT_FOUND_PROPERTY(HttpStatus.NOT_FOUND, "정렬기준을 확인해주세요"),
     /**
      * Image
      */
