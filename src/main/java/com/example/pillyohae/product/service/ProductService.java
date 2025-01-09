@@ -23,6 +23,14 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final UserService userService;
 
+    /**
+     * 상품 생성
+     *
+     * @param requestDto 상품 생성시 필요한 요청사항
+     * @param email      사용자 이메일
+     * @return 정상처리 시 ProductCreateResponseDto
+     */
+    @Transactional
     public ProductCreateResponseDto createProduct(ProductCreateRequestDto requestDto, String email) {
 
         User findUser = userService.findByEmail(email);
@@ -50,6 +58,14 @@ public class ProductService {
             savedProduct.getStatus());
     }
 
+    /**
+     * 상품정보 수정
+     *
+     * @param productId  상품 id
+     * @param requestDto 상품정보 수정시 필요한 요청사항
+     * @return 정상 처리 시 ProductUpdateResponseDto
+     */
+    @Transactional
     public ProductUpdateResponseDto updateProduct(Long productId, ProductUpdateRequestDto requestDto) {
 
         Product findProduct = findById(productId);
@@ -77,6 +93,13 @@ public class ProductService {
         );
     }
 
+    /**
+     * 상품정보 상세조회(단건 조회)
+     *
+     * @param productId 상품 id
+     * @return 정상 처리 시 ProductGetResponseDto
+     */
+    @Transactional
     public ProductGetResponseDto getProduct(Long productId) {
         Product findProduct = findById(productId);
 
@@ -92,11 +115,13 @@ public class ProductService {
         );
     }
 
-    public Product findById(Long productId) {
-        return productRepository.findById(productId)
-            .orElseThrow(() -> new CustomResponseStatusException(ErrorCode.NOT_FOUND_PRODUCT));
-    }
 
+    /**
+     * 상품 삭제
+     *
+     * @param productId 상품 id
+     * @param email     사용자 이메일
+     */
     @Transactional
     public void deleteProduct(Long productId, String email) {
 
@@ -111,6 +136,19 @@ public class ProductService {
         findProduct.deleteProduct();
     }
 
+    /**
+     * 상품 전체 조회(로그인 없이도 사용가능, 조건별 검색 가능)
+     *
+     * @param productName 상품 이름(검색 조건)
+     * @param companyName 판매사 이름(검색 조건)
+     * @param category    상품 분류(검색조건)
+     * @param page        페이지 번호
+     * @param size        한페이지 게시글 수
+     * @param sortBy      상품 정렬 조건(ex. productId, price)
+     * @param isAsc       상품 정렬 순서(true: 오름차순, false: 내림차순)
+     * @return 정상 처리 시 Page<ProductSearchResponseDto> (페이지로 반환된 dto)
+     */
+    @Transactional
     public Page<ProductSearchResponseDto> searchAndConvertProducts(String productName, String companyName, String category, int page, int size, String sortBy, Boolean isAsc) {
 
         //정렬 방향과 속성 지정
@@ -129,15 +167,23 @@ public class ProductService {
         ));
     }
 
+    /**
+     * 판매자 상품 조회(자체 조회기능, 판매자에게 권한 한정)
+     *
+     * @param email  사용자 이메일
+     * @param page   페이지 번호
+     * @param size   한페이지 게시글 수
+     * @param sortBy 상품 정렬 조건(ex. productId)
+     * @param isAsc  상품 정렬 순서(true: 오름차순, false: 내림차순)
+     * @return 정상 처리 시 Page<ProductSearchResponseDto> (페이지로 반환된 dto)
+     */
+    @Transactional
     public Page<ProductSearchResponseDto> findSellersProducts(String email, int page, int size, String sortBy, Boolean isAsc) {
 
         User user = userService.findByEmail(email);
 
         //정렬 방향과 속성 지정
         Sort.Direction direction = isAsc ? Sort.Direction.ASC : Sort.Direction.DESC;
-//        if (sortBy == null || sortBy.isEmpty()) {
-//            Sort.by(direction, "productId");
-//        }
         Sort sort = Sort.by(direction, sortBy);
         //페이징 객체 생성
         Pageable pageable = PageRequest.of(page, size, sort);
@@ -152,6 +198,11 @@ public class ProductService {
                 product.getPrice()
             ));
 
+    }
+
+    public Product findById(Long productId) {
+        return productRepository.findById(productId)
+            .orElseThrow(() -> new CustomResponseStatusException(ErrorCode.NOT_FOUND_PRODUCT));
     }
 }
 
