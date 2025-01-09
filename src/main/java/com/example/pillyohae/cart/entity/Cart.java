@@ -36,6 +36,16 @@ public class Cart extends BaseCreatedTimeEntity {
         this.quantity = quantity;
     }
 
+    /**
+     * Updates the quantity of the product in the cart.
+     *
+     * Ensures that the cart's product quantity is always at least 1. If the provided
+     * quantity is less than 1, the quantity is set to 1. Otherwise, the quantity is
+     * set to the specified value.
+     *
+     * @param quantity The new quantity to set for the product in the cart. 
+     *                 Must be a positive integer.
+     */
     public void updateQuantity(Integer quantity) {
         if (quantity < 1) {
             this.quantity = 1;

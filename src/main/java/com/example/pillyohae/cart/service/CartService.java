@@ -52,10 +52,14 @@ public class CartService {
     }
 
     /**
-     * 장바구니 목록을 조회
+     * Retrieves the cart items for a specific user.
      *
-     * @param email 사용자 이메일
-     * @return 정상 처리 시 응답 DTO
+     * This method finds all cart products associated with the user and calculates the total cart value.
+     * It requires a valid user email to fetch the cart details.
+     *
+     * @param email The email address of the user whose cart is being retrieved
+     * @return A CartListResponseDto containing the total cart price and a list of cart product details
+     * @throws UserNotFoundException if no user is found with the provided email
      */
     public CartListResponseDto findCart(String email) {
 
@@ -71,12 +75,17 @@ public class CartService {
     }
 
     /**
-     * 장바구니 상품 수량을 수정 요청 사용자 정보와 카트 정보가 일치하지 않으면 예외 발생
+     * Updates the quantity of a product in a user's cart.
      *
-     * @param cartId     카트 아이디
-     * @param email      사용자 이메일
-     * @param requestDto 수정할 수량
-     * @return 정상 처리 시 응답 DTO
+     * This method allows modifying the quantity of a specific cart item. It performs validation
+     * to ensure that the cart belongs to the requesting user before updating the quantity.
+     *
+     * @param cartId     The unique identifier of the cart item to be updated
+     * @param email      The email of the user requesting the cart update
+     * @param requestDto Data transfer object containing the new quantity for the cart item
+     * @return CartUpdateResponseDto containing the updated product ID and new quantity
+     * @throws NotFoundException if the cart item cannot be found
+     * @throws AccessDeniedException if the cart does not belong to the requesting user
      */
     @Transactional
     public CartUpdateResponseDto updateCart(
@@ -100,10 +109,12 @@ public class CartService {
     }
 
     /**
-     * 장바구니 상품 삭제 요청 사용자 정보와 카트 정보가 일치하지 않으면 예외 발생
+     * Deletes a specific item from the user's cart after verifying user ownership.
      *
-     * @param cartId 카트 아이디
-     * @param email  사용자 이메일
+     * @param cartId The unique identifier of the cart item to be deleted
+     * @param email The email of the user attempting to delete the cart item
+     * @throws AccessDeniedException If the cart does not belong to the specified user
+     * @throws ResponseStatusException If the cart item cannot be found in the repository
      */
     @Transactional
     public void deleteCart(Long cartId, String email) throws AccessDeniedException {
@@ -121,10 +132,11 @@ public class CartService {
     }
 
     /**
-     * 사용자의 장바구니 목록 조회
+     * Retrieves all cart items for a specific user by their user ID.
      *
-     * @param userId 사용자 ID
-     * @return 장바구니 목록
+     * @param userId The unique identifier of the user whose cart items are to be retrieved
+     * @return A list of Cart objects associated with the specified user
+     * @throws NotFoundException if no cart items are found for the given user ID
      */
     public List<Cart> findByUserId(Long userId) {
 
@@ -138,9 +150,13 @@ public class CartService {
     }
 
     /**
-     * 사용자의 장바구니 내 상품을 전부 제거
+     * Deletes all cart items for a specific user.
      *
-     * @param email 사용자 이메일
+     * This method removes all products from the user's shopping cart based on their email address.
+     * It first retrieves the user by email and then deletes all cart entries associated with that user.
+     *
+     * @param email the email address of the user whose cart items will be completely removed
+     * @throws UserNotFoundException if no user is found with the provided email
      */
     @Transactional
     public void deleteAll(String email) {

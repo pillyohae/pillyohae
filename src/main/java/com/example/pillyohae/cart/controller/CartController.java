@@ -29,11 +29,11 @@ public class CartController {
     private final CartService cartService;
 
     /**
-     * 장바구니에 상품을 추가
+     * Creates a new cart item for the authenticated user.
      *
-     * @param requestDto  추가할 상품 정보
-     * @param userDetails 사용자 정보
-     * @return 정상 처리 시 응답 DTO
+     * @param userDetails The authenticated user's details used to identify the user creating the cart
+     * @param requestDto The data transfer object containing the details of the product to be added to the cart
+     * @return A ResponseEntity containing the created cart item details with HTTP 200 OK status
      */
     @PostMapping
     public ResponseEntity<CartCreateResponseDto> createCart(
@@ -47,10 +47,10 @@ public class CartController {
     }
 
     /**
-     * 장바구니 목록을 조회
+     * Retrieves the cart items for the authenticated user.
      *
-     * @param userDetails 사용자 정보
-     * @return 정상 처리 시 응답 DTO
+     * @param userDetails The authentication details of the current user, used to identify the user's cart
+     * @return A ResponseEntity containing the list of cart items for the user
      */
     @GetMapping
     public ResponseEntity<CartListResponseDto> findCart(@AuthenticationPrincipal UserDetails userDetails) {
@@ -59,12 +59,13 @@ public class CartController {
     }
 
     /**
-     * 장바구니에 담긴 상품 수량을 수정
+     * Updates the quantity of a specific item in the user's shopping cart.
      *
-     * @param cartId      장바구니 ID
-     * @param userDetails 사용자 정보
-     * @param requestDto  수정할 수량 정보
-     * @return 정상 처리 시 응답 DTO
+     * @param cartId The unique identifier of the cart item to be updated
+     * @param userDetails The authentication details of the currently logged-in user
+     * @param requestDto The data transfer object containing the new quantity for the cart item
+     * @return A ResponseEntity containing the updated cart item details
+     * @throws IllegalArgumentException If the cart item cannot be found or updated
      */
     @PutMapping("/{cartId}")
     public ResponseEntity<CartUpdateResponseDto> updateCart(
@@ -77,11 +78,11 @@ public class CartController {
     }
 
     /**
-     * 장바구니에서 상품 삭제
+     * Deletes a specific item from the user's cart.
      *
-     * @param cartId      장바구니 ID
-     * @param userDetails 사용자 정보
-     * @return 정상 처리 시 응답 DTO
+     * @param cartId The unique identifier of the cart item to be deleted
+     * @param userDetails The authentication details of the current user
+     * @return A ResponseEntity with HTTP status 200 OK upon successful deletion
      */
     @DeleteMapping("/{cartId}")
     public ResponseEntity<Void> deleteCart(
@@ -95,10 +96,10 @@ public class CartController {
     }
 
     /**
-     * 장바구니에서 전체 상품 삭제
+     * Deletes all items from the user's shopping cart.
      *
-     * @param userDetails 사용자 정보
-     * @return 정상 처리 시 200 OK
+     * @param userDetails The authenticated user's details used to identify the cart owner
+     * @return A ResponseEntity with HTTP status 200 OK upon successful deletion of all cart items
      */
     @DeleteMapping
     public ResponseEntity<Void> deleteAll(@AuthenticationPrincipal UserDetails userDetails) {

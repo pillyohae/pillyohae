@@ -12,6 +12,15 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface CartRepository extends JpaRepository<Cart, Long> {
 
+    /**
+     * Retrieves a list of cart product details for a specific user.
+     *
+     * @param userId the unique identifier of the user whose cart products are to be fetched
+     * @return a list of {@link CartProductDetailResponseDto} containing cart product information
+     *         including product ID, name, image URL, price, and quantity
+     * 
+     * @throws IllegalArgumentException if the provided userId is null
+     */
     @Query("SELECT new com.example.pillyohae.cart.dto.CartProductDetailResponseDto(" +
         "c.product.productId," +
         "c.product.productName," +
@@ -22,11 +31,25 @@ public interface CartRepository extends JpaRepository<Cart, Long> {
         "WHERE c.user.id = :userId")
     List<CartProductDetailResponseDto> findCartDtoListByUserId(@Param("userId") Long userId);
 
+    /**
+     * Deletes all cart entries associated with a specific user.
+     *
+     * @param userId the unique identifier of the user whose cart entries will be deleted
+     * @throws DataAccessException if there is an error during the database deletion operation
+     */
     @Modifying
     @Query("DELETE FROM Cart c WHERE c.user.id = :userId ")
     void deleteAllByUserId(@Param("userId") Long userId);
 
-    // Cart를 가져올때 product정보까지 한번에 가져온다
+    /**
+     * Retrieves a list of Cart entities with their associated Product information for a specific user.
+     *
+     * This method performs a join fetch to efficiently load Cart and Product data in a single query,
+     * optimizing database access by avoiding the N+1 query problem.
+     *
+     * @param userId The unique identifier of the user whose cart items are to be retrieved
+     * @return A list of Cart entities, each containing its associated Product details
+     */
     @Query("SELECT c FROM Cart c JOIN FETCH c.product WHERE c.user.id = :userId")
     List<Cart> findCartsWithProductsByUserId(@Param("userId") Long userId);
 
