@@ -30,28 +30,22 @@ public class WebConfig {
     private final AuthenticationEntryPoint authEntryPoint;
 
     private final AccessDeniedHandler accessDeniedHandler;
-
-    private static final String[] WHITE_LIST = {"/users/login", "/users/signup", "/toss/success", "/toss/fail", "/toss/confirm", "/products"};
-
-    private static final String[] SELLER_AUTH_LIST = {"/users/sellers/**", "/products", "/products/**"};
+    private final SecurityProperties securityProperties;
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.cors(AbstractHttpConfigurer::disable)
             .csrf(AbstractHttpConfigurer::disable)
-            .authorizeHttpRequests(auth ->
-                auth.requestMatchers(WHITE_LIST).permitAll()
-                    .requestMatchers(HttpMethod.GET, "/products/*").permitAll()
-                    // static 리소스 경로
-                    .requestMatchers(PathRequest.toStaticResources().atCommonLocations())
-                    .permitAll()
-                    // 일부 dispatch 타입
-                    .dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.INCLUDE,
-                        DispatcherType.ERROR).permitAll()
-                    // path 별로 접근이 가능한 권한 설정
-                    .requestMatchers(SELLER_AUTH_LIST).hasRole("SELLER")
-                    // 나머지는 인증이 필요
-                    .anyRequest().authenticated()
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers(securityProperties.getWhiteList().toArray(new String[0]))
+                .permitAll()
+                .requestMatchers(HttpMethod.GET, "/products/*").permitAll()
+                .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
+                .dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.INCLUDE,
+                    DispatcherType.ERROR).permitAll()
+                .requestMatchers(securityProperties.getSellerAuthList().toArray(new String[0]))
+                .hasRole("SELLER")
+                .anyRequest().authenticated()
             )
             // Spring Security 예외에 대한 처리를 핸들러에 위임.
             .exceptionHandling(handler -> handler
