@@ -35,7 +35,7 @@ public class PersonaService {
 
         // 2. 페르소나 프롬프트 생성
         String prompt = createPersonaPrompt(productDescription);
-        log.info("persona prompt : {}, productImageUrl: {}", productDescription, productImageUrl);
+        log.info("persona prompt : {}, productImageUrl: {}", prompt, productImageUrl);
 
         // 3. 이미지 생성 요청
         return generatePersonaImages(prompt);

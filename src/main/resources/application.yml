@@ -40,8 +40,6 @@ spring:
       image:
         options:
           model: dall-e-3  # 기본 이미지 모델 설정
-          quality: hd      # HD 품질 설정 (dall-e-3에서만 지원)
-          size: 512x512    # 이미지 크기 설정
 
 toss:
   secret-key: ${TOSS_SECRET_KEY}
