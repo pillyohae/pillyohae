@@ -34,8 +34,12 @@ spring:
           generate_statistics: true
   config:
     import: optional:file:.env[.properties]
-
-
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      image:
+        options:
+          model: dall-e-3  # 기본 이미지 모델 설정
 
 toss:
   secret-key: ${TOSS_SECRET_KEY}
