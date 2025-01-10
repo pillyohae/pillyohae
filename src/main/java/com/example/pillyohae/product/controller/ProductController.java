@@ -7,7 +7,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,9 +28,6 @@ public class ProductController {
         @AuthenticationPrincipal UserDetails userDetails,
         @RequestBody ProductCreateRequestDto requestDto
     ) {
-
-        SecurityContextHolder.getContext();
-
         ProductCreateResponseDto responseDto = productService.createProduct(requestDto, userDetails.getUsername());
         return new ResponseEntity<>(responseDto, HttpStatus.CREATED);
     }

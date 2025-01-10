@@ -35,17 +35,7 @@ public class ProductService {
 
         User findUser = userService.findByEmail(email);
 
-
-        Product savedProduct = productRepository.save(new Product(
-            findUser,
-            requestDto.getProductName(),
-            requestDto.getCategory(),
-            requestDto.getDescription(),
-            requestDto.getCompanyName(),
-            requestDto.getPrice(),
-            requestDto.getImageUrl(),
-            requestDto.getStatus()
-        ));
+        Product savedProduct = productRepository.save(requestDto.toEntity(findUser));
 
         return new ProductCreateResponseDto(
             savedProduct.getProductId(),
