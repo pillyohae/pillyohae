@@ -41,6 +41,7 @@ public class WebConfig {
                 .permitAll()
                 .requestMatchers(HttpMethod.GET, "/products/*").permitAll()
                 .requestMatchers(HttpMethod.GET, "/products").permitAll()
+                .requestMatchers(HttpMethod.POST, "/persona/*").permitAll()
                 .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
                 .dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.INCLUDE,
                     DispatcherType.ERROR).permitAll()

@@ -1,0 +1,2 @@
+### GET request to example server
+POST http://localhost:8080/persona/generate?imageUrl=https://static.lottedfs.com/prod/prd-img/59/27/62/00/00/02/20000622759_1.jpg
