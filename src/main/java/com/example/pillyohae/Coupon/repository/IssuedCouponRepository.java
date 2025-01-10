@@ -5,6 +5,7 @@ import com.example.pillyohae.Coupon.entity.IssuedCoupon;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
@@ -13,6 +14,7 @@ import java.util.Optional;
 
 public interface IssuedCouponRepository extends JpaRepository<IssuedCoupon, Long> {
     // native query mysql batch 처리
+    @Transactional
     @Modifying
     @Query(value = "UPDATE issued_coupon " +
             "SET status = :newStatus " +
@@ -28,7 +30,7 @@ public interface IssuedCouponRepository extends JpaRepository<IssuedCoupon, Long
                     int limit
             );
     int countIssuedCouponByCouponTemplate_IdIn(Collection<Long> couponTemplateIds);
-
+    @Transactional
     @Modifying
     @Query(value = "UPDATE issued_coupon " +
             "SET status = :newStatus " +

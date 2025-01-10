@@ -44,7 +44,10 @@ public class CouponTemplate {
 
     @Enumerated(EnumType.STRING)
     private CouponStatus status;
-
+    /**
+      * 사용자에게 발급된 쿠폰 목록
+      * 만료되지 않은 활성 쿠폰들을 포함합니다
+      */
     @OneToMany(mappedBy = "couponTemplate", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<IssuedCoupon> issuedCoupons = new ArrayList<>();
 

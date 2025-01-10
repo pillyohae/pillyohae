@@ -41,6 +41,8 @@ public class CouponService {
         // 최대 10000개를 처리함
         // template마다 실행
         for(Long updatedCouponTemplateId : updatedCouponTemplateIds) {
+            hasExpiredCoupons = true;
+            attempt = 0;
             while(hasExpiredCoupons && attempt < maxAttempts) {
                 // couponTemplate을 통해 만료시킴
                 int updatedCount = issuedCouponRepository.updateIssuedCouponStatusByCouponTemplate_Id(
