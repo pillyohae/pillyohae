@@ -72,6 +72,8 @@ dependencies {
     // json-simple
     implementation 'com.googlecode.json-simple:json-simple:1.1.1'
 
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+
     // spring AI (OpenAI)
     implementation platform("org.springframework.ai:spring-ai-bom:1.0.0-SNAPSHOT")
     implementation 'org.springframework.ai:spring-ai-openai'
