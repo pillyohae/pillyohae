@@ -1,5 +1,6 @@
 package com.example.pillyohae.order.entity;
 
+import com.example.pillyohae.Coupon.entity.IssuedCoupon;
 import com.example.pillyohae.order.entity.status.OrderItemStatus;
 import com.example.pillyohae.order.entity.status.OrderStatus;
 import com.example.pillyohae.global.entity.BaseTimeEntity;
@@ -39,10 +40,17 @@ public class Order extends BaseTimeEntity {
     @Column
     private LocalDateTime paidAt;
 
+
+    // 주문 물품
     @OneToMany(mappedBy = "order", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> orderItems = new ArrayList<>();
 
+    // 사용된 쿠폰
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "issued_coupon_id")
+    private IssuedCoupon issuedCoupon;
 
+    // 구매자
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
