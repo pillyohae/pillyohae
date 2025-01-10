@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Positive;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -44,8 +45,8 @@ public class CouponTemplate {
     @Enumerated(EnumType.STRING)
     private CouponStatus status;
 
-    @OneToMany(mappedBy = "issued_coupon", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<IssuedCoupon> issuedCoupon;
+    @OneToMany(mappedBy = "couponTemplate", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<IssuedCoupon> issuedCoupons = new ArrayList<>();
 
 
     public enum DiscountType {

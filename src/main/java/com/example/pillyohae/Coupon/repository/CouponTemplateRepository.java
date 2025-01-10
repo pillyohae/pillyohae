@@ -11,20 +11,25 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface CouponTemplateRepository extends JpaRepository<CouponTemplate,Long > {
-    List<CouponTemplate> findAllByExpiredAtBefore(LocalDateTime expiredAtBefore);
-    @Modifying
-    @Query("UPDATE CouponTemplate c SET c.status = :status WHERE c.expiredAt <= :date")
-    int updateStatusByExpiredAt(LocalDateTime date, CouponTemplate.CouponStatus status);
+    int countByExpiredAt(LocalDateTime expiredAt);
+
+    @Query(value = "SELECT id FROM coupon_template " +
+            "WHERE expired_at <= :date AND status != :newStatus " +
+            "ORDER BY id LIMIT :limit",
+            nativeQuery = true)
+    List<Long> findExpiredTemplateIds(
+            LocalDateTime date,
+            String newStatus,
+            int limit
+    );
 
     @Modifying
     @Query(value = "UPDATE coupon_template " +
-            "SET status = :status " +
-            "WHERE expired_at <= :date AND status == :status " +
-            "ORDER BY id LIMIT :limit",
+            "SET status = :newStatus " +
+            "WHERE id IN (:ids)",
             nativeQuery = true)
-    int updateStatusByExpiredAtWithLimit(
-            LocalDateTime date,
-            String status,  // Enum을 String으로 받아야 함
-            int limit
+    int updateTemplateStatus(
+            List<Long> ids,
+            String newStatus
     );
 }

@@ -1,7 +1,6 @@
 package com.example.pillyohae.global.scheduler;
 
 import com.example.pillyohae.Coupon.entity.CouponTemplate;
-import com.example.pillyohae.Coupon.repository.CouponRepository;
 import com.example.pillyohae.Coupon.repository.CouponTemplateRepository;
 import com.example.pillyohae.Coupon.service.CouponService;
 import lombok.RequiredArgsConstructor;
