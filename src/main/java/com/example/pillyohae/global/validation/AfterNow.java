@@ -8,11 +8,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Constraint(validatedBy = DueDateValidator.class)
+@Constraint(validatedBy = AfterNowValidator.class)
 @Target({ ElementType.FIELD, ElementType.PARAMETER })
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ValidDueDate {
-    String message() default "마감 일자는 현재 시간보다 늦어야 합니다";
+public @interface AfterNow {
+    String message() default "현재 시간보다 늦어야 합니다";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
 }

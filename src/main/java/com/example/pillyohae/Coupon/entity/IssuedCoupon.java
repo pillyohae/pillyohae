@@ -3,10 +3,15 @@ package com.example.pillyohae.Coupon.entity;
 import com.example.pillyohae.order.entity.Order;
 import com.example.pillyohae.user.entity.User;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Entity
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class IssuedCoupon {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
