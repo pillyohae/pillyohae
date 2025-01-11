@@ -14,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -45,9 +44,9 @@ public class CouponService {
     @Transactional
     public void issueCoupons() {
         LocalDateTime now = LocalDateTime.now();
-        List<Long> updatedCouponIds = couponTemplateRepository.findIssueTemplateIds(
+        List<Long> updatedCouponIds = couponTemplateRepository.findTemplateIdsByStartAtAndNowState(
                 now,
-                CouponTemplate.CouponStatus.ACTIVE.toString()
+                CouponTemplate.CouponStatus.INACTIVE.toString()
         );
         couponTemplateRepository.updateTemplateStatus(updatedCouponIds, CouponTemplate.CouponStatus.ACTIVE.toString());
     }
@@ -129,7 +128,8 @@ public class CouponService {
             updatedCouponAllIds.addAll(updatedCouponIds);
 
             // 만료되지 않은 쿠폰을 확인
-            int remainCouponCount = couponTemplateRepository.countByExpireAt(now);
+            int remainCouponCount = couponTemplateRepository.countByExpireAtBetween(start, end);
+
 
             hasExpiredCoupons = remainCouponCount != 0;
             attempt++;

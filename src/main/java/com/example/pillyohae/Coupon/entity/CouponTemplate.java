@@ -70,6 +70,7 @@ public class CouponTemplate {
         this.startAt = startAt;
         this.expireAt = expireAt;
         this.maxIssuanceCount = maxIssuanceCount;
+        this.status = CouponStatus.INACTIVE;
     }
 
     @PrePersist
