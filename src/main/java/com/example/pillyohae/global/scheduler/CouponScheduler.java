@@ -1,7 +1,5 @@
 package com.example.pillyohae.global.scheduler;
 
-import com.example.pillyohae.Coupon.entity.CouponTemplate;
-import com.example.pillyohae.Coupon.repository.CouponTemplateRepository;
 import com.example.pillyohae.Coupon.service.CouponService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -9,7 +7,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Component
 @RequiredArgsConstructor

@@ -1,7 +1,6 @@
 package com.example.pillyohae.Coupon.dto;
 
 import com.example.pillyohae.Coupon.entity.CouponTemplate;
-import com.example.pillyohae.global.validation.AfterNow;
 import com.example.pillyohae.global.validation.ValidCouponPeriod;
 import jakarta.validation.constraints.*;
 import lombok.Getter;

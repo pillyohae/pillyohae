@@ -1,6 +1,5 @@
 package com.example.pillyohae.Coupon.repository;
 
-import com.example.pillyohae.Coupon.entity.CouponTemplate;
 import com.example.pillyohae.Coupon.entity.IssuedCoupon;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -8,10 +7,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 
 public interface IssuedCouponRepository extends JpaRepository<IssuedCoupon, Long> {
     // native query mysql batch 처리

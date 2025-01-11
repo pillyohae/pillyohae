@@ -9,7 +9,6 @@ import com.example.pillyohae.Coupon.repository.CouponTemplateRepository;
 import com.example.pillyohae.Coupon.repository.IssuedCouponRepository;
 import com.example.pillyohae.user.entity.User;
 import com.example.pillyohae.user.entity.type.Role;
-import com.example.pillyohae.user.repository.UserRepository;
 import com.example.pillyohae.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +20,6 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
