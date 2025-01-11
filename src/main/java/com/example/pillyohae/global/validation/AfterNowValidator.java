@@ -7,7 +7,7 @@ import jakarta.validation.ConstraintValidatorContext;
 import java.time.LocalDateTime;
 
 
-public class DueDateValidator implements ConstraintValidator<ValidDueDate, LocalDateTime> {
+public class AfterNowValidator implements ConstraintValidator<AfterNow, LocalDateTime> {
     @Override
     public boolean isValid(LocalDateTime value, ConstraintValidatorContext context) {
         if (value == null) {

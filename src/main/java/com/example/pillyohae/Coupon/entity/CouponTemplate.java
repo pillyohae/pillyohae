@@ -3,7 +3,11 @@ package com.example.pillyohae.Coupon.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
+import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -11,6 +15,7 @@ import java.util.List;
 
 @Entity
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 //발급할 쿠폰의 정보 저장
 public class CouponTemplate {
     @Id
@@ -20,14 +25,17 @@ public class CouponTemplate {
     @Column(nullable = false)
     private String name;
 
+    @Column(nullable = false)
+    private String description;
+
     @Enumerated(EnumType.STRING)
     private DiscountType type;
 
-    @Positive
-    private Double fixedAmount;
+    @PositiveOrZero
+    private Double fixedAmount = 0.0;
 
-    @Positive @Max(100)
-    private Double fixedRate;
+    @PositiveOrZero @Max(100)
+    private Double fixedRate = 0.0;
 
     @Column(nullable = false)
     @Positive
@@ -37,7 +45,7 @@ public class CouponTemplate {
     private LocalDateTime startAt;
 
     @Column(nullable = false)
-    private LocalDateTime expiredAt;
+    private LocalDateTime expireAt;
 
     @Column(nullable = false)
     private Integer maxIssuanceCount;
@@ -51,6 +59,30 @@ public class CouponTemplate {
     @OneToMany(mappedBy = "couponTemplate", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<IssuedCoupon> issuedCoupons = new ArrayList<>();
 
+    @Builder
+    public CouponTemplate(String name, String description, DiscountType type, Double fixedAmount, Double fixedRate, Double maxDiscountAmount, LocalDateTime startAt, LocalDateTime expireAt, Integer maxIssuanceCount) {
+        this.name = name;
+        this.description = description;
+        this.type = type;
+        this.fixedAmount = fixedAmount;
+        this.fixedRate = fixedRate;
+        this.maxDiscountAmount = maxDiscountAmount;
+        this.startAt = startAt;
+        this.expireAt = expireAt;
+        this.maxIssuanceCount = maxIssuanceCount;
+        this.status = CouponStatus.INACTIVE;
+    }
+
+    @PrePersist
+    @PreUpdate
+    private void ensureDefaultValues() {
+        if (this.fixedAmount == null) {
+            this.fixedAmount = 0.0;
+        }
+        if (this.fixedRate == null) {
+            this.fixedRate = 0.0;
+        }
+    }
 
     public enum DiscountType {
         FIXED_AMOUNT,
@@ -58,7 +90,7 @@ public class CouponTemplate {
     }
 
     public enum CouponStatus{
-        ACTIVE, INACTIVE
+        ACTIVE, INACTIVE, EXPIRED
     }
 
 

@@ -3,10 +3,15 @@ package com.example.pillyohae.Coupon.entity;
 import com.example.pillyohae.order.entity.Order;
 import com.example.pillyohae.user.entity.User;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Entity
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class IssuedCoupon {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,6 +34,13 @@ public class IssuedCoupon {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;              // 쿠폰 소유 사용자
+
+    public IssuedCoupon(LocalDateTime issuedDate, CouponStatus status, CouponTemplate couponTemplate, User user) {
+        this.issuedDate = issuedDate;
+        this.status = status;
+        this.couponTemplate = couponTemplate;
+        this.user = user;
+    }
 
     // 쿠폰 상태 enum
     public enum CouponStatus {
