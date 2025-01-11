@@ -16,17 +16,20 @@ import org.springframework.web.bind.annotation.*;
 public class CouponController {
     private final CouponService couponService;
 
-    @ResponseStatus(code = HttpStatus.CREATED)
+
     @PostMapping("/create")
     public ResponseEntity<CreateCouponTemplateResponseDto> createCouponTemplate(@RequestBody @Valid CreateCouponTemplateRequestDto createCouponTemplateRequestDto,
-                                                                               Authentication authentication) {
-        return ResponseEntity.ok(couponService.createCouponTemplate( authentication.getName(), createCouponTemplateRequestDto));
+                                                                                Authentication authentication) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(couponService.createCouponTemplate(authentication.getName(), createCouponTemplateRequestDto));
     }
 
-    @ResponseStatus(code = HttpStatus.CREATED)
+
     @PostMapping("/{couponTemplateId}/issue")
-    public ResponseEntity<GiveCouponResponseDto> giveCoupon(Authentication authentication, @PathVariable(name = "couponTemplateId") Long couponTemplateId) {
-        return ResponseEntity.ok(couponService.giveCoupon(authentication.getName(), couponTemplateId));
+    public ResponseEntity<GiveCouponResponseDto> giveCoupon(
+            @PathVariable(name = "couponTemplateId") Long couponTemplateId, Authentication authentication) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(couponService.giveCoupon(authentication.getName(), couponTemplateId));
     }
 
 }
