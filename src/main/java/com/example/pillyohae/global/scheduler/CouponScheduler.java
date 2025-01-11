@@ -1,6 +1,6 @@
 package com.example.pillyohae.global.scheduler;
 
-import com.example.pillyohae.Coupon.service.CouponService;
+import com.example.pillyohae.coupon.service.CouponService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;

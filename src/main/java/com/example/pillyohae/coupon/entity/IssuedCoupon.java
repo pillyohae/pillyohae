@@ -1,4 +1,4 @@
-package com.example.pillyohae.Coupon.entity;
+package com.example.pillyohae.coupon.entity;
 
 import com.example.pillyohae.order.entity.Order;
 import com.example.pillyohae.user.entity.User;
