@@ -35,11 +35,11 @@ public class IssuedCoupon {
     @JoinColumn(name = "user_id")
     private User user;              // 쿠폰 소유 사용자
 
-    public IssuedCoupon(LocalDateTime issuedDate, CouponStatus status, CouponTemplate couponTemplate, User user) {
+    public IssuedCoupon(LocalDateTime issuedDate,CouponTemplate couponTemplate, User user) {
         this.issuedDate = issuedDate;
-        this.status = status;
         this.couponTemplate = couponTemplate;
         this.user = user;
+        this.status = CouponStatus.AVAILABLE;
     }
 
     // 쿠폰 상태 enum

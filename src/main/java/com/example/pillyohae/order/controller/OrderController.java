@@ -7,6 +7,7 @@ import com.example.pillyohae.order.entity.status.OrderItemStatus;
 import com.example.pillyohae.order.service.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.apache.http.protocol.HTTP;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -20,16 +21,14 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping("/products/create")
-    @ResponseStatus(code = HttpStatus.CREATED)
     public ResponseEntity<OrderCreateResponseDto> createOrderByProduct(Authentication authentication,
                                                                        @RequestBody @Valid OrderCreateByProductRequestDto requestDto) {
-        return ResponseEntity.ok(orderService.createOrderByProduct(authentication.getName(), requestDto));
+        return ResponseEntity.status(HttpStatus.CREATED).body(orderService.createOrderByProduct(authentication.getName(), requestDto));
     }
 
     @PostMapping("/carts/create")
-    @ResponseStatus(code = HttpStatus.CREATED)
     public ResponseEntity<OrderCreateResponseDto> createOrderByCart(Authentication authentication){
-        return ResponseEntity.ok(orderService.createOrderByCart(authentication.getName()));
+        return ResponseEntity.status(HttpStatus.CREATED).body(orderService.createOrderByCart(authentication.getName()));
     }
 
     @PutMapping("/orderItems/{orderItemId}/status")

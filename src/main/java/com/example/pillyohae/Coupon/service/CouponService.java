@@ -2,18 +2,26 @@ package com.example.pillyohae.Coupon.service;
 
 import com.example.pillyohae.Coupon.dto.CreateCouponTemplateRequestDto;
 import com.example.pillyohae.Coupon.dto.CreateCouponTemplateResponseDto;
+import com.example.pillyohae.Coupon.dto.GiveCouponResponseDto;
 import com.example.pillyohae.Coupon.entity.CouponTemplate;
 import com.example.pillyohae.Coupon.entity.IssuedCoupon;
 import com.example.pillyohae.Coupon.repository.CouponTemplateRepository;
 import com.example.pillyohae.Coupon.repository.IssuedCouponRepository;
+import com.example.pillyohae.user.entity.User;
+import com.example.pillyohae.user.entity.type.Role;
+import com.example.pillyohae.user.repository.UserRepository;
+import com.example.pillyohae.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -21,9 +29,16 @@ import java.util.List;
 public class CouponService {
     private final CouponTemplateRepository couponTemplateRepository;
     private final IssuedCouponRepository issuedCouponRepository;
+    private final UserService userService;
+
 
     @Transactional
-    public CreateCouponTemplateResponseDto createCouponTemplate(CreateCouponTemplateRequestDto requestDto) {
+    public CreateCouponTemplateResponseDto createCouponTemplate(String email, CreateCouponTemplateRequestDto requestDto) {
+        User user = userService.findByEmail(email);
+        // 추후에 admin으로 변경해야함
+        if(user.getRole() != Role.SELLER){
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "관리자만 쿠폰을 만들 수 있습니다.");
+        }
         CouponTemplate couponTemplate = CouponTemplate.builder()
                 .name(requestDto.getCouponName())
                 .type(requestDto.getDiscountType())
@@ -37,6 +52,25 @@ public class CouponService {
                 .build();
         couponTemplateRepository.save(couponTemplate);
         return new CreateCouponTemplateResponseDto(couponTemplate.getId());
+    }
+
+    @Transactional
+    public GiveCouponResponseDto giveCoupon(String email, Long couponTemplateId) {
+        User user = userService.findByEmail(email);
+        if(user.getRole() != Role.USER){
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "유저만 받을 수 있습니다");
+        }
+        // issued coupon과 coupon template을 한번에 가져옴
+        List<IssuedCoupon> userIssuedCoupons = issuedCouponRepository.findIssuedCouponsWithTemplateByUserId(user.getId());
+        List<CouponTemplate> userCouponTemplates = userIssuedCoupons.stream().map(IssuedCoupon::getCouponTemplate).toList();
+        CouponTemplate couponTemplate = couponTemplateRepository.findById(couponTemplateId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        if(userCouponTemplates.contains(couponTemplate)){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"쿠폰을 중복해서 가질 수 없습니다");
+        }
+        IssuedCoupon issuedCoupon = new IssuedCoupon(LocalDateTime.now(),couponTemplate,user);
+        issuedCouponRepository.save(issuedCoupon);
+        return new GiveCouponResponseDto(issuedCoupon.getId());
     }
 
 
