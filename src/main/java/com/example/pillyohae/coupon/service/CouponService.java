@@ -2,17 +2,22 @@ package com.example.pillyohae.coupon.service;
 
 import com.example.pillyohae.coupon.dto.CreateCouponTemplateRequestDto;
 import com.example.pillyohae.coupon.dto.CreateCouponTemplateResponseDto;
+import com.example.pillyohae.coupon.dto.FindCouponListToUseResponseDto;
 import com.example.pillyohae.coupon.dto.GiveCouponResponseDto;
 import com.example.pillyohae.coupon.entity.CouponTemplate;
 import com.example.pillyohae.coupon.entity.IssuedCoupon;
 import com.example.pillyohae.coupon.repository.CouponTemplateRepository;
 import com.example.pillyohae.coupon.repository.IssuedCouponRepository;
+import com.example.pillyohae.order.entity.Order;
+import com.example.pillyohae.order.repository.OrderRepository;
 import com.example.pillyohae.user.entity.User;
 import com.example.pillyohae.user.entity.type.Role;
 import com.example.pillyohae.user.service.UserService;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -28,6 +33,7 @@ public class CouponService {
     private final CouponTemplateRepository couponTemplateRepository;
     private final IssuedCouponRepository issuedCouponRepository;
     private final UserService userService;
+    private final OrderRepository orderRepository;
 
 
     @Transactional
@@ -48,6 +54,7 @@ public class CouponService {
             .startAt(requestDto.getStartAt())
             .expireAt(requestDto.getExpireAt())
             .maxIssuanceCount(requestDto.getMaxIssueCount())
+                .minimumPrice(requestDto.getMinimumPrice())
             .build();
         couponTemplateRepository.save(couponTemplate);
         return new CreateCouponTemplateResponseDto(couponTemplate.getId());
@@ -72,6 +79,19 @@ public class CouponService {
         IssuedCoupon issuedCoupon = new IssuedCoupon(LocalDateTime.now(), couponTemplate, user);
         issuedCouponRepository.save(issuedCoupon);
         return new GiveCouponResponseDto(issuedCoupon.getId());
+    }
+
+
+    @Transactional
+    public FindCouponListToUseResponseDto findCouponListToUse(String email, UUID orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(
+                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "order not found")
+                );
+        User user = userService.findByEmail(email);
+
+
+        return new FindCouponListToUseResponseDto(issuedCouponRepository.findCouponListToUse(order.getTotalPrice(),user.getId()));
     }
 
 

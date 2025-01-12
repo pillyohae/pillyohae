@@ -16,7 +16,10 @@ import java.util.List;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-//발급할 쿠폰의 정보 저장
+@Table(name = "coupon_template", indexes = {
+        @Index(name = "idx_coupon_template_status_price",
+                columnList = "status,minimum_price")
+})
 public class CouponTemplate {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,6 +39,10 @@ public class CouponTemplate {
 
     @PositiveOrZero @Max(100)
     private Double fixedRate = 0.0;
+
+    @Column(nullable = false)
+    @PositiveOrZero
+    private Double minimumPrice = 0.0;
 
     @Column(nullable = false)
     @Positive
@@ -60,7 +67,7 @@ public class CouponTemplate {
     private List<IssuedCoupon> issuedCoupons = new ArrayList<>();
 
     @Builder
-    public CouponTemplate(String name, String description, DiscountType type, Double fixedAmount, Double fixedRate, Double maxDiscountAmount, LocalDateTime startAt, LocalDateTime expireAt, Integer maxIssuanceCount) {
+    public CouponTemplate(String name, String description, DiscountType type, Double fixedAmount, Double fixedRate, Double maxDiscountAmount,Double minimumPrice ,LocalDateTime startAt, LocalDateTime expireAt, Integer maxIssuanceCount) {
         this.name = name;
         this.description = description;
         this.type = type;
@@ -68,6 +75,7 @@ public class CouponTemplate {
         this.fixedRate = fixedRate;
         this.maxDiscountAmount = maxDiscountAmount;
         this.startAt = startAt;
+        this.minimumPrice = minimumPrice;
         this.expireAt = expireAt;
         this.maxIssuanceCount = maxIssuanceCount;
         this.status = CouponStatus.INACTIVE;

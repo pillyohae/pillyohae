@@ -15,8 +15,8 @@ import java.util.List;
 import java.util.UUID;
 
 public class OrderQueryRepositoryImpl implements OrderQueryRepository {
-    private static final QOrder order = QOrder.order;
-    private static final QOrderItem orderItem = QOrderItem.orderItem;
+    private final QOrder order = QOrder.order;
+    private final QOrderItem orderItem = QOrderItem.orderItem;
     private final JPAQueryFactory queryFactory;
 
     public OrderQueryRepositoryImpl(JPAQueryFactory queryFactory) {

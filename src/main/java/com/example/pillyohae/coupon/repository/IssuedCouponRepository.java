@@ -12,7 +12,7 @@ import java.util.Collection;
 import java.util.List;
 
 
-public interface IssuedCouponRepository extends JpaRepository<IssuedCoupon, Long> {
+public interface IssuedCouponRepository extends JpaRepository<IssuedCoupon, Long>, IssuedCouponQueryRepository {
     // native query mysql batch 처리
     @Transactional
     @Modifying

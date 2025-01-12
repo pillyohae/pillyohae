@@ -12,6 +12,10 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(name = "issued_coupon", indexes = {
+        @Index(name = "idx_issued_coupon_user",
+                columnList = "user_id,used_at,expire_at")
+})
 public class IssuedCoupon {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,10 +23,12 @@ public class IssuedCoupon {
 
     private LocalDateTime issuedDate;       // 발급일
 
-    private LocalDateTime usedDate;         // 사용일
+    private LocalDateTime usedAt;         // 사용일
 
     @Enumerated(EnumType.STRING)
     private CouponStatus status;            // 쿠폰 상태
+
+    private LocalDateTime expireAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "coupon_template_id")

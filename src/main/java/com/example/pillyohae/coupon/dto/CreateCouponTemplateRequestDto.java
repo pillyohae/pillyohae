@@ -29,6 +29,10 @@ public class CreateCouponTemplateRequestDto {
     private Double maxDiscountAmount;
 
     @NotNull
+    @PositiveOrZero
+    private Double minimumPrice;
+
+    @NotNull
     @Positive
     private Integer maxIssueCount;
 
@@ -42,13 +46,14 @@ public class CreateCouponTemplateRequestDto {
 
 
 
-    public CreateCouponTemplateRequestDto(String couponName, String couponDescription, CouponTemplate.DiscountType discountType, Double fixedAmount, Double fixedRate, Double maxDiscountAmount, LocalDateTime startAt, LocalDateTime expireAt, Integer maxIssueCount) {
+    public CreateCouponTemplateRequestDto(String couponName, String couponDescription, CouponTemplate.DiscountType discountType, Double fixedAmount, Double fixedRate, Double maxDiscountAmount, Double minimumPrice, LocalDateTime startAt, LocalDateTime expireAt, Integer maxIssueCount) {
         this.couponName = couponName;
         this.couponDescription = couponDescription;
         this.discountType = discountType;
         this.fixedAmount = fixedAmount;
         this.fixedRate = fixedRate;
         this.maxDiscountAmount = maxDiscountAmount;
+        this.minimumPrice = minimumPrice;
         this.startAt = startAt;
         this.expireAt = expireAt;
         this.maxIssueCount = maxIssueCount;
