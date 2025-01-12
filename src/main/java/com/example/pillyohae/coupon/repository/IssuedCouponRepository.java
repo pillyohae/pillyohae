@@ -7,8 +7,10 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
+
 import java.util.Collection;
 import java.util.List;
+
 
 public interface IssuedCouponRepository extends JpaRepository<IssuedCoupon, Long> {
     // native query mysql batch 처리

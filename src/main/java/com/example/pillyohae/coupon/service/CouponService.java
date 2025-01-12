@@ -10,6 +10,9 @@ import com.example.pillyohae.coupon.repository.IssuedCouponRepository;
 import com.example.pillyohae.user.entity.User;
 import com.example.pillyohae.user.entity.type.Role;
 import com.example.pillyohae.user.service.UserService;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -17,37 +20,35 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class CouponService {
+
     private final CouponTemplateRepository couponTemplateRepository;
     private final IssuedCouponRepository issuedCouponRepository;
     private final UserService userService;
 
 
     @Transactional
-    public CreateCouponTemplateResponseDto createCouponTemplate(String email, CreateCouponTemplateRequestDto requestDto) {
+    public CreateCouponTemplateResponseDto createCouponTemplate(String email,
+        CreateCouponTemplateRequestDto requestDto) {
         User user = userService.findByEmail(email);
         // 추후에 admin으로 변경해야함
-        if(user.getRole() != Role.SELLER){
+        if (user.getRole() != Role.SELLER) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "관리자만 쿠폰을 만들 수 있습니다.");
         }
         CouponTemplate couponTemplate = CouponTemplate.builder()
-                .name(requestDto.getCouponName())
-                .type(requestDto.getDiscountType())
-                .description(requestDto.getCouponDescription())
-                .fixedAmount(requestDto.getFixedAmount())
-                .fixedRate(requestDto.getFixedRate())
-                .maxDiscountAmount(requestDto.getMaxDiscountAmount())
-                .startAt(requestDto.getStartAt())
-                .expireAt(requestDto.getExpireAt())
-                .maxIssuanceCount(requestDto.getMaxIssueCount())
-                .build();
+            .name(requestDto.getCouponName())
+            .type(requestDto.getDiscountType())
+            .description(requestDto.getCouponDescription())
+            .fixedAmount(requestDto.getFixedAmount())
+            .fixedRate(requestDto.getFixedRate())
+            .maxDiscountAmount(requestDto.getMaxDiscountAmount())
+            .startAt(requestDto.getStartAt())
+            .expireAt(requestDto.getExpireAt())
+            .maxIssuanceCount(requestDto.getMaxIssueCount())
+            .build();
         couponTemplateRepository.save(couponTemplate);
         return new CreateCouponTemplateResponseDto(couponTemplate.getId());
     }
@@ -55,43 +56,45 @@ public class CouponService {
     @Transactional
     public GiveCouponResponseDto giveCoupon(String email, Long couponTemplateId) {
         User user = userService.findByEmail(email);
-        if(user.getRole() != Role.USER){
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "유저만 받을 수 있습니다");
+        if (user.getRole() != Role.BUYER) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "BUYER만 받을 수 있습니다");
         }
         // issued coupon과 coupon template을 한번에 가져옴
-        List<IssuedCoupon> userIssuedCoupons = issuedCouponRepository.findIssuedCouponsWithTemplateByUserId(user.getId());
-        List<CouponTemplate> userCouponTemplates = userIssuedCoupons.stream().map(IssuedCoupon::getCouponTemplate).toList();
+        List<IssuedCoupon> userIssuedCoupons = issuedCouponRepository.findIssuedCouponsWithTemplateByUserId(
+            user.getId());
+        List<CouponTemplate> userCouponTemplates = userIssuedCoupons.stream()
+            .map(IssuedCoupon::getCouponTemplate).toList();
         CouponTemplate couponTemplate = couponTemplateRepository.findById(couponTemplateId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-        if(userCouponTemplates.contains(couponTemplate)){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"쿠폰을 중복해서 가질 수 없습니다");
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        if (userCouponTemplates.contains(couponTemplate)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "쿠폰을 중복해서 가질 수 없습니다");
         }
-        IssuedCoupon issuedCoupon = new IssuedCoupon(LocalDateTime.now(),couponTemplate,user);
+        IssuedCoupon issuedCoupon = new IssuedCoupon(LocalDateTime.now(), couponTemplate, user);
         issuedCouponRepository.save(issuedCoupon);
         return new GiveCouponResponseDto(issuedCoupon.getId());
     }
-
 
 
     @Transactional
     public void issueCoupons() {
         LocalDateTime now = LocalDateTime.now();
         List<Long> updatedCouponIds = couponTemplateRepository.findTemplateIdsByStartAtAndNowState(
-                now,
-                CouponTemplate.CouponStatus.INACTIVE.toString()
+            now,
+            CouponTemplate.CouponStatus.INACTIVE.toString()
         );
-        couponTemplateRepository.updateTemplateStatus(updatedCouponIds, CouponTemplate.CouponStatus.ACTIVE.toString());
+        couponTemplateRepository.updateTemplateStatus(updatedCouponIds,
+            CouponTemplate.CouponStatus.ACTIVE.toString());
     }
 
     @Transactional
     public void expireCouponByTimeRange(LocalDateTime start, LocalDateTime end) {
-        List<Long> couponTemplates = expireCouponTemplateBetweenTimes(start,end);
+        List<Long> couponTemplates = expireCouponTemplateBetweenTimes(start, end);
         expireIssuedCoupon(couponTemplates);
     }
 
     @Transactional
     public void expireCoupon() {
-        List<Long> updatedCouponTemplateIds =  expireCouponTemplate();
+        List<Long> updatedCouponTemplateIds = expireCouponTemplate();
         expireIssuedCoupon(updatedCouponTemplateIds);
     }
 
@@ -104,28 +107,29 @@ public class CouponService {
         LocalDateTime now = LocalDateTime.now();
         // 최대 10000개를 처리함
         // template마다 실행
-        for(Long updatedCouponTemplateId : updatedCouponTemplateIds) {
+        for (Long updatedCouponTemplateId : updatedCouponTemplateIds) {
             hasExpiredCoupons = true;
             attempt = 0;
-            while(hasExpiredCoupons && attempt < maxAttempts) {
+            while (hasExpiredCoupons && attempt < maxAttempts) {
                 // couponTemplate을 통해 만료시킴
                 int updatedCount = issuedCouponRepository.updateIssuedCouponStatusByCouponTemplate_Id(
-                        updatedCouponTemplateId,
-                        IssuedCoupon.CouponStatus.EXPIRED.toString(),
-                        IssuedCoupon.CouponStatus.AVAILABLE.toString(),
-                        batchSize
+                    updatedCouponTemplateId,
+                    IssuedCoupon.CouponStatus.EXPIRED.toString(),
+                    IssuedCoupon.CouponStatus.AVAILABLE.toString(),
+                    batchSize
                 );
 
-                int remainCouponCount = issuedCouponRepository.countIssuedCouponByCouponTemplate_Id(updatedCouponTemplateId);
+                int remainCouponCount = issuedCouponRepository.countIssuedCouponByCouponTemplate_Id(
+                    updatedCouponTemplateId);
 
                 hasExpiredCoupons = remainCouponCount != 0;
                 attempt++;
 
-                if(hasExpiredCoupons) {
+                if (hasExpiredCoupons) {
                     alertRemainCoupon(remainCouponCount, attempt, updatedCount);
                 }
             }
-            if(hasExpiredCoupons) {
+            if (hasExpiredCoupons) {
                 failExpireAllCoupon(maxAttempts);
                 // 알림 발송 또는 다른 처리
             }

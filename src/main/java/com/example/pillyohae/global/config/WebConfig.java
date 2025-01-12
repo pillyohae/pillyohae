@@ -34,6 +34,7 @@ public class WebConfig {
     private final AuthenticationEntryPoint authEntryPoint;
 
     private final AccessDeniedHandler accessDeniedHandler;
+
     private final SecurityProperties securityProperties;
 
     @Bean
@@ -42,6 +43,7 @@ public class WebConfig {
         configuration.addAllowedOriginPattern("*"); // 모든 출처 허용
         configuration.addAllowedMethod("*"); // 모든 HTTP 메서드 허용
         configuration.addAllowedHeader("*"); // 모든 헤더 허용
+        configuration.addExposedHeader("Authorization"); // 클라이언트가 접근 가능한 헤더
         configuration.setAllowCredentials(true); // 인증 정보 포함 허용
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -63,6 +65,8 @@ public class WebConfig {
                 .dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.INCLUDE,
                     DispatcherType.ERROR).permitAll()
                 .requestMatchers(securityProperties.getSellerAuthList().toArray(new String[0]))
+                //스프링 시큐리티의 hasRole 메서드는 내부적으로 ROLE_ 접두사를 해당 값에 자동으로 추가하도록 설계됨.
+                //"SELLER" 를 넣어도 ROLE_SELLER 와 비교하게 된다는 뜻.
                 .hasRole("SELLER")
                 .anyRequest().authenticated()
             )

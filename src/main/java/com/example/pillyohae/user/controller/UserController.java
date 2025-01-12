@@ -34,25 +34,26 @@ public class UserController {
 
     @PostMapping("/signup")
     public ResponseEntity<UserCreateResponseDto> createUser(
-            @RequestBody UserCreateRequestDto requestDto
+        @RequestBody UserCreateRequestDto requestDto
     ) {
         UserCreateResponseDto responseDto = userService.createUser(requestDto);
         return new ResponseEntity<>(responseDto, HttpStatus.CREATED);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<JwtAuthResponse> login(
-            @RequestBody UserLoginRequestDto requestDto
+    public ResponseEntity<Void> login(
+        @RequestBody UserLoginRequestDto requestDto
     ) {
         String accessToken = userService.loginTokenGenerate(requestDto);
 
-        return ResponseEntity.ok().header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
-                .build();
+        return ResponseEntity.ok()
+            .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+            .build();
     }
 
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(HttpServletRequest request,
-                                       HttpServletResponse response, Authentication authentication) {
+        HttpServletResponse response, Authentication authentication) {
 
         if (authentication != null && authentication.isAuthenticated()) {
             new SecurityContextLogoutHandler().logout(request, response, authentication);
@@ -65,8 +66,8 @@ public class UserController {
 
     @DeleteMapping
     public ResponseEntity<Void> deleteUser(
-            @RequestBody UserDeleteRequestDto requestDto, Authentication authentication,
-            HttpServletRequest request, HttpServletResponse response
+        @RequestBody UserDeleteRequestDto requestDto, Authentication authentication,
+        HttpServletRequest request, HttpServletResponse response
     ) {
         userService.deleteUser(requestDto, authentication);
 
@@ -77,7 +78,7 @@ public class UserController {
 
     @GetMapping("/profile")
     public ResponseEntity<UserProfileResponseDto> getProfile(
-            Authentication authentication
+        Authentication authentication
     ) {
 
         return new ResponseEntity<>(userService.getProfile(authentication), HttpStatus.OK);
@@ -85,39 +86,39 @@ public class UserController {
 
     @PutMapping("/profile")
     public ResponseEntity<UserProfileResponseDto> updateProfile(
-            @RequestBody UserProfileUpdateRequestDto requestDto,
-            Authentication authentication
+        @RequestBody UserProfileUpdateRequestDto requestDto,
+        Authentication authentication
     ) {
         UserProfileResponseDto responseDto = userService.updateProfile(requestDto,
-                authentication);
+            authentication);
 
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
 
     @GetMapping("/orders")
     public ResponseEntity<BuyerOrderSearchResponseDto> findAllOrdersByBuyer(
-            Authentication authentication,
-            @RequestParam(name = "startAt") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startAt,
-            @RequestParam(name = "endAt") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endAt,
-            @RequestParam(name = "pageNumber", defaultValue = "0") @Min(0) Long pageNumber,
-            @RequestParam(name = "pageSize", defaultValue = "10") @Min(1) @Max(100) Long pageSize
+        Authentication authentication,
+        @RequestParam(name = "startAt") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startAt,
+        @RequestParam(name = "endAt") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endAt,
+        @RequestParam(name = "pageNumber", defaultValue = "0") @Min(0) Long pageNumber,
+        @RequestParam(name = "pageSize", defaultValue = "10") @Min(1) @Max(100) Long pageSize
     ) {
         if (endAt.isBefore(startAt)) {
             throw new IllegalArgumentException("End date must be after start date");
         }
         return ResponseEntity.ok(orderService.findOrder(
-                authentication.getName(),
-                startAt,
-                endAt,
-                pageNumber,
-                pageSize
+            authentication.getName(),
+            startAt,
+            endAt,
+            pageNumber,
+            pageSize
         ));
     }
 
     @GetMapping("/orders/{orderId}/orderItems")
     public ResponseEntity<BuyerOrderDetailInfo> findOrderDetailInfo(
-            Authentication authentication, @PathVariable(name = "orderId") UUID orderId
-    ){
+        Authentication authentication, @PathVariable(name = "orderId") UUID orderId
+    ) {
         return ResponseEntity.ok(orderService.getOrderDetail(authentication.getName(), orderId));
     }
 }
