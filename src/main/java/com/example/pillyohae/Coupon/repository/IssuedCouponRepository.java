@@ -1,6 +1,6 @@
-package com.example.pillyohae.coupon.repository;
+package com.example.pillyohae.Coupon.repository;
 
-import com.example.pillyohae.coupon.entity.IssuedCoupon;
+import com.example.pillyohae.Coupon.entity.IssuedCoupon;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

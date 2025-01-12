@@ -1,4 +1,4 @@
-package com.example.pillyohae.coupon.dto;
+package com.example.pillyohae.Coupon.dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

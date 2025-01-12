@@ -1,9 +1,9 @@
-package com.example.pillyohae.coupon.controller;
+package com.example.pillyohae.Coupon.controller;
 
-import com.example.pillyohae.coupon.dto.CreateCouponTemplateRequestDto;
-import com.example.pillyohae.coupon.dto.CreateCouponTemplateResponseDto;
-import com.example.pillyohae.coupon.dto.GiveCouponResponseDto;
-import com.example.pillyohae.coupon.service.CouponService;
+import com.example.pillyohae.Coupon.dto.CreateCouponTemplateRequestDto;
+import com.example.pillyohae.Coupon.dto.CreateCouponTemplateResponseDto;
+import com.example.pillyohae.Coupon.dto.GiveCouponResponseDto;
+import com.example.pillyohae.Coupon.service.CouponService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

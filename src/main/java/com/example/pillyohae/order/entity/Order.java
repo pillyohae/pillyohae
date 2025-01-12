@@ -1,6 +1,6 @@
 package com.example.pillyohae.order.entity;
 
-import com.example.pillyohae.coupon.entity.IssuedCoupon;
+import com.example.pillyohae.Coupon.entity.IssuedCoupon;
 import com.example.pillyohae.order.entity.status.OrderItemStatus;
 import com.example.pillyohae.order.entity.status.OrderStatus;
 import com.example.pillyohae.global.entity.BaseTimeEntity;
