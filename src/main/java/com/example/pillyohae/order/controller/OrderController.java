@@ -7,35 +7,46 @@ import com.example.pillyohae.order.entity.status.OrderItemStatus;
 import com.example.pillyohae.order.service.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.apache.http.protocol.HTTP;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 @RequestMapping("/api/v1/orders")
 @RequiredArgsConstructor
 public class OrderController {
+
     private final OrderService orderService;
 
     @PostMapping("/products/create")
-    public ResponseEntity<OrderCreateResponseDto> createOrderByProduct(Authentication authentication,
-                                                                       @RequestBody @Valid OrderCreateByProductRequestDto requestDto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(orderService.createOrderByProduct(authentication.getName(), requestDto));
+    public ResponseEntity<OrderCreateResponseDto> createOrderByProduct(
+        Authentication authentication,
+        @RequestBody @Valid OrderCreateByProductRequestDto requestDto) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+            .body(orderService.createOrderByProduct(authentication.getName(), requestDto));
     }
 
     @PostMapping("/carts/create")
-    public ResponseEntity<OrderCreateResponseDto> createOrderByCart(Authentication authentication){
-        return ResponseEntity.status(HttpStatus.CREATED).body(orderService.createOrderByCart(authentication.getName()));
+    public ResponseEntity<OrderCreateResponseDto> createOrderByCart(Authentication authentication) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+            .body(orderService.createOrderByCart(authentication.getName()));
     }
 
     @PutMapping("/orderItems/{orderItemId}/status")
-    public ResponseEntity<SellerOrderItemStatusChangeResponseDto> changeOrderItemStatus(Authentication authentication,
-                                                                                        @PathVariable(name = "orderItemId") Long orderItemId,
-                                                                                        @RequestParam OrderItemStatus orderItemStatus) {
-        return ResponseEntity.ok(orderService.changeOrderItemStatus(authentication.getName(), orderItemId, orderItemStatus));
+    public ResponseEntity<SellerOrderItemStatusChangeResponseDto> changeOrderItemStatus(
+        Authentication authentication,
+        @PathVariable(name = "orderItemId") Long orderItemId,
+        @RequestParam OrderItemStatus orderItemStatus) {
+        return ResponseEntity.ok(
+            orderService.changeOrderItemStatus(authentication.getName(), orderItemId,
+                orderItemStatus));
     }
 
 }
