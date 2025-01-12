@@ -32,6 +32,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private final UserDetailsService userDetailsService;
 
     private final SecurityProperties securityProperties;
+
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
     @Override
@@ -68,6 +69,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         String token = this.getTokenFromRequest(request);
 
+        //받은 토큰 값이 유효한지 판단.
         if (!jwtProvider.validToken(token)) {
             return;
         }
@@ -80,12 +82,16 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     }
 
     private String getTokenFromRequest(HttpServletRequest request) {
+        //Bearer 를 포함한 토큰 String 값
         final String bearerToken = request.getHeader(HttpHeaders.AUTHORIZATION);
+        //"Bearer " 을 생성하는 과정. 이 String 값은 토큰 값만 추출해내는데 사용됨.
         final String headerPrefix = AuthenticationScheme.generateType(AuthenticationScheme.BEARER);
 
+        //bearerToken 이 null 값이 아니고 "Bearer " 로 시작한다면 true 아니면 false
         boolean tokenFound =
             StringUtils.hasText(bearerToken) && bearerToken.startsWith(headerPrefix);
 
+        //"Bearer " 을 분리시켜 토큰값만 String 값으로 return
         if (tokenFound) {
             return bearerToken.substring(headerPrefix.length());
         }
