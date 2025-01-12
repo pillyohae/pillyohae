@@ -13,6 +13,7 @@ import org.springframework.stereotype.Repository;
 public interface CartRepository extends JpaRepository<Cart, Long> {
 
     @Query("SELECT new com.example.pillyohae.cart.dto.CartProductDetailResponseDto(" +
+        "c.id, " +
         "c.product.productId," +
         "c.product.productName," +
         "c.product.imageUrl," +
