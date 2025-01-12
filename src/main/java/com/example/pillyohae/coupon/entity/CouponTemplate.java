@@ -1,4 +1,4 @@
-package com.example.pillyohae.Coupon.entity;
+package com.example.pillyohae.coupon.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;

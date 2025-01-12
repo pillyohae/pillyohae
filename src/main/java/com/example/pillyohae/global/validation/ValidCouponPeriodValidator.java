@@ -1,6 +1,6 @@
 package com.example.pillyohae.global.validation;
 
-import com.example.pillyohae.Coupon.dto.CreateCouponTemplateRequestDto;
+import com.example.pillyohae.coupon.dto.CreateCouponTemplateRequestDto;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 

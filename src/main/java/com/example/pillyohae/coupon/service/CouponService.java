@@ -1,12 +1,12 @@
-package com.example.pillyohae.Coupon.service;
+package com.example.pillyohae.coupon.service;
 
-import com.example.pillyohae.Coupon.dto.CreateCouponTemplateRequestDto;
-import com.example.pillyohae.Coupon.dto.CreateCouponTemplateResponseDto;
-import com.example.pillyohae.Coupon.dto.GiveCouponResponseDto;
-import com.example.pillyohae.Coupon.entity.CouponTemplate;
-import com.example.pillyohae.Coupon.entity.IssuedCoupon;
-import com.example.pillyohae.Coupon.repository.CouponTemplateRepository;
-import com.example.pillyohae.Coupon.repository.IssuedCouponRepository;
+import com.example.pillyohae.coupon.dto.CreateCouponTemplateRequestDto;
+import com.example.pillyohae.coupon.dto.CreateCouponTemplateResponseDto;
+import com.example.pillyohae.coupon.dto.GiveCouponResponseDto;
+import com.example.pillyohae.coupon.entity.CouponTemplate;
+import com.example.pillyohae.coupon.entity.IssuedCoupon;
+import com.example.pillyohae.coupon.repository.CouponTemplateRepository;
+import com.example.pillyohae.coupon.repository.IssuedCouponRepository;
 import com.example.pillyohae.user.entity.User;
 import com.example.pillyohae.user.entity.type.Role;
 import com.example.pillyohae.user.service.UserService;
