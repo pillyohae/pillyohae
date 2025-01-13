@@ -37,6 +37,7 @@ public class CouponTemplate {
     @PositiveOrZero
     private Double fixedAmount = 0.0;
 
+    // %단위로 저장
     @PositiveOrZero
     @Max(100)
     private Double fixedRate = 0.0;

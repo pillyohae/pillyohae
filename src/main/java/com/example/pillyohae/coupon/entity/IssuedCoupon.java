@@ -61,6 +61,13 @@ public class IssuedCoupon {
         }
     }
 
+    //사용한 쿠폰에 정보 저장
+    public void useCoupon(Order order) {
+        this.usedAt = LocalDateTime.now();
+        this.usedOrder = order;
+        this.status = CouponStatus.USED;
+    }
+
     // 쿠폰 상태 enum
     public enum CouponStatus {
         AVAILABLE,    // 사용 가능

@@ -2,6 +2,8 @@ package com.example.pillyohae.order.service;
 
 import com.example.pillyohae.cart.entity.Cart;
 import com.example.pillyohae.cart.repository.CartRepository;
+import com.example.pillyohae.coupon.entity.IssuedCoupon;
+import com.example.pillyohae.coupon.repository.IssuedCouponRepository;
 import com.example.pillyohae.order.dto.*;
 import com.example.pillyohae.order.entity.Order;
 import com.example.pillyohae.order.entity.OrderItem;
@@ -16,6 +18,7 @@ import com.example.pillyohae.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -33,6 +36,7 @@ public class OrderService {
     private final ProductRepository productRepository;
     private final CartRepository cartRepository;
     private final OrderItemRepository orderItemRepository;
+    private final IssuedCouponRepository issuedCouponRepository;
 
     //cart 정보를 주문 정보로 변환 후 저장
     @Transactional
@@ -85,7 +89,7 @@ public class OrderService {
         User user = userService.findByEmail(email);
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
-        if(!order.getUser().equals(user)) {
+        if (!order.getUser().equals(user)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Order is not owned by user");
         }
         List<BuyerOrderDetailInfo.BuyerOrderItemInfo> itemInfos = orderRepository.findBuyerOrderDetail(orderId);
@@ -104,6 +108,25 @@ public class OrderService {
         orderItem.updateStatus(newStatus);
 
         return new SellerOrderItemStatusChangeResponseDto(orderItem.getId(), orderItem.getStatus().getValue());
+    }
+
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public OrderUseCouponResponseDto useCoupon(String email, UUID orderId, Long couponId) {
+        if (email == null || orderId == null || couponId == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Required parameters cannot be null");
+        }
+        User user = userService.findByEmail(email);
+        IssuedCoupon coupon = issuedCouponRepository.findById(couponId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Coupon not found"));
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
+        validateCouponToUse(coupon, user);
+        // 최소 금액보다 낮을경우 예외
+        if (coupon.getCouponTemplate().getMinimumPrice() >= order.getTotalPrice()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Coupon could not be used for this order");
+        }
+        order.applyCoupon(coupon);
+        return new OrderUseCouponResponseDto(orderId, couponId, order.getDiscountAmount());
     }
 
 
@@ -145,5 +168,19 @@ public class OrderService {
         orderItemRepository.saveAll(orderItems);
         order.updateTotalPrice();
         return order;
+    }
+
+    // 쿠폰이 만료되거나 사용될 경우 예외
+    private void validateCouponToUse(IssuedCoupon coupon, User user) {
+        if (!coupon.getUser().equals(user)) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Coupon is not owned by user");
+        }
+        if (LocalDateTime.now().isAfter(coupon.getCouponTemplate().getExpiredAt())) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Coupon is expired");
+        }
+        if (IssuedCoupon.CouponStatus.USED.equals(coupon.getStatus())) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Coupon is used");
+        }
+
     }
 }
