@@ -21,7 +21,8 @@ public class IssuedCoupon {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private LocalDateTime issuedDate;       // 발급일
+    @Column(nullable = false)
+    private LocalDateTime issuedAt;       // 발급일
 
     private LocalDateTime usedAt;         // 사용일
 
@@ -41,11 +42,17 @@ public class IssuedCoupon {
     @JoinColumn(name = "user_id")
     private User user;              // 쿠폰 소유 사용자
 
-    public IssuedCoupon(LocalDateTime issuedDate,CouponTemplate couponTemplate, User user) {
-        this.issuedDate = issuedDate;
+    public IssuedCoupon(LocalDateTime issuedAt, CouponTemplate couponTemplate, User user) {
+        this.issuedAt = issuedAt;
         this.couponTemplate = couponTemplate;
         this.user = user;
         this.status = CouponStatus.AVAILABLE;
+    }
+
+    public void validateExpireAt() {
+        if (expireAt.isBefore(issuedAt)) {
+            throw new IllegalArgumentException("만료일은 발급일 이후여야 합니다.");
+        }
     }
 
     // 쿠폰 상태 enum
@@ -54,5 +61,5 @@ public class IssuedCoupon {
         USED,        // 사용됨
         EXPIRED,      // 만료됨
         CANCELED     // 취소됨
-        }
+    }
 }

@@ -37,7 +37,8 @@ public class CouponTemplate {
     @PositiveOrZero
     private Double fixedAmount = 0.0;
 
-    @PositiveOrZero @Max(100)
+    @PositiveOrZero
+    @Max(100)
     private Double fixedRate = 0.0;
 
     @Column(nullable = false)
@@ -60,14 +61,14 @@ public class CouponTemplate {
     @Enumerated(EnumType.STRING)
     private CouponStatus status;
     /**
-      * 사용자에게 발급된 쿠폰 목록
-      * 만료되지 않은 활성 쿠폰들을 포함합니다
-      */
+     * 사용자에게 발급된 쿠폰 목록
+     * 만료되지 않은 활성 쿠폰들을 포함합니다
+     */
     @OneToMany(mappedBy = "couponTemplate", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<IssuedCoupon> issuedCoupons = new ArrayList<>();
 
     @Builder
-    public CouponTemplate(String name, String description, DiscountType type, Double fixedAmount, Double fixedRate, Double maxDiscountAmount,Double minimumPrice ,LocalDateTime startAt, LocalDateTime expireAt, Integer maxIssuanceCount) {
+    public CouponTemplate(String name, String description, DiscountType type, Double fixedAmount, Double fixedRate, Double maxDiscountAmount, Double minimumPrice, LocalDateTime startAt, LocalDateTime expireAt, Integer maxIssuanceCount) {
         this.name = name;
         this.description = description;
         this.type = type;
@@ -92,17 +93,16 @@ public class CouponTemplate {
         }
     }
 
+
+
     public enum DiscountType {
         FIXED_AMOUNT,
         PERCENTAGE
     }
 
-    public enum CouponStatus{
+    public enum CouponStatus {
         ACTIVE, INACTIVE, EXPIRED
     }
-
-
-
 
 
 }
