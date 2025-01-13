@@ -1,27 +1,30 @@
 package com.example.pillyohae.global.scheduler;
 
+
 import com.example.pillyohae.coupon.service.CouponService;
+
+import java.time.LocalDateTime;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class CouponScheduler {
+
     private final CouponService couponService;
+
     // 쿠폰 만료
     // 실시간으로 가벼운 체크 (10분마다)
     @Scheduled(cron = "0 */10 * * * ?")
     public void checkRecentExpiredCoupons() {
         // 최근 10분 동안의 만료된 쿠폰만 처리
         couponService.expireCouponByTimeRange(
-                LocalDateTime.now().minusMinutes(10),
-                LocalDateTime.now()
+            LocalDateTime.now().minusMinutes(10),
+            LocalDateTime.now()
         );
     }
 
