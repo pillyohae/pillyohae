@@ -1,4 +1,4 @@
-package com.example.pillyohae.Coupon.entity;
+package com.example.pillyohae.coupon.entity;
 
 import com.example.pillyohae.order.entity.Order;
 import com.example.pillyohae.user.entity.User;
@@ -12,17 +12,25 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(name = "issued_coupon", indexes = {
+        @Index(name = "idx_issued_coupon_user",
+                columnList = "user_id,used_at,expire_at")
+})
 public class IssuedCoupon {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private LocalDateTime issuedDate;       // 발급일
+    @Column(nullable = false)
+    private LocalDateTime issuedAt;       // 발급일
 
-    private LocalDateTime usedDate;         // 사용일
+    private LocalDateTime usedAt;         // 사용일
 
     @Enumerated(EnumType.STRING)
     private CouponStatus status;            // 쿠폰 상태
+
+    @Column(nullable = false)
+    private LocalDateTime expiredAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "coupon_template_id")
@@ -35,11 +43,22 @@ public class IssuedCoupon {
     @JoinColumn(name = "user_id")
     private User user;              // 쿠폰 소유 사용자
 
-    public IssuedCoupon(LocalDateTime issuedDate,CouponTemplate couponTemplate, User user) {
-        this.issuedDate = issuedDate;
+    public IssuedCoupon(LocalDateTime issuedAt, LocalDateTime expiredAt, CouponTemplate couponTemplate, User user) {
+        this.issuedAt = issuedAt;
+        this.expiredAt = expiredAt;
         this.couponTemplate = couponTemplate;
         this.user = user;
         this.status = CouponStatus.AVAILABLE;
+        validateExpireAt();
+    }
+
+    public void validateExpireAt() {
+        if (expiredAt == null) {
+            throw new IllegalArgumentException("만료일은 필수 값입니다.");
+        }
+        if (expiredAt.isBefore(issuedAt)) {
+            throw new IllegalArgumentException("만료일은 발급일 이후여야 합니다.");
+        }
     }
 
     // 쿠폰 상태 enum
@@ -48,5 +67,5 @@ public class IssuedCoupon {
         USED,        // 사용됨
         EXPIRED,      // 만료됨
         CANCELED     // 취소됨
-        }
+    }
 }
