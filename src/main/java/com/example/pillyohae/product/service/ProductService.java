@@ -1,9 +1,13 @@
 package com.example.pillyohae.product.service;
 
+import com.example.pillyohae.global.S3.S3Service;
+import com.example.pillyohae.global.dto.UploadFileInfo;
+import com.example.pillyohae.global.entity.FileStorage;
 import com.example.pillyohae.global.exception.CustomResponseStatusException;
 import com.example.pillyohae.global.exception.code.ErrorCode;
 import com.example.pillyohae.product.dto.*;
 import com.example.pillyohae.product.entity.Product;
+import com.example.pillyohae.product.repository.ImageStorageRepository;
 import com.example.pillyohae.product.repository.ProductRepository;
 import com.example.pillyohae.user.entity.User;
 import com.example.pillyohae.user.service.UserService;
@@ -15,13 +19,16 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
 public class ProductService {
 
     private final ProductRepository productRepository;
+    private final ImageStorageRepository imageStorageRepository;
     private final UserService userService;
+    private final S3Service s3Service;
 
     /**
      * 상품 생성
@@ -44,7 +51,6 @@ public class ProductService {
             savedProduct.getCompanyName(),
             savedProduct.getDescription(),
             savedProduct.getPrice(),
-            savedProduct.getImageUrl(),
             savedProduct.getStatus());
     }
 
@@ -65,7 +71,6 @@ public class ProductService {
             requestDto.getDescription(),
             requestDto.getCompanyName(),
             requestDto.getPrice(),
-            requestDto.getImageUrl(),
             requestDto.getStatus()
         );
 
@@ -78,7 +83,6 @@ public class ProductService {
             updatedProduct.getDescription(),
             updatedProduct.getCompanyName(),
             updatedProduct.getPrice(),
-            updatedProduct.getImageUrl(),
             updatedProduct.getStatus()
         );
     }
@@ -100,7 +104,6 @@ public class ProductService {
             findProduct.getDescription(),
             findProduct.getCompanyName(),
             findProduct.getPrice(),
-            findProduct.getImageUrl(),
             findProduct.getStatus()
         );
     }
@@ -190,9 +193,29 @@ public class ProductService {
 
     }
 
+    public UploadFileInfo uploadImages(Long productId, MultipartFile image) {
+
+        // Product 조회
+        Product findProduct = findById(productId);
+
+        // 파일 업로드 로직 호출
+        UploadFileInfo imageInfo = s3Service.uploadFile(image);
+
+        // FileStorage 객체 생성
+        FileStorage saveImage = new FileStorage(imageInfo.fileUrl(), imageInfo.fileKey(), image.getContentType(), image.getSize(), findProduct);
+
+        // DB에 저장
+        imageStorageRepository.save(saveImage);
+
+        // 업로드 결과 반환
+        return new UploadFileInfo(saveImage.getFileUrl(), saveImage.getFileKey());
+    }
+
     public Product findById(Long productId) {
         return productRepository.findById(productId)
             .orElseThrow(() -> new CustomResponseStatusException(ErrorCode.NOT_FOUND_PRODUCT));
     }
+
+
 }
 

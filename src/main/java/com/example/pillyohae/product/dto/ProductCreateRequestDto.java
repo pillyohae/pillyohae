@@ -23,7 +23,6 @@ public class ProductCreateRequestDto {
             this.description,
             this.companyName,
             this.price,
-            this.imageUrl,
             this.status
         );
     }

@@ -1,5 +1,6 @@
 package com.example.pillyohae.product.controller;
 
+import com.example.pillyohae.global.dto.UploadFileInfo;
 import com.example.pillyohae.product.dto.*;
 import com.example.pillyohae.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping
@@ -127,6 +129,22 @@ public class ProductController {
         page = page - 1;
         Page<ProductSearchResponseDto> findSellersProducts = productService.findSellersProducts(userDetails.getUsername(), page, size, sortBy, isAsc);
         return new ResponseEntity<>(findSellersProducts, HttpStatus.OK);
+    }
+
+    /**
+     * 이미지 업로드
+     *
+     * @param productId 상품 id
+     * @param image     사용자가 올리는 이미지파일
+     * @return UploadFileInfo 반환되는 이미지 정보들
+     */
+    @PostMapping("/products/{productId}/images")
+    public ResponseEntity<UploadFileInfo> uploadImages(
+        @PathVariable Long productId,
+        @RequestPart(name = "image", required = false) MultipartFile image
+    ) {
+        UploadFileInfo uploadFileInfo = productService.uploadImages(productId, image);
+        return new ResponseEntity<>(uploadFileInfo, HttpStatus.OK);
     }
 
 

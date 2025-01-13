@@ -11,17 +11,15 @@ public class ProductGetResponseDto {
     private String description;
     private String companyName;
     private Long price;
-    private String imageUrl;
     private ProductStatus status;
 
-    public ProductGetResponseDto(Long productId, String productName, String category, String description, String companyName, Long price, String imageUrl, ProductStatus status) {
+    public ProductGetResponseDto(Long productId, String productName, String category, String description, String companyName, Long price, ProductStatus status) {
         this.productId = productId;
         this.productName = productName;
         this.category = category;
         this.description = description;
         this.companyName = companyName;
         this.price = price;
-        this.imageUrl = imageUrl;
         this.status = status;
     }
 }

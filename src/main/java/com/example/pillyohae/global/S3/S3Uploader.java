@@ -29,21 +29,21 @@ public class S3Uploader {
 
     public UploadFileInfo uploadFile(MultipartFile file) {
         ObjectMetadata metadata = createMetaDataFromFile(file);
-        String filePath = createFilePath(file.getContentType(),file.getName());
-        try(InputStream inputStream = file.getInputStream()){
+        String filePath = createFilePath(file.getContentType(), file.getName());
+        try (InputStream inputStream = file.getInputStream()) {
             s3.putObject(
-                    // 읽기 권한 public 설정
-                    new PutObjectRequest(bucket,filePath,inputStream,metadata)
-                            .withCannedAcl(CannedAccessControlList.PublicRead)
+                // 읽기 권한 public 설정
+                new PutObjectRequest(bucket, filePath, inputStream, metadata)
+                    .withCannedAcl(CannedAccessControlList.PublicRead)
             );
         } catch (Exception e) {
             throw new BaseException(ErrorCode.S3_UPLOADER_ERROR);
         }
-        return new UploadFileInfo(getUrlFromBucket(filePath),filePath);
+        return new UploadFileInfo(getUrlFromBucket(filePath), filePath);
     }
 
     // s3에 들어갈 파일의 path 설정
-    private String createFilePath(String contentType,String fileName) {
+    private String createFilePath(String contentType, String fileName) {
         LocalDate now = LocalDate.now();
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(DATE_FORMAT_YYYYMMDD);
         String randomUUID = UUID.randomUUID().toString();
@@ -68,8 +68,8 @@ public class S3Uploader {
     private String getContentType(MultipartFile file) {
         String contentType = file.getContentType();
         Boolean isImage = ("image/jpeg").equals(contentType) || ("image/png").equals(contentType);
-        Boolean isDocument = ("application/pdf").equals(contentType)|| ("application/csv").equals(contentType);
-        if(contentType == null || !(isImage || isDocument)){
+        Boolean isDocument = ("application/pdf").equals(contentType) || ("application/csv").equals(contentType);
+        if (contentType == null || !(isImage || isDocument)) {
             throw new BaseException(ErrorCode.BAD_FORMAT);
         }
         return contentType;
