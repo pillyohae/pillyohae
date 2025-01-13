@@ -40,4 +40,6 @@ public class CouponController {
     public ResponseEntity<FindCouponListToUseResponseDto> getCouponListToUse( Authentication authentication, @PathVariable(name = "orderId") UUID orderId) {
         return ResponseEntity.ok(couponService.findCouponListToUse(authentication.getName(), orderId));
     }
+
+
 }

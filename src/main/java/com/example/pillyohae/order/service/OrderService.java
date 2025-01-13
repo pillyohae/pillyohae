@@ -2,6 +2,8 @@ package com.example.pillyohae.order.service;
 
 import com.example.pillyohae.cart.entity.Cart;
 import com.example.pillyohae.cart.repository.CartRepository;
+import com.example.pillyohae.coupon.entity.IssuedCoupon;
+import com.example.pillyohae.coupon.repository.IssuedCouponRepository;
 import com.example.pillyohae.order.dto.*;
 import com.example.pillyohae.order.entity.Order;
 import com.example.pillyohae.order.entity.OrderItem;
@@ -33,6 +35,7 @@ public class OrderService {
     private final ProductRepository productRepository;
     private final CartRepository cartRepository;
     private final OrderItemRepository orderItemRepository;
+    private final IssuedCouponRepository issuedCouponRepository;
 
     //cart 정보를 주문 정보로 변환 후 저장
     @Transactional
@@ -106,6 +109,22 @@ public class OrderService {
         return new SellerOrderItemStatusChangeResponseDto(orderItem.getId(), orderItem.getStatus().getValue());
     }
 
+    @Transactional
+    public OrderUseCouponResponseDto useCoupon(String email, UUID orderId, Long couponId) {
+        User user = userService.findByEmail(email);
+        IssuedCoupon coupon = issuedCouponRepository.findById(couponId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Coupon not found"));
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
+        validateCouponToUse(coupon, user);
+        // 최소 금액보다 낮을경우 예외
+        if(coupon.getCouponTemplate().getMinimumPrice() >= order.getTotalPrice()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Coupon could not be used for this order");
+        }
+        order.applyCoupon(coupon);
+        return new OrderUseCouponResponseDto(orderId,couponId,order.getDiscountAmount());
+    }
+
 
     private Double calculateOrderItemPrice(Double price, Integer quantity) {
         return price * quantity;
@@ -145,5 +164,21 @@ public class OrderService {
         orderItemRepository.saveAll(orderItems);
         order.updateTotalPrice();
         return order;
+    }
+    // 쿠폰이 만료되거나 사용될 경우 예외
+    private void validateCouponToUse(IssuedCoupon coupon, User user) {
+        if(coupon.getUser() != user) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Coupon is not owned by user");
+        }
+        if(coupon.getCouponTemplate().getExpiredAt().isBefore(LocalDateTime.now())) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Coupon is expired");
+        }
+        if(coupon.getCouponTemplate().getExpiredAt().isAfter(LocalDateTime.now())) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Coupon is expired");
+        }
+        if(IssuedCoupon.CouponStatus.USED.equals(coupon.getStatus())){
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Coupon is used");
+        }
+
     }
 }

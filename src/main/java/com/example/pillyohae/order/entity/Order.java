@@ -1,5 +1,6 @@
 package com.example.pillyohae.order.entity;
 
+import com.example.pillyohae.coupon.entity.CouponTemplate;
 import com.example.pillyohae.coupon.entity.IssuedCoupon;
 import com.example.pillyohae.order.entity.status.OrderItemStatus;
 import com.example.pillyohae.order.entity.status.OrderStatus;
@@ -40,6 +41,7 @@ public class Order extends BaseTimeEntity {
     @Column
     private LocalDateTime paidAt;
 
+    private Double discountAmount = 0.0;
 
     // 주문 물품
     @OneToMany(mappedBy = "order", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
@@ -60,6 +62,24 @@ public class Order extends BaseTimeEntity {
         this.user = user;
         // 초기 상태 결제 대기중
         this.status = OrderStatus.PENDING;
+    }
+
+    // 쿠폰 적용
+    public void applyCoupon(IssuedCoupon issuedCoupon) {
+        Double tempDiscountAmount;
+        if(CouponTemplate.DiscountType.FIXED_AMOUNT.equals(issuedCoupon.getCouponTemplate().getType())){
+            tempDiscountAmount = issuedCoupon.getCouponTemplate().getFixedAmount();
+        }
+        else{
+            tempDiscountAmount = totalPrice * issuedCoupon.getCouponTemplate().getFixedRate()/100;
+        }
+        Double maxDiscount = issuedCoupon.getCouponTemplate().getMaxDiscountAmount();
+        if(maxDiscount < tempDiscountAmount ){
+            tempDiscountAmount = maxDiscount;
+        }
+        this.issuedCoupon = issuedCoupon;
+        this.discountAmount = tempDiscountAmount;
+        issuedCoupon.useCoupon(this);
     }
 
     // order에 대한 status 업데이트
