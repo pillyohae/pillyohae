@@ -3,11 +3,11 @@ package com.example.pillyohae.user.controller;
 import com.example.pillyohae.order.dto.BuyerOrderDetailInfo;
 import com.example.pillyohae.order.dto.BuyerOrderSearchResponseDto;
 import com.example.pillyohae.order.service.OrderService;
-import com.example.pillyohae.global.dto.JwtAuthResponse;
 import com.example.pillyohae.user.dto.*;
 import com.example.pillyohae.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +34,7 @@ public class UserController {
 
     @PostMapping("/signup")
     public ResponseEntity<UserCreateResponseDto> createUser(
-        @RequestBody UserCreateRequestDto requestDto
+        @Valid @RequestBody UserCreateRequestDto requestDto
     ) {
         UserCreateResponseDto responseDto = userService.createUser(requestDto);
         return new ResponseEntity<>(responseDto, HttpStatus.CREATED);
@@ -42,7 +42,7 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity<Void> login(
-        @RequestBody UserLoginRequestDto requestDto
+        @Valid @RequestBody UserLoginRequestDto requestDto
     ) {
         String accessToken = userService.loginTokenGenerate(requestDto);
 
@@ -66,7 +66,7 @@ public class UserController {
 
     @DeleteMapping
     public ResponseEntity<Void> deleteUser(
-        @RequestBody UserDeleteRequestDto requestDto, Authentication authentication,
+        @Valid @RequestBody UserDeleteRequestDto requestDto, Authentication authentication,
         HttpServletRequest request, HttpServletResponse response
     ) {
         userService.deleteUser(requestDto, authentication);
@@ -86,7 +86,7 @@ public class UserController {
 
     @PutMapping("/profile")
     public ResponseEntity<UserProfileResponseDto> updateProfile(
-        @RequestBody UserProfileUpdateRequestDto requestDto,
+        @Valid @RequestBody UserProfileUpdateRequestDto requestDto,
         Authentication authentication
     ) {
         UserProfileResponseDto responseDto = userService.updateProfile(requestDto,
