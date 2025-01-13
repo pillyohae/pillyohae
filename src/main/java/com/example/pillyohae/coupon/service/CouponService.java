@@ -52,7 +52,7 @@ public class CouponService {
                 .fixedRate(requestDto.getFixedRate())
                 .maxDiscountAmount(requestDto.getMaxDiscountAmount())
                 .startAt(requestDto.getStartAt())
-                .expireAt(requestDto.getExpireAt())
+                .expiredAt(requestDto.getExpireAt())
                 .maxIssuanceCount(requestDto.getMaxIssueCount())
                 .minimumPrice(validateMinimumPrice(requestDto.getMinimumPrice()))
                 .build();
@@ -77,7 +77,7 @@ public class CouponService {
         if (userCouponTemplates.contains(couponTemplate)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "쿠폰을 중복해서 가질 수 없습니다");
         }
-        IssuedCoupon issuedCoupon = new IssuedCoupon(LocalDateTime.now(), couponTemplate, user);
+        IssuedCoupon issuedCoupon = new IssuedCoupon(LocalDateTime.now(), couponTemplate.getExpiredAt(), couponTemplate, user);
         issuedCouponRepository.save(issuedCoupon);
         return new GiveCouponResponseDto(issuedCoupon.getId());
     }
@@ -99,14 +99,8 @@ public class CouponService {
 
         Double totalPrice = order.getTotalPrice();
         if (totalPrice == null) {
-            try {
-                orderRepository.delete(order);
-                orderRepository.flush(); // 즉시 삭제 수행
-            } catch (Exception e) {
-                log.error("주문 삭제 실패: " + orderId, e);
-                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "주문 삭제 중 오류가 발생했습니다");
-            }
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "주문 금액이 없습니다");
+            log.warn("주문 금액이 없는 주문 발견: {}", orderId);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "유효하지 않은 주문입니다. 주문 금액이 없습니다.");
         }
 
         return new FindCouponListToUseResponseDto(
@@ -204,7 +198,7 @@ public class CouponService {
             updatedCouponAllIds.addAll(updatedCouponIds);
 
             // 만료되지 않은 쿠폰을 확인
-            int remainCouponCount = couponTemplateRepository.countByExpireAtBetween(start, end);
+            int remainCouponCount = couponTemplateRepository.countByExpiredAtBetween(start, end);
 
 
             hasExpiredCoupons = remainCouponCount != 0;
@@ -249,7 +243,7 @@ public class CouponService {
             updatedCouponAllIds.addAll(updatedCouponIds);
 
             // 만료되지 않은 쿠폰을 확인
-            int remainCouponCount = couponTemplateRepository.countByExpireAt(now);
+            int remainCouponCount = couponTemplateRepository.countByExpiredAt(now);
 
             hasExpiredCoupons = remainCouponCount != 0;
             attempt++;

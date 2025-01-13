@@ -31,7 +31,7 @@ public class IssuedCouponQueryRepositoryImpl implements IssuedCouponQueryReposit
                         couponTemplate.fixedAmount,
                         couponTemplate.fixedRate,
                         couponTemplate.maxDiscountAmount,
-                        couponTemplate.expireAt
+                        couponTemplate.expiredAt
                 ))
                 .from(issuedCoupon)
                 .join(issuedCoupon.couponTemplate, couponTemplate) // leftJoin -> join
@@ -41,10 +41,9 @@ public class IssuedCouponQueryRepositoryImpl implements IssuedCouponQueryReposit
                         couponTemplate.minimumPrice.loe(price), // goe -> loe로 수정 (최소사용금액이 결제금액보다 작아야 함)
                         couponTemplate.status.eq(CouponTemplate.CouponStatus.ACTIVE),
                         issuedCoupon.usedAt.isNull(), // 미사용 쿠폰 조건 추가
-                        issuedCoupon.expireAt.gt(LocalDateTime.now()) // 만료되지 않은 쿠폰 조건 추가
+                        issuedCoupon.expiredAt.gt(LocalDateTime.now()) // 만료되지 않은 쿠폰 조건 추가
                 )
                 .orderBy(couponTemplate.minimumPrice.desc()) // 최소사용금액이 높은 순으로 정렬
                 .fetch();
     }
-
 }

@@ -53,7 +53,7 @@ public class CouponTemplate {
     private LocalDateTime startAt;
 
     @Column(nullable = false)
-    private LocalDateTime expireAt;
+    private LocalDateTime expiredAt;
 
     @Column(nullable = false)
     private Integer maxIssuanceCount;
@@ -68,7 +68,7 @@ public class CouponTemplate {
     private List<IssuedCoupon> issuedCoupons = new ArrayList<>();
 
     @Builder
-    public CouponTemplate(String name, String description, DiscountType type, Double fixedAmount, Double fixedRate, Double maxDiscountAmount, Double minimumPrice, LocalDateTime startAt, LocalDateTime expireAt, Integer maxIssuanceCount) {
+    public CouponTemplate(String name, String description, DiscountType type, Double fixedAmount, Double fixedRate, Double maxDiscountAmount, Double minimumPrice, LocalDateTime startAt, LocalDateTime expiredAt, Integer maxIssuanceCount) {
         this.name = name;
         this.description = description;
         this.type = type;
@@ -77,7 +77,7 @@ public class CouponTemplate {
         this.maxDiscountAmount = maxDiscountAmount;
         this.startAt = startAt;
         this.minimumPrice = minimumPrice;
-        this.expireAt = expireAt;
+        this.expiredAt = expiredAt;
         this.maxIssuanceCount = maxIssuanceCount;
         this.status = CouponStatus.INACTIVE;
     }

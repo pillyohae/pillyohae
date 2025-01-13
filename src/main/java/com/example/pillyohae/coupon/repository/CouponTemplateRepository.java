@@ -11,11 +11,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface CouponTemplateRepository extends JpaRepository<CouponTemplate,Long > {
-    int countByExpireAt(LocalDateTime expireAt);
-
     @Transactional(readOnly = true)
     @Query(value = "SELECT id FROM coupon_template " +
-            "WHERE expire_at <= :date AND status != :newStatus " +
+            "WHERE expired_at <= :date AND status != :newStatus " +
             "ORDER BY id LIMIT :limit",
             nativeQuery = true)
     List<Long> findExpiredTemplateIds(
@@ -37,7 +35,7 @@ public interface CouponTemplateRepository extends JpaRepository<CouponTemplate,L
 
     @Transactional(readOnly = true)
     @Query(value = "SELECT id FROM coupon_template " +
-            "WHERE expire_at <= :date AND :startAt<= expired_at AND status != :newStatus " +
+            "WHERE expired_at <= :date AND :startAt<= expired_at AND status != :newStatus " +
             "ORDER BY id LIMIT :limit",
             nativeQuery = true)
     List<Long> findExpiredTemplateIdsBetweenTimes(
@@ -58,5 +56,7 @@ public interface CouponTemplateRepository extends JpaRepository<CouponTemplate,L
     );
 
 
-    int countByExpireAtBetween(LocalDateTime expireAtAfter, LocalDateTime expireAtBefore);
+    int countByExpiredAtBetween(LocalDateTime expiredAtAfter, LocalDateTime expiredAtBefore);
+
+    int countByExpiredAt(LocalDateTime expiredAt);
 }

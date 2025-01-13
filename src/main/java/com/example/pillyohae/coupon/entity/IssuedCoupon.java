@@ -29,7 +29,8 @@ public class IssuedCoupon {
     @Enumerated(EnumType.STRING)
     private CouponStatus status;            // 쿠폰 상태
 
-    private LocalDateTime expireAt;
+    @Column(nullable = false)
+    private LocalDateTime expiredAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "coupon_template_id")
@@ -42,15 +43,20 @@ public class IssuedCoupon {
     @JoinColumn(name = "user_id")
     private User user;              // 쿠폰 소유 사용자
 
-    public IssuedCoupon(LocalDateTime issuedAt, CouponTemplate couponTemplate, User user) {
+    public IssuedCoupon(LocalDateTime issuedAt, LocalDateTime expiredAt, CouponTemplate couponTemplate, User user) {
         this.issuedAt = issuedAt;
+        this.expiredAt = expiredAt;
         this.couponTemplate = couponTemplate;
         this.user = user;
         this.status = CouponStatus.AVAILABLE;
+        validateExpireAt();
     }
 
     public void validateExpireAt() {
-        if (expireAt.isBefore(issuedAt)) {
+        if (expiredAt == null) {
+            throw new IllegalArgumentException("만료일은 필수 값입니다.");
+        }
+        if (expiredAt.isBefore(issuedAt)) {
             throw new IllegalArgumentException("만료일은 발급일 이후여야 합니다.");
         }
     }
