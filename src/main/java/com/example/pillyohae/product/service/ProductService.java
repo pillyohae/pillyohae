@@ -193,6 +193,14 @@ public class ProductService {
 
     }
 
+    /**
+     * 이미지 업로드
+     *
+     * @param productId 상품 id
+     * @param image     사용자가 올리는 이미지파일
+     * @return UploadFileInfo 반환되는 이미지 정보들
+     */
+    @Transactional
     public UploadFileInfo uploadImages(Long productId, MultipartFile image) {
 
         // Product 조회
