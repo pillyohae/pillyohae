@@ -2,9 +2,9 @@ package com.example.pillyohae.order.entity;
 
 import com.example.pillyohae.coupon.entity.CouponTemplate;
 import com.example.pillyohae.coupon.entity.IssuedCoupon;
+import com.example.pillyohae.global.entity.BaseTimeEntity;
 import com.example.pillyohae.order.entity.status.OrderItemStatus;
 import com.example.pillyohae.order.entity.status.OrderStatus;
-import com.example.pillyohae.global.entity.BaseTimeEntity;
 import com.example.pillyohae.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -66,20 +66,35 @@ public class Order extends BaseTimeEntity {
 
     // 쿠폰 적용
     public void applyCoupon(IssuedCoupon issuedCoupon) {
-        Double tempDiscountAmount;
-        if(CouponTemplate.DiscountType.FIXED_AMOUNT.equals(issuedCoupon.getCouponTemplate().getType())){
-            tempDiscountAmount = issuedCoupon.getCouponTemplate().getFixedAmount();
+        if (issuedCoupon == null || issuedCoupon.getCouponTemplate() == null) {
+            throw new IllegalArgumentException("유효하지 않은 쿠폰입니다");
         }
-        else{
-            tempDiscountAmount = totalPrice * issuedCoupon.getCouponTemplate().getFixedRate()/100;
+
+        Double discountAmount = calculateDiscountAmount(issuedCoupon);
+
+        if (discountAmount < 0) {
+            throw new IllegalArgumentException("할인 금액은 음수가 될 수 없습니다");
+        }
+
+        this.issuedCoupon = issuedCoupon;
+        this.discountAmount = discountAmount;
+        issuedCoupon.useCoupon(this);
+    }
+
+    private Double calculateDiscountAmount(IssuedCoupon issuedCoupon) {
+        Double tempDiscountAmount;
+        if (CouponTemplate.DiscountType.FIXED_AMOUNT.equals(issuedCoupon.getCouponTemplate().getType())) {
+            tempDiscountAmount = issuedCoupon.getCouponTemplate().getFixedAmount();
+        } else {
+            // fixed rate는 %단위
+            tempDiscountAmount = totalPrice * issuedCoupon.getCouponTemplate().getFixedRate() / 100;
         }
         Double maxDiscount = issuedCoupon.getCouponTemplate().getMaxDiscountAmount();
-        if(maxDiscount < tempDiscountAmount ){
+        if (maxDiscount < tempDiscountAmount) {
             tempDiscountAmount = maxDiscount;
         }
-        this.issuedCoupon = issuedCoupon;
-        this.discountAmount = tempDiscountAmount;
-        issuedCoupon.useCoupon(this);
+
+        return tempDiscountAmount;
     }
 
     // order에 대한 status 업데이트
