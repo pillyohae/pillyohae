@@ -33,11 +33,18 @@ public class JwtProvider {
     private String secret;
 
     /**
-     * 토큰 만료시간(밀리초).
+     * 액세스 토큰 만료시간(밀리초).
      */
     @Getter
     @Value("${jwt.expiry-millis}")
     private long expiryMillis;
+
+    /**
+     * 리프레시 토큰 만료시간(밀리초))
+     */
+    @Getter
+    @Value("${jwt.refresh-expiry-millis}")
+    private long refreshExpiryMillis;
 
     private final UserRepository userRepository;
 
@@ -45,7 +52,6 @@ public class JwtProvider {
         String username = authentication.getName();
         return this.generateTokenBy(username);
     }
-
 
     public String getUsername(String token) {
         Claims claims = this.getClaims(token);
@@ -82,6 +88,26 @@ public class JwtProvider {
             .compact();
     }
 
+    public String generateRefreshToken(Authentication authentication) {
+        String email = authentication.getName(); // Authentication에서 사용자 이메일 가져오기
+        return Jwts.builder()
+            .subject(email)
+            .issuedAt(new Date())
+            .expiration(new Date(System.currentTimeMillis() + this.refreshExpiryMillis))
+            .signWith(Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8)), Jwts.SIG.HS256)
+            .compact();
+    }
+
+    public boolean validateRefreshToken(String token) {
+        try {
+            Claims claims = this.getClaims(token);
+            return !claims.getExpiration().before(new Date());
+        } catch (ExpiredJwtException e) {
+            log.error("Invalid Refresh Token: {}", e.getMessage());
+            return false;
+        }
+    }
+
     private Claims getClaims(String token) {
         if (!StringUtils.hasText(token)) {
             throw new MalformedJwtException("토큰이 비어 있습니다.");
@@ -107,4 +133,5 @@ public class JwtProvider {
         final Claims claims = this.getClaims(token);
         return claimsResolver.apply(claims);
     }
+
 }

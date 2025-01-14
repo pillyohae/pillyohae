@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CartUpdateResponseDto {
 
-    private final Long productId;
+    private final Long cartId;
 
     private final Integer quantity;
 }

@@ -3,6 +3,8 @@ package com.example.pillyohae.user.service;
 import com.example.pillyohae.global.exception.CustomResponseStatusException;
 import com.example.pillyohae.global.exception.code.ErrorCode;
 import com.example.pillyohae.global.util.JwtProvider;
+import com.example.pillyohae.refresh.service.RefreshTokenService;
+import com.example.pillyohae.user.dto.TokenResponse;
 import com.example.pillyohae.user.dto.UserCreateRequestDto;
 import com.example.pillyohae.user.dto.UserCreateResponseDto;
 import com.example.pillyohae.user.dto.UserDeleteRequestDto;
@@ -35,6 +37,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtProvider jwtProvider;
+    private final RefreshTokenService refreshTokenService;
 
     public UserCreateResponseDto createUser(UserCreateRequestDto requestDto)
         throws DuplicateKeyException {
@@ -55,7 +58,7 @@ public class UserService {
             savedUser.getEmail(), savedUser.getAddress(), savedUser.getCreatedAt());
     }
 
-    public String loginTokenGenerate(UserLoginRequestDto requestDto) {
+    public TokenResponse loginTokenGenerate(UserLoginRequestDto requestDto) {
 
         User user = findByEmail(requestDto.getEmail());
 
@@ -71,8 +74,13 @@ public class UserService {
         // 인증 객체를 SecurityContext에 저장
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        // JWT 생성 후 반환
-        return jwtProvider.generateToken(authentication);
+        // access, refresh 토큰 생성 후 반환
+        String accessToken = jwtProvider.generateToken(authentication);
+        String refreshToken = jwtProvider.generateRefreshToken(authentication);
+
+        refreshTokenService.saveRefreshToken(user.getId(), refreshToken);
+
+        return new TokenResponse(accessToken, refreshToken);
     }
 
     @Transactional

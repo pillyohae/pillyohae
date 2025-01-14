@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CartCreateResponseDto {
 
-    private final Long productId;
+    private final Long cartId;
 
     private final LocalDateTime createdAt;
 }
