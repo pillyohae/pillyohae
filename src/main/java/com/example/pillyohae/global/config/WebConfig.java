@@ -44,6 +44,7 @@ public class WebConfig {
         configuration.addAllowedMethod("*"); // 모든 HTTP 메서드 허용
         configuration.addAllowedHeader("*"); // 모든 헤더 허용
         configuration.addExposedHeader("Authorization"); // 클라이언트가 접근 가능한 헤더
+        configuration.addExposedHeader("Set-Cookie");
         configuration.setAllowCredentials(true); // 인증 정보 포함 허용
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
