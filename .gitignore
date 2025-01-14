@@ -36,9 +36,7 @@ out/
 ### VS Code ###
 .vscode/
 
-.test-env
-
-.env
+*.env
 
 .gitmessage.txt
 
