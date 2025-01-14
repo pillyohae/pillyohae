@@ -5,6 +5,7 @@ import com.example.pillyohae.cart.repository.CartRepository;
 import com.example.pillyohae.coupon.entity.CouponTemplate;
 import com.example.pillyohae.coupon.entity.IssuedCoupon;
 import com.example.pillyohae.coupon.repository.IssuedCouponRepository;
+import com.example.pillyohae.global.entity.address.ShippingAddress;
 import com.example.pillyohae.order.dto.*;
 import com.example.pillyohae.order.entity.Order;
 import com.example.pillyohae.order.entity.OrderProduct;
@@ -63,6 +64,8 @@ public class OrderService {
             orderProducts.add(new OrderProduct(productOrderInfo.getQuantity(), product.getPrice(), product.getProductId(), product.getUser(),order));
         }
         Order savedOrder = orderRepository.save(order);
+        // ADDRESS DUMMY 데이터를 넣음
+        order.updateShippingAddress(new ShippingAddress("TEST","010-0000-0000","TEST","TEST","TEST"));
         orderProductRepository.saveAll(orderProducts);
 
         // 쿠폰 적용 일단 한개만 적용하도록 설정

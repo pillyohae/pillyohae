@@ -15,6 +15,11 @@ public class OrderCreateRequestDto {
     private List<ProductOrderInfo> productInfos;
     private List<Long> couponIds;
 
+    public OrderCreateRequestDto(List<ProductOrderInfo> productInfos, List<Long> couponIds) {
+        this.productInfos = productInfos;
+        this.couponIds = couponIds;
+    }
+
     @Getter
     @NoArgsConstructor
     public static class ProductOrderInfo {
@@ -24,5 +29,10 @@ public class OrderCreateRequestDto {
         @NotNull
         @Positive @Max(20)
         private Integer quantity;
+
+        public ProductOrderInfo(Long productId, Integer quantity) {
+            this.productId = productId;
+            this.quantity = quantity;
+        }
     }
 }
