@@ -31,6 +31,15 @@ public class ProductCreateRequestDto {
     @NotNull
     private ProductStatus status;
 
+    public ProductCreateRequestDto(String productName, String category, String description, String companyName, Long price, ProductStatus status) {
+        this.productName = productName;
+        this.category = category;
+        this.description = description;
+        this.companyName = companyName;
+        this.price = price;
+        this.status = status;
+    }
+
     public Product toEntity(User user) {
         return new Product(
             user,
