@@ -1,4 +1,4 @@
-package com.example.pillyohae.global.config.auth;
+package com.example.pillyohae.global.auth;
 
 import com.example.pillyohae.user.entity.User;
 import com.example.pillyohae.user.entity.type.Role;
