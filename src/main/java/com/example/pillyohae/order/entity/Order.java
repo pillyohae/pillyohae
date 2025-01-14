@@ -2,6 +2,7 @@ package com.example.pillyohae.order.entity;
 
 import com.example.pillyohae.coupon.entity.CouponTemplate;
 import com.example.pillyohae.coupon.entity.IssuedCoupon;
+import com.example.pillyohae.global.entity.Address;
 import com.example.pillyohae.global.entity.BaseTimeEntity;
 import com.example.pillyohae.order.entity.status.OrderItemStatus;
 import com.example.pillyohae.order.entity.status.OrderStatus;
@@ -44,6 +45,9 @@ public class Order extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
 
+    //배송지 정보 저장
+    @Embedded
+    private Address address;
 
     // 주문 물품
     @OneToMany(mappedBy = "order", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
@@ -111,7 +115,6 @@ public class Order extends BaseTimeEntity {
     }
 
     // order 품목별 status 업데이트
-
     public OrderItemStatus updateItemStatus(Long itemId, OrderItemStatus newStatus) {
         for (OrderProduct item : this.orderProducts) {
             if (item.getId().equals(itemId)) {
@@ -122,6 +125,10 @@ public class Order extends BaseTimeEntity {
         throw new IllegalArgumentException("해당 ID의 품목을 찾을 수 없습니다: " + itemId);
     }
 
+    // order 배송지 정보 업데이트
+    public void updateDeliveryInfo(Address newAddress) {
+        this.address = newAddress;
+    }
 
 //    public Double updateTotalPrice() {
 //        this.totalPrice = 0.0;
