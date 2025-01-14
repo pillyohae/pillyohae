@@ -48,7 +48,7 @@ public enum ErrorCode {
     /**
      * Jwt error
      */
-    BAD_REQUEST_TOKEN(HttpStatus.NOT_FOUND, "토큰이 비어있거나 만료되었거나 지원하지않습니다.");
+    BAD_REQUEST_TOKEN(HttpStatus.UNAUTHORIZED, "토큰이 비어있거나 만료되었거나 지원하지않습니다.");
 
     private final HttpStatus httpStatus;
     private final String message;
