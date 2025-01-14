@@ -20,19 +20,13 @@ public class OrderController {
 
     private final OrderService orderService;
 
-    @PostMapping("/products/create")
-    public ResponseEntity<OrderCreateResponseDto> createOrderByProduct(
-        Authentication authentication,
-        @RequestBody @Valid OrderCreateByProductRequestDto requestDto) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-            .body(orderService.createOrderByProduct(authentication.getName(), requestDto));
-    }
+    @PostMapping
+    public ResponseEntity<OrderCreateResponseDto> createOrder(
+            Authentication authentication, @RequestBody @Valid OrderCreateRequestDto requestDto) {
 
-    @PostMapping("/carts/create")
-    public ResponseEntity<OrderCreateResponseDto> createOrderByCart(Authentication authentication) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-            .body(orderService.createOrderByCart(authentication.getName()));
-    }
+        return ResponseEntity.ok(orderService.createOrderByProducts(authentication.getName(), requestDto));
+
+}
 
     @PutMapping("/orderItems/{orderItemId}/status")
     public ResponseEntity<SellerOrderItemStatusChangeResponseDto> changeOrderItemStatus(
