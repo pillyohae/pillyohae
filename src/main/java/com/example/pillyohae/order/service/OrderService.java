@@ -28,6 +28,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -40,28 +41,29 @@ public class OrderService {
     private final OrderProductRepository orderProductRepository;
     private final IssuedCouponRepository issuedCouponRepository;
 
-    //cart 정보를 주문 정보로 변환 후 저장
+
+    // 상품 주문 생성
     @Transactional
-    public OrderCreateResponseDto createOrderByCart(String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
-        Order order = convertCartToOrder(user);
-        return new OrderCreateResponseDto(order.getId());
-
-    }
-
-
-    // 상품 단건 구매
-    @Transactional
-    public OrderCreateResponseDto createOrderByProduct(String email, OrderCreateByProductRequestDto requestDto) {
+    public OrderCreateResponseDto createOrderByProducts(String email, OrderCreateRequestDto requestDto) {
         User user = userService.findByEmail(email);
-        Product product = productRepository.findById(requestDto.getProductId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
-        // 재고 처리 및 품절 로직 필요
+        List<Long> productIds = requestDto.getProductInfos().stream().map(OrderCreateRequestDto.ProductOrderInfo::getProductId).toList();
+        // 저장에 필요한 product를 한번에 불러옴
+        List<Product> purchaseProducts = productRepository.findByProductIdIn(productIds);
+        if(purchaseProducts.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"there is no product to order");
+        }
         Order order = new Order(user);
-        OrderProduct orderProduct = new OrderProduct(requestDto.getQuantity(), product.getProductId(), order);
+        List<OrderProduct> orderProducts = new ArrayList<>();
+        // 주문 상품들을 orderProduct 로 저장
+        for(OrderCreateRequestDto.ProductOrderInfo productOrderInfo : requestDto.getProductInfos()) {
+            Product product = productRepository.findById(productOrderInfo.getProductId()).orElse(null);
+            if(product == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"product not found");
+            }
+            orderProducts.add(new OrderProduct(productOrderInfo.getQuantity(), product.getPrice(),productOrderInfo.getProductId(),order));
+        }
         Order savedOrder = orderRepository.save(order);
-        orderProductRepository.save(orderProduct);
+        orderProductRepository.saveAll(orderProducts);
         return new OrderCreateResponseDto(savedOrder.getId());
     }
 
@@ -153,37 +155,7 @@ public class OrderService {
         return price * quantity;
     }
 
-    @Transactional
-    protected Order convertCartToOrder(User user) {
-        // fetch join으로 product도 같이 갖고옴
-        List<Cart> carts = cartRepository.findCartsWithProductsByUserId(user.getId());
 
-        if (carts.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cart is empty");
-        }
-
-        // Order 생성 및 저장
-        Order order = new Order(user);
-        orderRepository.save(order);
-
-        // OrderItem 생성
-        List<OrderProduct> orderProducts = new ArrayList<>();
-        for (Cart cart : carts) {
-            if (cart == null) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cart is empty");
-            }
-            Product product = cart.getProduct();
-            OrderProduct orderProduct = new OrderProduct(
-                    cart.getQuantity(),
-                    product.getProductId(),
-                    order
-            );
-            orderProducts.add(orderProduct);
-        }
-        // OrderItem 저장
-        orderProductRepository.saveAll(orderProducts);
-        return order;
-    }
 
     public String makeOrderName(String firstProductName, Integer firstProductQuantity, Integer productKinds ){
         if (productKinds == 1){

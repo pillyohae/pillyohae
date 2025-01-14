@@ -50,14 +50,16 @@ public class OrderProduct {
     private Order order;
 
     // 결제 하기전에 상품 갯수 및 식별정보 및 주문 식별 정보만 설정
-    public OrderProduct(Integer quantity, Long productId, Order order) {
+    public OrderProduct(Integer quantity, Long price , Long productId, Order order) {
         this.quantity = quantity;
+        this.price = price;
         this.productId = productId;
         this.order = order;
         // 초기 상태
         this.status = OrderItemStatus.PENDING;
         order.getOrderProducts().add(this);
     }
+
 
     // Update status with validation
     public void updateStatus(OrderItemStatus newStatus) {
