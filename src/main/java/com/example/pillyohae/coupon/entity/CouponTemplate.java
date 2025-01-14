@@ -34,6 +34,9 @@ public class CouponTemplate {
     @Enumerated(EnumType.STRING)
     private DiscountType type;
 
+    @Enumerated(EnumType.STRING)
+    private ExpiredType expiredType;
+
     @PositiveOrZero
     private Double fixedAmount = 0.0;
 
@@ -80,7 +83,7 @@ public class CouponTemplate {
         this.minimumPrice = minimumPrice;
         this.expiredAt = expiredAt;
         this.maxIssuanceCount = maxIssuanceCount;
-        this.status = CouponStatus.INACTIVE;
+        this.status = CouponStatus.ACTIVE;
     }
 
     @PrePersist
@@ -94,16 +97,22 @@ public class CouponTemplate {
         }
     }
 
-
+    // 고정 날짜 만료 또는 생성일 기준 만료로 나뉨
+    // 추후 기능 추가할 예정
+    public enum ExpiredType {
+        FIXED_DATE, DURATION_BASED
+    }
 
     public enum DiscountType {
         FIXED_AMOUNT,
         PERCENTAGE
     }
 
+    //INACTIVE 상태는 긴급하게 사용을 막아야할때 사용
     public enum CouponStatus {
-        ACTIVE, INACTIVE, EXPIRED
+        ACTIVE, INACTIVE
     }
+
 
 
 }

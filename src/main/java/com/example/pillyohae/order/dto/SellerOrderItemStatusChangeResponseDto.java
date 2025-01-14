@@ -6,11 +6,11 @@ import java.util.UUID;
 
 @Getter
 public class SellerOrderItemStatusChangeResponseDto {
-    private Long orderItemId;
+    private Long orderProductId;
     private String status;
 
-    public SellerOrderItemStatusChangeResponseDto(Long orderItemId, String status) {
-        this.orderItemId = orderItemId;
+    public SellerOrderItemStatusChangeResponseDto(Long orderProductId, String status) {
+        this.orderProductId = orderProductId;
         this.status = status;
     }
 }

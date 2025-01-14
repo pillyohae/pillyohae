@@ -2,12 +2,14 @@ package com.example.pillyohae.order.service;
 
 import com.example.pillyohae.cart.entity.Cart;
 import com.example.pillyohae.cart.repository.CartRepository;
+import com.example.pillyohae.coupon.entity.CouponTemplate;
 import com.example.pillyohae.coupon.entity.IssuedCoupon;
 import com.example.pillyohae.coupon.repository.IssuedCouponRepository;
 import com.example.pillyohae.order.dto.*;
 import com.example.pillyohae.order.entity.Order;
-import com.example.pillyohae.order.entity.OrderItem;
+import com.example.pillyohae.order.entity.OrderProduct;
 import com.example.pillyohae.order.entity.status.OrderItemStatus;
+import com.example.pillyohae.order.entity.status.OrderStatus;
 import com.example.pillyohae.order.repository.OrderItemRepository;
 import com.example.pillyohae.order.repository.OrderRepository;
 import com.example.pillyohae.product.entity.Product;
@@ -56,14 +58,10 @@ public class OrderService {
         Product product = productRepository.findById(requestDto.getProductId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
         // 재고 처리 및 품절 로직 필요
-        String orderName = product.getProductName() + " " + requestDto.getQuantity() + " 개";
-        Order order = new Order(orderName, user);
-        OrderItem orderItem = new OrderItem(product.getProductName()
-                , calculateOrderItemPrice(Double.valueOf(product.getPrice()), requestDto.getQuantity())
-                , requestDto.getQuantity(), requestDto.getProductId(), order);
-        order.updateTotalPrice();
+        Order order = new Order(user);
+        OrderProduct orderProduct = new OrderProduct(requestDto.getQuantity(), product.getProductId(), order);
         Order savedOrder = orderRepository.save(order);
-        orderItemRepository.save(orderItem);
+        orderItemRepository.save(orderProduct);
         return new OrderCreateResponseDto(savedOrder.getId());
     }
 
@@ -83,16 +81,36 @@ public class OrderService {
 
     }
 
-    // order 단건 조회
+    // 결제가 모두 완료된 order 단건 조회
     @Transactional
-    public BuyerOrderDetailInfo getOrderDetail(String email, UUID orderId) {
+    public BuyerOrderDetailInfo getOrderDetailAfterPayment(String email, UUID orderId) {
         User user = userService.findByEmail(email);
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
+        if(OrderStatus.PENDING.equals(order.getStatus())){
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Order is in pending");
+        }
         if (!order.getUser().equals(user)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Order is not owned by user");
         }
-        List<BuyerOrderDetailInfo.BuyerOrderItemInfo> itemInfos = orderRepository.findBuyerOrderDetail(orderId);
+        // orderItem에 저장된 정보로 조회
+        List<BuyerOrderDetailInfo.BuyerOrderProductInfo> itemInfos = orderRepository.findBuyerOrderDetailAfterPayment(orderId);
+        return new BuyerOrderDetailInfo(itemInfos);
+    }
+
+    // 결제가 완료되기 전 order 단건조회
+    @Transactional
+    public BuyerOrderDetailInfo getOrderDetailBeforePayment(String email, UUID orderId) {
+        User user = userService.findByEmail(email);
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
+        if(!OrderStatus.PENDING.equals(order.getStatus())){
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Order is not in pending");
+        }
+        if (!order.getUser().equals(user)) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Order is not owned by user");
+        }
+        List<BuyerOrderDetailInfo.BuyerOrderProductInfo> itemInfos = orderRepository.findBuyerOrderDetailBeforePayment(orderId);
         return new BuyerOrderDetailInfo(itemInfos);
     }
 
@@ -100,16 +118,17 @@ public class OrderService {
     @Transactional
     public SellerOrderItemStatusChangeResponseDto changeOrderItemStatus(String email, Long orderItemId, OrderItemStatus newStatus) {
         User seller = userService.findByEmail(email);
-        OrderItem orderItem = orderItemRepository.findById(orderItemId)
+        OrderProduct orderProduct = orderItemRepository.findById(orderItemId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order item not found"));
-        if (!seller.equals(orderItem.getSeller())) {
+        if (!seller.equals(orderProduct.getSeller())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Order item is not owned by user");
         }
-        orderItem.updateStatus(newStatus);
+        orderProduct.updateStatus(newStatus);
 
-        return new SellerOrderItemStatusChangeResponseDto(orderItem.getId(), orderItem.getStatus().getValue());
+        return new SellerOrderItemStatusChangeResponseDto(orderProduct.getId(), orderProduct.getStatus().getValue());
     }
 
+    //쿠폰 사용
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     public OrderUseCouponResponseDto useCoupon(String email, UUID orderId, Long couponId) {
         if (email == null || orderId == null || couponId == null) {
@@ -144,38 +163,44 @@ public class OrderService {
         }
 
         // Order 생성 및 저장
-        String orderName = carts.get(0).getProduct().getProductName() + " " + carts.get(0).getQuantity() + "개" + " 외 " + (carts.size() - 1) + " 건";
-        Order order = new Order(orderName, user);
+        Order order = new Order(user);
         orderRepository.save(order);
 
         // OrderItem 생성
-        List<OrderItem> orderItems = new ArrayList<>();
+        List<OrderProduct> orderProducts = new ArrayList<>();
         for (Cart cart : carts) {
             if (cart == null) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cart is empty");
             }
             Product product = cart.getProduct();
-            OrderItem orderItem = new OrderItem(
-                    product.getProductName(),
-                    Double.valueOf(product.getPrice()),
+            OrderProduct orderProduct = new OrderProduct(
                     cart.getQuantity(),
                     product.getProductId(),
                     order
             );
-            orderItems.add(orderItem);
+            orderProducts.add(orderProduct);
         }
         // OrderItem 저장
-        orderItemRepository.saveAll(orderItems);
-        order.updateTotalPrice();
+        orderItemRepository.saveAll(orderProducts);
         return order;
     }
 
-    // 쿠폰이 만료되거나 사용될 경우 예외
+    public String makeOrderName(String firstProductName, Integer firstProductQuantity, Integer productKinds ){
+        if (productKinds == 1){
+            return firstProductName + " " + firstProductQuantity + " 개";
+        }
+        return firstProductName + " " + firstProductQuantity + "개" + " 외 " + (productKinds - 1) + " 건" ;
+    }
+
+    // 쿠폰이 만료되거나 사용될 경우 또는 쿠폰 사용을 금지했을경우 예외
     private void validateCouponToUse(IssuedCoupon coupon, User user) {
+        if(CouponTemplate.CouponStatus.INACTIVE.equals(coupon.getCouponTemplate().getStatus())){
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Coupon is not active");
+        }
         if (!coupon.getUser().equals(user)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Coupon is not owned by user");
         }
-        if (LocalDateTime.now().isAfter(coupon.getCouponTemplate().getExpiredAt())) {
+        if (LocalDateTime.now().isAfter(coupon.getExpiredAt())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Coupon is expired");
         }
         if (IssuedCoupon.CouponStatus.USED.equals(coupon.getStatus())) {

@@ -26,26 +26,28 @@ public class Order extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(nullable = false)
-    private Double totalPrice = 0.0;
+    // snapshot 결제 완료후 저장
+    private Long totalPrice;
 
-    // order 전반적인 status
-    @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
-    private OrderStatus status;
+    // snapshot 결제 완료후 저장
+    private Double discountAmount;
 
-    @Column(nullable = false)
+    // snapshot 결제 완료후 저장
     private String orderName;
 
     // 주문 생성 후 실제 결제가 되고나서 값이 지정됨
     @Column
     private LocalDateTime paidAt;
 
-    private Double discountAmount = 0.0;
+    // order 전반적인 status
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private OrderStatus status;
+
 
     // 주문 물품
     @OneToMany(mappedBy = "order", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<OrderItem> orderItems = new ArrayList<>();
+    private List<OrderProduct> orderProducts = new ArrayList<>();
 
     // 사용된 쿠폰
     @OneToOne(fetch = FetchType.LAZY)
@@ -57,8 +59,8 @@ public class Order extends BaseTimeEntity {
     @JoinColumn(name = "user_id")
     private User user;
 
-    public Order(String orderName, User user) {
-        this.orderName = orderName;
+    // 결제 하기전 주문 생성
+    public Order(User user) {
         this.user = user;
         // 초기 상태 결제 대기중
         this.status = OrderStatus.PENDING;
@@ -111,7 +113,7 @@ public class Order extends BaseTimeEntity {
     // order 품목별 status 업데이트
 
     public OrderItemStatus updateItemStatus(Long itemId, OrderItemStatus newStatus) {
-        for (OrderItem item : this.orderItems) {
+        for (OrderProduct item : this.orderProducts) {
             if (item.getId().equals(itemId)) {
                 item.updateStatus(newStatus);
                 return item.getStatus();
@@ -121,12 +123,12 @@ public class Order extends BaseTimeEntity {
     }
 
 
-    public Double updateTotalPrice() {
-        this.totalPrice = 0.0;
-        for (OrderItem item : this.orderItems) {
-            this.totalPrice += item.getPrice();
-        }
-        return this.totalPrice;
-    }
+//    public Double updateTotalPrice() {
+//        this.totalPrice = 0.0;
+//        for (OrderItem item : this.orderItems) {
+//            this.totalPrice += item.getPrice();
+//        }
+//        return this.totalPrice;
+//    }
 
 }
