@@ -10,22 +10,22 @@ import java.util.List;
 @Getter
 @NoArgsConstructor(force = true)
 public class BuyerOrderDetailInfo {
-    private final List<BuyerOrderItemInfo> orderItemInfos;
+    private final List<BuyerOrderProductInfo> orderItemInfos;
 
-    public BuyerOrderDetailInfo(List<BuyerOrderItemInfo> orderItemInfos) {
+    public BuyerOrderDetailInfo(List<BuyerOrderProductInfo> orderItemInfos) {
         this.orderItemInfos = orderItemInfos;
     }
 
     @NoArgsConstructor
     @Getter
-    public static class BuyerOrderItemInfo{
+    public static class BuyerOrderProductInfo{
         private Long orderItemId;
         private String orderItemName;
         private Integer orderItemQuantity;
-        private Double orderItemPrice;
+        private Long orderItemPrice;
         private OrderItemStatus orderItemStatus;
         @QueryProjection
-        public BuyerOrderItemInfo(Long orderItemId, String orderItemName, Integer orderItemQuantity, Double orderItemPrice, OrderItemStatus orderItemStatus) {
+        public BuyerOrderProductInfo(Long orderItemId, String orderItemName, Integer orderItemQuantity, Long orderItemPrice, OrderItemStatus orderItemStatus) {
             this.orderItemId = orderItemId;
             this.orderItemName = orderItemName;
             this.orderItemQuantity = orderItemQuantity;

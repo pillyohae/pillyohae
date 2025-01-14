@@ -10,5 +10,7 @@ import java.util.UUID;
 public interface OrderQueryRepository {
     List<BuyerOrderInfo> findBuyerOrders(Long userId, LocalDateTime startAt, LocalDateTime endAt, Long pageNumber, Long pageSize);
 
-    List<BuyerOrderDetailInfo.BuyerOrderItemInfo> findBuyerOrderDetail(UUID orderId);
+    List<BuyerOrderDetailInfo.BuyerOrderProductInfo> findBuyerOrderDetailAfterPayment(UUID orderId);
+
+    List<BuyerOrderDetailInfo.BuyerOrderProductInfo> findBuyerOrderDetailBeforePayment(UUID orderId);
 }

@@ -14,7 +14,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
-@RestController("/coupons")
+@RestController
+@RequestMapping("/coupons")
 @RequiredArgsConstructor
 public class CouponController {
     private final CouponService couponService;

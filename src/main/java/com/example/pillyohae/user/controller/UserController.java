@@ -18,7 +18,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -115,10 +114,11 @@ public class UserController {
         ));
     }
 
+    // 결제된 order의 snapshot을 본다
     @GetMapping("/orders/{orderId}/orderItems")
     public ResponseEntity<BuyerOrderDetailInfo> findOrderDetailInfo(
         Authentication authentication, @PathVariable(name = "orderId") UUID orderId
     ) {
-        return ResponseEntity.ok(orderService.getOrderDetail(authentication.getName(), orderId));
+        return ResponseEntity.ok(orderService.getOrderDetailAfterPayment(authentication.getName(), orderId));
     }
 }

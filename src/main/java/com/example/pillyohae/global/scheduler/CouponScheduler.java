@@ -15,22 +15,6 @@ public class CouponScheduler {
 
     private final CouponService couponService;
 
-    // 쿠폰 만료
-    // 실시간으로 가벼운 체크 (10분마다)
-    @Scheduled(cron = "0 */10 * * * ?")
-    public void checkRecentExpiredCoupons() {
-        // 최근 10분 동안의 만료된 쿠폰만 처리
-        couponService.expireCouponByTimeRange(
-            LocalDateTime.now().minusMinutes(10),
-            LocalDateTime.now()
-        );
-    }
-
-    // 전체 정리 (매일 새벽)
-    @Scheduled(cron = "0 0 2 * * ?")
-    public void fullCleanupExpiredCoupons() {
-        couponService.expireCoupon();
-    }
 
     // 쿠폰 발행
     @Scheduled(cron = "0 0 * * * ?") // 매시 정각
