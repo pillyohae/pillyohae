@@ -10,7 +10,7 @@ import com.example.pillyohae.order.entity.Order;
 import com.example.pillyohae.order.entity.OrderProduct;
 import com.example.pillyohae.order.entity.status.OrderItemStatus;
 import com.example.pillyohae.order.entity.status.OrderStatus;
-import com.example.pillyohae.order.repository.OrderItemRepository;
+import com.example.pillyohae.order.repository.OrderProductRepository;
 import com.example.pillyohae.order.repository.OrderRepository;
 import com.example.pillyohae.product.entity.Product;
 import com.example.pillyohae.product.repository.ProductRepository;
@@ -37,7 +37,7 @@ public class OrderService {
     private final UserService userService;
     private final ProductRepository productRepository;
     private final CartRepository cartRepository;
-    private final OrderItemRepository orderItemRepository;
+    private final OrderProductRepository orderProductRepository;
     private final IssuedCouponRepository issuedCouponRepository;
 
     //cart 정보를 주문 정보로 변환 후 저장
@@ -61,7 +61,7 @@ public class OrderService {
         Order order = new Order(user);
         OrderProduct orderProduct = new OrderProduct(requestDto.getQuantity(), product.getProductId(), order);
         Order savedOrder = orderRepository.save(order);
-        orderItemRepository.save(orderProduct);
+        orderProductRepository.save(orderProduct);
         return new OrderCreateResponseDto(savedOrder.getId());
     }
 
@@ -118,7 +118,7 @@ public class OrderService {
     @Transactional
     public SellerOrderItemStatusChangeResponseDto changeOrderItemStatus(String email, Long orderItemId, OrderItemStatus newStatus) {
         User seller = userService.findByEmail(email);
-        OrderProduct orderProduct = orderItemRepository.findById(orderItemId)
+        OrderProduct orderProduct = orderProductRepository.findById(orderItemId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order item not found"));
         if (!seller.equals(orderProduct.getSeller())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Order item is not owned by user");
@@ -181,7 +181,7 @@ public class OrderService {
             orderProducts.add(orderProduct);
         }
         // OrderItem 저장
-        orderItemRepository.saveAll(orderProducts);
+        orderProductRepository.saveAll(orderProducts);
         return order;
     }
 
@@ -195,7 +195,7 @@ public class OrderService {
     // 쿠폰이 만료되거나 사용될 경우 또는 쿠폰 사용을 금지했을경우 예외
     private void validateCouponToUse(IssuedCoupon coupon, User user) {
         if(CouponTemplate.CouponStatus.INACTIVE.equals(coupon.getCouponTemplate().getStatus())){
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Coupon is not active");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Coupon is not active");
         }
         if (!coupon.getUser().equals(user)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Coupon is not owned by user");

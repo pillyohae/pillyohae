@@ -38,20 +38,20 @@ public class CouponTemplate {
     private ExpiredType expiredType;
 
     @PositiveOrZero
-    private Double fixedAmount = 0.0;
+    private Long fixedAmount = 0L;
 
     // %단위로 저장
     @PositiveOrZero
     @Max(100)
-    private Double fixedRate = 0.0;
+    private Long fixedRate = 0L;
 
     @Column(nullable = false)
     @PositiveOrZero
-    private Double minimumPrice = 0.0;
+    private Long minimumPrice = 0L;
 
     @Column(nullable = false)
     @Positive
-    private Double maxDiscountAmount;
+    private Long maxDiscountAmount;
 
     @Column(nullable = false)
     private LocalDateTime startAt;
@@ -72,7 +72,7 @@ public class CouponTemplate {
     private List<IssuedCoupon> issuedCoupons = new ArrayList<>();
 
     @Builder
-    public CouponTemplate(String name, String description, DiscountType type, Double fixedAmount, Double fixedRate, Double maxDiscountAmount, Double minimumPrice, LocalDateTime startAt, LocalDateTime expiredAt, Integer maxIssuanceCount) {
+    public CouponTemplate(String name, String description, DiscountType type, Long fixedAmount, Long fixedRate, Long maxDiscountAmount, Long minimumPrice, LocalDateTime startAt, LocalDateTime expiredAt, Integer maxIssuanceCount) {
         this.name = name;
         this.description = description;
         this.type = type;
@@ -90,10 +90,10 @@ public class CouponTemplate {
     @PreUpdate
     private void ensureDefaultValues() {
         if (this.fixedAmount == null) {
-            this.fixedAmount = 0.0;
+            this.fixedAmount = 0L;
         }
         if (this.fixedRate == null) {
-            this.fixedRate = 0.0;
+            this.fixedRate = 0L;
         }
     }
 

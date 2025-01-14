@@ -121,7 +121,7 @@ public class CouponService {
         );
     }
 
-    private Double validateMinimumPrice(Double minimumPrice) {
+    private Long validateMinimumPrice(Long minimumPrice) {
         if (minimumPrice == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "최소 주문 금액은 필수입니다");
         }

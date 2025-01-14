@@ -30,7 +30,7 @@ public class Order extends BaseTimeEntity {
     private Long totalPrice;
 
     // snapshot 결제 완료후 저장
-    private Double discountAmount;
+    private Long discountAmount;
 
     // snapshot 결제 완료후 저장
     private String orderName;
@@ -72,7 +72,7 @@ public class Order extends BaseTimeEntity {
             throw new IllegalArgumentException("유효하지 않은 쿠폰입니다");
         }
 
-        Double discountAmount = calculateDiscountAmount(issuedCoupon);
+        Long discountAmount = calculateDiscountAmount(issuedCoupon);
 
         if (discountAmount < 0) {
             throw new IllegalArgumentException("할인 금액은 음수가 될 수 없습니다");
@@ -83,15 +83,15 @@ public class Order extends BaseTimeEntity {
         issuedCoupon.useCoupon(this);
     }
 
-    private Double calculateDiscountAmount(IssuedCoupon issuedCoupon) {
-        Double tempDiscountAmount;
+    private Long calculateDiscountAmount(IssuedCoupon issuedCoupon) {
+        Long tempDiscountAmount;
         if (CouponTemplate.DiscountType.FIXED_AMOUNT.equals(issuedCoupon.getCouponTemplate().getType())) {
             tempDiscountAmount = issuedCoupon.getCouponTemplate().getFixedAmount();
         } else {
             // fixed rate는 %단위
             tempDiscountAmount = totalPrice * issuedCoupon.getCouponTemplate().getFixedRate() / 100;
         }
-        Double maxDiscount = issuedCoupon.getCouponTemplate().getMaxDiscountAmount();
+        Long maxDiscount = issuedCoupon.getCouponTemplate().getMaxDiscountAmount();
         if (maxDiscount < tempDiscountAmount) {
             tempDiscountAmount = maxDiscount;
         }
