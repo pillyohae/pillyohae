@@ -1,4 +1,4 @@
-package com.example.pillyohae.global.config.auth;
+package com.example.pillyohae.global.auth;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
