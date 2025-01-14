@@ -67,7 +67,7 @@ public class CartService {
             .mapToLong(product -> product.getPrice() * product.getQuantity())
             .sum();
 
-        return new CartListResponseDto(totalPrice, products);
+        return new CartListResponseDto(user.getId(), totalPrice, products);
     }
 
     /**
