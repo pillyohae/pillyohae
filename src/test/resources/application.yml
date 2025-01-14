@@ -27,15 +27,31 @@ spring:
         enable_lazy_load_no_trans: true
         globally_quoted_identifiers: true
 
-    ## batch 전략
-    jdbc:
-      batch_size: 30
-      order_inserts: true
-      order_updates: true
-      generate_statistics: true
+      ## batch 전략
+      jdbc:
+        batch_size: 30
+        order_inserts: true
+        order_updates: true
+        generate_statistics: true
 
-    config:
-      import: optional:file:.env[.properties]
+  config:
+    import: optional:file:.env[.properties]
+
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      image:
+        options:
+          model: dall-e-3  # 기본 이미지 모델 설정
+
+toss:
+  secret-key: ${TOSS_SECRET_KEY}
+
+
+jwt:
+  secret: ${JWT_SECRET_KEY}
+  expiry-millis: 300000 # 10분
+  refresh-expiry-millis: 604800000 #7일
 
 cloud:
   aws:
@@ -51,6 +67,20 @@ cloud:
       access-key: ${ACCESS_KEY}
       secret-key: ${SECRET_KEY}
 
-config:
-  import: optional:file:.env[.properti
+security: # SecurityProperties의 prefix와 일치
+  white-list: # SecurityProperties의 whiteList 필드와 매핑
+    - "/refresh"
+    - "/users/login"
+    - "/users/signup"
+    - "/toss/fail"
+    - "/toss/success"
+    - "/toss/confirm"
+  seller-auth-list:
+    - "/users/sellers/**"
+    - "/products"
+    - "/products/**"
+  method-specific-patterns:
+    GET:
+      - "/products/*"
+      - "/products"
 

@@ -7,23 +7,26 @@ import jakarta.validation.constraints.Positive;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
 @Getter
 @Entity
 @DynamicUpdate
+@DynamicInsert
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class OrderItem {
+public class OrderProduct {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // snapshot 결제 완료후 저장
     @Column(nullable = false)
-    private String productName;
+    private String productName = "초기값";
 
-    @Column(nullable = false)
+    // snapshot 결제 완료후 저장
     @Positive
-    private Double price;
+    private Long price;
 
     @Column(nullable = false)
     @Positive
@@ -34,13 +37,11 @@ public class OrderItem {
     @Enumerated(EnumType.STRING)
     private OrderItemStatus status;
 
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "seller_id")
     private User seller;
 
-    // 상점 주인의 주문 조회용
-    // 연관 관계가 필요한지 고민
+    // 구매완료전 상품의 실시간 정보를 위해 필요
     @Column(nullable = false)
     private Long productId;
 
@@ -48,18 +49,17 @@ public class OrderItem {
     @JoinColumn(name = "order_id")
     private Order order;
 
-
-    public OrderItem(String productName, Double price, Integer quantity, Long productId, Order order) {
-        this.productName = productName;
-        this.price = price;
+    // 결제 하기전에 상품 갯수 및 식별정보 및 주문 식별 정보만 설정
+    public OrderProduct(Integer quantity, Long price , Long productId, Order order) {
         this.quantity = quantity;
+        this.price = price;
         this.productId = productId;
         this.order = order;
         // 초기 상태
         this.status = OrderItemStatus.PENDING;
-
-        order.getOrderItems().add(this);
+        order.getOrderProducts().add(this);
     }
+
 
     // Update status with validation
     public void updateStatus(OrderItemStatus newStatus) {

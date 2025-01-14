@@ -48,8 +48,8 @@ toss:
 
 jwt:
   secret: ${JWT_SECRET_KEY}
-  expiry-millis: 300000 # 10분
-
+  expiry-millis: 600000 # 10분
+  refresh-expiry-millis: 604800000 #7일
 
 cloud:
   aws:
@@ -65,6 +65,7 @@ cloud:
 
 security: # SecurityProperties의 prefix와 일치
   white-list: # SecurityProperties의 whiteList 필드와 매핑
+    - "/refresh"
     - "/users/login"
     - "/users/signup"
     - "/toss/fail"

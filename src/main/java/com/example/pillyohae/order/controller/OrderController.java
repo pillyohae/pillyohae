@@ -1,9 +1,6 @@
 package com.example.pillyohae.order.controller;
 
-import com.example.pillyohae.order.dto.OrderCreateByProductRequestDto;
-import com.example.pillyohae.order.dto.OrderCreateResponseDto;
-import com.example.pillyohae.order.dto.OrderUseCouponResponseDto;
-import com.example.pillyohae.order.dto.SellerOrderItemStatusChangeResponseDto;
+import com.example.pillyohae.order.dto.*;
 import com.example.pillyohae.order.entity.status.OrderItemStatus;
 import com.example.pillyohae.order.service.OrderService;
 import jakarta.validation.Valid;
@@ -16,26 +13,20 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
-@Controller
-@RequestMapping("/api/v1/orders")
+@RestController
+@RequestMapping("/orders")
 @RequiredArgsConstructor
 public class OrderController {
 
     private final OrderService orderService;
 
-    @PostMapping("/products/create")
-    public ResponseEntity<OrderCreateResponseDto> createOrderByProduct(
-        Authentication authentication,
-        @RequestBody @Valid OrderCreateByProductRequestDto requestDto) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-            .body(orderService.createOrderByProduct(authentication.getName(), requestDto));
-    }
+    @PostMapping
+    public ResponseEntity<OrderCreateResponseDto> createOrder(
+            Authentication authentication, @RequestBody @Valid OrderCreateRequestDto requestDto) {
 
-    @PostMapping("/carts/create")
-    public ResponseEntity<OrderCreateResponseDto> createOrderByCart(Authentication authentication) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-            .body(orderService.createOrderByCart(authentication.getName()));
-    }
+        return ResponseEntity.ok(orderService.createOrderByProducts(authentication.getName(), requestDto));
+
+}
 
     @PutMapping("/orderItems/{orderItemId}/status")
     public ResponseEntity<SellerOrderItemStatusChangeResponseDto> changeOrderItemStatus(
@@ -47,13 +38,20 @@ public class OrderController {
                 orderItemStatus));
     }
     // 쿠폰 사용
-    @PatchMapping ("/{orderId}")
+    @PatchMapping ("/{orderId}/coupon")
     public ResponseEntity<OrderUseCouponResponseDto> useCoupon(
             Authentication authentication,
             @PathVariable(name = "orderId") UUID orderId,
             @RequestParam(name = "couponId") Long couponId) {
         return ResponseEntity.ok(
                 orderService.useCoupon(authentication.getName(),orderId,couponId));
+    }
+
+    @GetMapping("/{orderId}")
+    public ResponseEntity<BuyerOrderDetailInfo> getOrderDetailBeforePayment(
+            Authentication authentication,
+            @PathVariable(name = "orderId") UUID orderId) {
+        return ResponseEntity.ok(orderService.getOrderDetailBeforePayment(authentication.getName(), orderId));
     }
 
 

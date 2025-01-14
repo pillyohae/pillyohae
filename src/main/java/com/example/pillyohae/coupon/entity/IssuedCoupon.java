@@ -30,7 +30,7 @@ public class IssuedCoupon {
     private CouponStatus status;            // 쿠폰 상태
 
     @Column(nullable = false)
-    private LocalDateTime expiredAt;
+    private LocalDateTime expiredAt; // 유저 각각의 쿠폰 만료일자 설정
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "coupon_template_id")
@@ -68,11 +68,9 @@ public class IssuedCoupon {
         this.status = CouponStatus.USED;
     }
 
-    // 쿠폰 상태 enum
+    // 쿠폰 상태는 사용가능한 상태와 사용된 상태만 존재 만료 여부는 expiredAt으로 판단
     public enum CouponStatus {
         AVAILABLE,    // 사용 가능
         USED,        // 사용됨
-        EXPIRED,      // 만료됨
-        CANCELED     // 취소됨
     }
 }
