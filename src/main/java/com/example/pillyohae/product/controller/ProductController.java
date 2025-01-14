@@ -3,6 +3,7 @@ package com.example.pillyohae.product.controller;
 import com.example.pillyohae.global.dto.UploadFileInfo;
 import com.example.pillyohae.product.dto.*;
 import com.example.pillyohae.product.service.ProductService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -28,7 +29,7 @@ public class ProductController {
     @PostMapping("/products")
     public ResponseEntity<ProductCreateResponseDto> createProduct(
         @AuthenticationPrincipal UserDetails userDetails,
-        @RequestBody ProductCreateRequestDto requestDto
+        @Valid @RequestBody ProductCreateRequestDto requestDto
     ) {
         ProductCreateResponseDto responseDto = productService.createProduct(requestDto, userDetails.getUsername());
         return new ResponseEntity<>(responseDto, HttpStatus.CREATED);
@@ -141,7 +142,7 @@ public class ProductController {
     @PostMapping("/products/{productId}/images")
     public ResponseEntity<UploadFileInfo> uploadImages(
         @PathVariable Long productId,
-        @RequestPart(name = "image", required = false) MultipartFile image
+        @RequestPart(name = "image") MultipartFile image
     ) {
         UploadFileInfo uploadFileInfo = productService.uploadImages(productId, image);
         return new ResponseEntity<>(uploadFileInfo, HttpStatus.OK);

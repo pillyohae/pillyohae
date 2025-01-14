@@ -38,7 +38,7 @@ public class FileStorage {
     private LocalDateTime uploadedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product-id")
+    @JoinColumn(name = "product_id")
     private Product product;
 
 
