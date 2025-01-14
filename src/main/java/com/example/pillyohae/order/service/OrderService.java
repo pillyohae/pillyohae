@@ -60,7 +60,7 @@ public class OrderService {
                     .filter(p -> p.getProductId().equals(productOrderInfo.getProductId()))
                     .findFirst()
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,"product not found"));
-            orderProducts.add(new OrderProduct(productOrderInfo.getQuantity(), product.getPrice(), product.getProductId(), order));
+            orderProducts.add(new OrderProduct(productOrderInfo.getQuantity(), product.getPrice(), product.getProductId(), product.getUser(),order));
         }
         Order savedOrder = orderRepository.save(order);
         orderProductRepository.saveAll(orderProducts);
