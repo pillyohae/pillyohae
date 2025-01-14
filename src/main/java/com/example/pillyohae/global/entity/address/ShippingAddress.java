@@ -1,4 +1,4 @@
-package com.example.pillyohae.global.entity.adress;
+package com.example.pillyohae.global.entity.address;
 
 import com.example.pillyohae.global.entity.Address;
 import jakarta.persistence.Embeddable;

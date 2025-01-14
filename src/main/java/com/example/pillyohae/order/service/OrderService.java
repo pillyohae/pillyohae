@@ -56,14 +56,19 @@ public class OrderService {
         List<OrderProduct> orderProducts = new ArrayList<>();
         // 주문 상품들을 orderProduct 로 저장
         for(OrderCreateRequestDto.ProductOrderInfo productOrderInfo : requestDto.getProductInfos()) {
-            Product product = productRepository.findById(productOrderInfo.getProductId()).orElse(null);
-            if(product == null) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"product not found");
-            }
-            orderProducts.add(new OrderProduct(productOrderInfo.getQuantity(), product.getPrice(),productOrderInfo.getProductId(),order));
+            Product product = purchaseProducts.stream()
+                    .filter(p -> p.getProductId().equals(productOrderInfo.getProductId()))
+                    .findFirst()
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,"product not found"));
+            orderProducts.add(new OrderProduct(productOrderInfo.getQuantity(), product.getPrice(), product.getProductId(), order));
         }
         Order savedOrder = orderRepository.save(order);
         orderProductRepository.saveAll(orderProducts);
+
+        // 쿠폰 적용 일단 한개만 적용하도록 설정
+        if(requestDto.getCouponIds() != null ){
+            issuedCouponRepository.findById(requestDto.getCouponIds().get(0)).ifPresent(order::applyCoupon);
+        }
         return new OrderCreateResponseDto(savedOrder.getId());
     }
 

@@ -22,7 +22,7 @@ public class OrderController {
 
     @PostMapping
     public ResponseEntity<OrderCreateResponseDto> createOrder(
-            Authentication authentication, OrderCreateRequestDto requestDto) {
+            Authentication authentication, @RequestBody @Valid OrderCreateRequestDto requestDto) {
 
         return ResponseEntity.ok(orderService.createOrderByProducts(authentication.getName(), requestDto));
 

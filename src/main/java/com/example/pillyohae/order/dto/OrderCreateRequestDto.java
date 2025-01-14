@@ -11,6 +11,7 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 public class OrderCreateRequestDto {
+    @NotNull
     private List<ProductOrderInfo> productInfos;
     private List<Long> couponIds;
 
