@@ -61,6 +61,7 @@ public class CouponService {
         return new CreateCouponTemplateResponseDto(couponTemplate.getId());
     }
 
+    // 유저 개인이 발행
     @Transactional
     public GiveCouponResponseDto giveCoupon(String email, Long couponTemplateId) {
         User user = userService.findByEmail(email);
@@ -97,7 +98,7 @@ public class CouponService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "해당 주문에 대한 권한이 없습니다");
         }
 
-        Double totalPrice = order.getTotalPrice();
+        Long totalPrice = order.getTotalPrice();
         if (totalPrice == null) {
             log.warn("주문 금액이 없는 주문 발견: {}", orderId);
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "유효하지 않은 주문입니다. 주문 금액이 없습니다.");
@@ -108,168 +109,19 @@ public class CouponService {
         );
     }
 
-
+    // 모든 유저에게 대량 발행
+    // 다른 방법으로 변경예정
     @Transactional
     public void issueCoupons() {
         LocalDateTime now = LocalDateTime.now();
+
         List<Long> updatedCouponIds = couponTemplateRepository.findTemplateIdsByStartAtAndNowState(
                 now,
-                CouponTemplate.CouponStatus.INACTIVE.toString()
+                CouponTemplate.CouponStatus.ACTIVE.toString()
         );
-        couponTemplateRepository.updateTemplateStatus(updatedCouponIds,
-                CouponTemplate.CouponStatus.ACTIVE.toString());
     }
 
-    @Transactional
-    public void expireCouponByTimeRange(LocalDateTime start, LocalDateTime end) {
-        List<Long> couponTemplates = expireCouponTemplateBetweenTimes(start, end);
-        expireIssuedCoupon(couponTemplates);
-    }
-
-    @Transactional
-    public void expireCoupon() {
-        List<Long> updatedCouponTemplateIds = expireCouponTemplate();
-        expireIssuedCoupon(updatedCouponTemplateIds);
-    }
-
-    @Transactional
-    protected void expireIssuedCoupon(List<Long> updatedCouponTemplateIds) {
-        int maxAttempts = 10; // 최대 시도 횟수
-        int attempt = 0;
-        int batchSize = 1000; // 배치 사이즈
-        boolean hasExpiredCoupons = true;
-        LocalDateTime now = LocalDateTime.now();
-        // 최대 10000개를 처리함
-        // template마다 실행
-        for (Long updatedCouponTemplateId : updatedCouponTemplateIds) {
-            hasExpiredCoupons = true;
-            attempt = 0;
-            while (hasExpiredCoupons && attempt < maxAttempts) {
-                // couponTemplate을 통해 만료시킴
-                int updatedCount = issuedCouponRepository.updateIssuedCouponStatusByCouponTemplate_Id(
-                        updatedCouponTemplateId,
-                        IssuedCoupon.CouponStatus.EXPIRED.toString(),
-                        IssuedCoupon.CouponStatus.AVAILABLE.toString(),
-                        batchSize
-                );
-
-                int remainCouponCount = issuedCouponRepository.countIssuedCouponByCouponTemplate_Id(
-                        updatedCouponTemplateId);
-
-                hasExpiredCoupons = remainCouponCount != 0;
-                attempt++;
-
-                if (hasExpiredCoupons) {
-                    alertRemainCoupon(remainCouponCount, attempt, updatedCount);
-                }
-            }
-            if (hasExpiredCoupons) {
-                failExpireAllCoupon(maxAttempts);
-                // 알림 발송 또는 다른 처리
-            }
-        }
-
-    }
-
-    @Transactional
-    protected List<Long> expireCouponTemplateBetweenTimes(LocalDateTime start, LocalDateTime end) {
-        int maxAttempts = 3; // 최대 시도 횟수
-        int attempt = 0;
-        int batchSize = 10; // 배치 사이즈
-        boolean hasExpiredCoupons = true;
-        LocalDateTime now = LocalDateTime.now();
-        List<Long> updatedCouponAllIds = new ArrayList<>();
-
-        // 최대 30개를 처리함
-        // 최대 3회 시도 한번에 10개 처리
-        while (hasExpiredCoupons && attempt < maxAttempts) {
-            // 만료시킬 쿠폰의 식별자를 batch 크기만큼 가져옴
-            List<Long> updatedCouponIds = couponTemplateRepository.findExpiredTemplateIdsBetweenTimes(
-                    start,
-                    end,
-                    CouponTemplate.CouponStatus.EXPIRED.toString(),
-                    batchSize
-            );
-            // 식별자 리스트를 통해 모두 만료시킴
-            int updatedCount = couponTemplateRepository.updateTemplateStatus(
-                    updatedCouponIds,
-                    CouponTemplate.CouponStatus.EXPIRED.toString()
-            );
-            updatedCouponAllIds.addAll(updatedCouponIds);
-
-            // 만료되지 않은 쿠폰을 확인
-            int remainCouponCount = couponTemplateRepository.countByExpiredAtBetween(start, end);
-
-
-            hasExpiredCoupons = remainCouponCount != 0;
-            attempt++;
-
-            if (hasExpiredCoupons) {
-                alertRemainCoupon(remainCouponCount, attempt, updatedCount);
-            }
-        }
-        if (hasExpiredCoupons) {
-            failExpireAllCoupon(maxAttempts);
-            // 알림 발송 또는 다른 처리
-        }
-
-        return updatedCouponAllIds;
-    }
-
-    @Transactional
-    protected List<Long> expireCouponTemplate() {
-        int maxAttempts = 3; // 최대 시도 횟수
-        int attempt = 0;
-        int batchSize = 100; // 배치 사이즈
-        boolean hasExpiredCoupons = true;
-        LocalDateTime now = LocalDateTime.now();
-
-        List<Long> updatedCouponAllIds = new ArrayList<>();
-
-        // 최대 300개를 처리함
-        // 최대 3회 시도 한번에 100개 처리
-        while (hasExpiredCoupons && attempt < maxAttempts) {
-            // 만료시킬 쿠폰의 식별자를 batch 크기만큼 가져옴
-            List<Long> updatedCouponIds = couponTemplateRepository.findExpiredTemplateIds(
-                    now,
-                    CouponTemplate.CouponStatus.EXPIRED.toString(),
-                    batchSize
-            );
-            // 식별자 리스트를 통해 모두 만료시킴
-            int updatedCount = couponTemplateRepository.updateTemplateStatus(
-                    updatedCouponIds,
-                    CouponTemplate.CouponStatus.EXPIRED.toString()
-            );
-            updatedCouponAllIds.addAll(updatedCouponIds);
-
-            // 만료되지 않은 쿠폰을 확인
-            int remainCouponCount = couponTemplateRepository.countByExpiredAt(now);
-
-            hasExpiredCoupons = remainCouponCount != 0;
-            attempt++;
-
-            if (hasExpiredCoupons) {
-                alertRemainCoupon(remainCouponCount, attempt, updatedCount);
-            }
-        }
-        if (hasExpiredCoupons) {
-            failExpireAllCoupon(maxAttempts);
-            // 알림 발송 또는 다른 처리
-        }
-
-        return updatedCouponAllIds;
-    }
-
-    private static void alertRemainCoupon(int count, int attempt, int updatedCount) {
-        log.warn("Still have {} expired coupons after attempt {}. Updated {} coupons.",
-                count, attempt, updatedCount);
-    }
-
-    private static void failExpireAllCoupon(int maxAttempts) {
-        log.error("Failed to expire all coupons after {} attempts", maxAttempts);
-    }
-
-    private Double validateMinimumPrice(Double minimumPrice) {
+    private Long validateMinimumPrice(Long minimumPrice) {
         if (minimumPrice == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "최소 주문 금액은 필수입니다");
         }

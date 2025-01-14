@@ -34,21 +34,24 @@ public class CouponTemplate {
     @Enumerated(EnumType.STRING)
     private DiscountType type;
 
+    @Enumerated(EnumType.STRING)
+    private ExpiredType expiredType;
+
     @PositiveOrZero
-    private Double fixedAmount = 0.0;
+    private Long fixedAmount = 0L;
 
     // %단위로 저장
     @PositiveOrZero
     @Max(100)
-    private Double fixedRate = 0.0;
+    private Long fixedRate = 0L;
 
     @Column(nullable = false)
     @PositiveOrZero
-    private Double minimumPrice = 0.0;
+    private Long minimumPrice = 0L;
 
     @Column(nullable = false)
     @Positive
-    private Double maxDiscountAmount;
+    private Long maxDiscountAmount;
 
     @Column(nullable = false)
     private LocalDateTime startAt;
@@ -69,7 +72,7 @@ public class CouponTemplate {
     private List<IssuedCoupon> issuedCoupons = new ArrayList<>();
 
     @Builder
-    public CouponTemplate(String name, String description, DiscountType type, Double fixedAmount, Double fixedRate, Double maxDiscountAmount, Double minimumPrice, LocalDateTime startAt, LocalDateTime expiredAt, Integer maxIssuanceCount) {
+    public CouponTemplate(String name, String description, DiscountType type, Long fixedAmount, Long fixedRate, Long maxDiscountAmount, Long minimumPrice, LocalDateTime startAt, LocalDateTime expiredAt, Integer maxIssuanceCount) {
         this.name = name;
         this.description = description;
         this.type = type;
@@ -80,30 +83,36 @@ public class CouponTemplate {
         this.minimumPrice = minimumPrice;
         this.expiredAt = expiredAt;
         this.maxIssuanceCount = maxIssuanceCount;
-        this.status = CouponStatus.INACTIVE;
+        this.status = CouponStatus.ACTIVE;
     }
 
     @PrePersist
     @PreUpdate
     private void ensureDefaultValues() {
         if (this.fixedAmount == null) {
-            this.fixedAmount = 0.0;
+            this.fixedAmount = 0L;
         }
         if (this.fixedRate == null) {
-            this.fixedRate = 0.0;
+            this.fixedRate = 0L;
         }
     }
 
-
+    // 고정 날짜 만료 또는 생성일 기준 만료로 나뉨
+    // 추후 기능 추가할 예정
+    public enum ExpiredType {
+        FIXED_DATE, DURATION_BASED
+    }
 
     public enum DiscountType {
         FIXED_AMOUNT,
         PERCENTAGE
     }
 
+    //INACTIVE 상태는 긴급하게 사용을 막아야할때 사용
     public enum CouponStatus {
-        ACTIVE, INACTIVE, EXPIRED
+        ACTIVE, INACTIVE
     }
+
 
 
 }

@@ -10,6 +10,5 @@ public class ProductUpdateRequestDto {
     private String description;
     private String companyName;
     private Long price;
-    private String imageUrl;
     private ProductStatus status;
 }

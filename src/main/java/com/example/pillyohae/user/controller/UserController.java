@@ -3,13 +3,7 @@ package com.example.pillyohae.user.controller;
 import com.example.pillyohae.order.dto.BuyerOrderDetailInfo;
 import com.example.pillyohae.order.dto.BuyerOrderSearchResponseDto;
 import com.example.pillyohae.order.service.OrderService;
-import com.example.pillyohae.user.dto.TokenResponse;
-import com.example.pillyohae.user.dto.UserCreateRequestDto;
-import com.example.pillyohae.user.dto.UserCreateResponseDto;
-import com.example.pillyohae.user.dto.UserDeleteRequestDto;
-import com.example.pillyohae.user.dto.UserLoginRequestDto;
-import com.example.pillyohae.user.dto.UserProfileResponseDto;
-import com.example.pillyohae.user.dto.UserProfileUpdateRequestDto;
+import com.example.pillyohae.user.dto.*;
 import com.example.pillyohae.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -27,6 +21,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -86,7 +84,6 @@ public class UserController {
         throw new UsernameNotFoundException("로그인이 먼저 필요합니다.");
     }
 
-
     @DeleteMapping
     public ResponseEntity<Void> deleteUser(
         @Valid @RequestBody UserDeleteRequestDto requestDto, Authentication authentication,
@@ -138,10 +135,11 @@ public class UserController {
         ));
     }
 
+    // 결제된 order의 snapshot을 본다
     @GetMapping("/orders/{orderId}/orderItems")
     public ResponseEntity<BuyerOrderDetailInfo> findOrderDetailInfo(
         Authentication authentication, @PathVariable(name = "orderId") UUID orderId
     ) {
-        return ResponseEntity.ok(orderService.getOrderDetail(authentication.getName(), orderId));
+        return ResponseEntity.ok(orderService.getOrderDetailAfterPayment(authentication.getName(), orderId));
     }
 }

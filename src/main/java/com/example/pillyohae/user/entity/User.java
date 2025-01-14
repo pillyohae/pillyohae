@@ -2,8 +2,8 @@ package com.example.pillyohae.user.entity;
 
 import com.example.pillyohae.coupon.entity.IssuedCoupon;
 import com.example.pillyohae.order.entity.Order;
-import com.example.pillyohae.order.entity.OrderItem;
 import com.example.pillyohae.global.entity.BaseTimeEntity;
+import com.example.pillyohae.order.entity.OrderProduct;
 import com.example.pillyohae.user.entity.type.Role;
 import com.example.pillyohae.user.entity.type.Status;
 import jakarta.persistence.Entity;
@@ -47,7 +47,7 @@ public class User extends BaseTimeEntity {
     private List<Order> orders = new ArrayList<>();
 
     @OneToMany(mappedBy = "seller", fetch = FetchType.LAZY)
-    private List<OrderItem> sellerOrders = new ArrayList<>();
+    private List<OrderProduct> sellerOrders = new ArrayList<>();
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<IssuedCoupon> issuedCoupons = new ArrayList<>();

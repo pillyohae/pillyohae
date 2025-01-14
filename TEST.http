@@ -6,10 +6,23 @@ Content-Type: application/json
 {
   "name": "송정학",
   "email": "asdf@naver.com",
-  "password": "asdf1234@",
+  "password": "Asdf1234@",
   "address": "asdf123",
-  "role": "user"
+  "role": "seller"
 }
+###
+POST http://localhost:8080/users/signup
+Authorization:
+Content-Type: application/json
+
+{
+"name": "송정학",
+"email": "asdf2@naver.com",
+"password": "Asdf1234@",
+"address": "asdf123",
+"role": "buyer"
+}
+
 
 ###
 POST http://localhost:8080/users/login
@@ -17,7 +30,72 @@ Content-Type: application/json
 
 {
   "email": "asdf@naver.com",
-  "password": "asdf1234@"
+  "password": "Asdf1234@"
+}
+
+> {%
+    // 응답 헤더에서 "Authorization" 또는 토큰 키를 가져옴
+    const accessToken = response.headers.valueOf("Authorization");
+
+
+    // 토큰이 있는 경우만 처리
+    if (accessToken) {
+        // Bearer 토큰 형식이 포함되어 있다면 분리
+        const token = accessToken.replace("Bearer ", "").trim();
+
+        // 환경 변수에 저장
+        client.global.set("accessToken", token);
+        console.log("Access Token:", token); // 디버깅용 로그
+    } else {
+        console.warn("Authorization header not found in response.");
+    }
+
+%}
+
+
+
+###
+POST http://localhost:8080/products
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "productName": "약",
+  "category": "asdf@naver.com",
+  "description": "Asdf1234@",
+  "companyName": "a",
+  "price":10000 ,
+  "imageUrl": "a"  ,
+  "status": "SELLING"
+
+
+}
+
+###
+
+POST http://localhost:8080/users/logout
+Authorization: Bearer {{accessToken}}
+
+> {%
+// 로그아웃 성공 여부 확인
+if (response.status === 200) {
+    // 환경 변수에서 액세스 토큰 제거
+    client.global.clear("accessToken");
+    console.log("Access token has been removed from the environment.");
+} else {
+    console.error("Logout failed. Access token was not removed.");
+}
+%}
+
+###
+
+// buyer 로그인
+POST http://localhost:8080/users/login
+Content-Type: application/json
+
+{
+  "email": "asdf2@naver.com",
+  "password": "Asdf1234@"
 }
 
 > {%
@@ -40,20 +118,25 @@ Content-Type: application/json
 %}
 
 ###
+POST http://localhost:8080/carts
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
 
-POST http://localhost:8080/users/logout
+{
+  "productId": 1,
+  "quantity": 1
+}
+
+### 카트로부터 주문 생성
+POST http://localhost:8080/orders/carts/create
 Authorization: Bearer {{accessToken}}
 
-> {%
-// 로그아웃 성공 여부 확인
-if (response.status === 200) {
-    // 환경 변수에서 액세스 토큰 제거
-    client.global.clear("accessToken");
-    console.log("Access token has been removed from the environment.");
-} else {
-    console.error("Logout failed. Access token was not removed.");
-}
-%}
+### 구매가 완료된 후 주문 확인
+GET http://localhost:8080/users/orders/b9126c0e-8e36-4618-879a-33bec9e3f970/orderItems
+Authorization: Bearer {{accessToken}}
+### 구매 전 주문 확인
+GET http://localhost:8080/orders/b9126c0e-8e36-4618-879a-33bec9e3f970
+Authorization: Bearer {{accessToken}}
 
 ###
 GET http://localhost:8080/toss/checkout

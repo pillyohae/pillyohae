@@ -1,10 +1,14 @@
 package com.example.pillyohae.product.entity;
 
 import com.example.pillyohae.global.entity.BaseTimeEntity;
+import com.example.pillyohae.global.entity.FileStorage;
 import com.example.pillyohae.product.entity.type.ProductStatus;
 import com.example.pillyohae.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Entity
@@ -32,24 +36,25 @@ public class Product extends BaseTimeEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 
-    public Product(User user, String productName, String category, String description, String companyName, Long price, String imageUrl, ProductStatus status) {
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<FileStorage> images = new ArrayList<>();
+
+    public Product(User user, String productName, String category, String description, String companyName, Long price, ProductStatus status) {
         this.user = user;
         this.productName = productName;
         this.category = category;
         this.description = description;
         this.companyName = companyName;
         this.price = price;
-        this.imageUrl = imageUrl;
         this.status = status;
     }
 
-    public void updateProduct(String productName, String category, String description, String companyName, Long price, String imageUrl, ProductStatus status) {
+    public void updateProduct(String productName, String category, String description, String companyName, Long price, ProductStatus status) {
         this.productName = productName;
         this.category = category;
         this.description = description;
         this.companyName = companyName;
         this.price = price;
-        this.imageUrl = imageUrl;
         this.status = status;
     }
 
