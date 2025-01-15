@@ -8,7 +8,10 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +35,7 @@ public class CouponTemplate {
     private String description;
 
     @Enumerated(EnumType.STRING)
-    private DiscountType type;
+    private DiscountType discountType;
 
     @Enumerated(EnumType.STRING)
     private ExpiredType expiredType;
@@ -72,10 +75,11 @@ public class CouponTemplate {
     private List<IssuedCoupon> issuedCoupons = new ArrayList<>();
 
     @Builder
-    public CouponTemplate(String name, String description, DiscountType type, Long fixedAmount, Long fixedRate, Long maxDiscountAmount, Long minimumPrice, LocalDateTime startAt, LocalDateTime expiredAt, Integer maxIssuanceCount) {
+    public CouponTemplate(String name, String description, DiscountType discountType, ExpiredType expiredType, Long fixedAmount, Long fixedRate, Long maxDiscountAmount, Long minimumPrice, LocalDateTime startAt, LocalDateTime expiredAt, Integer maxIssuanceCount) {
         this.name = name;
         this.description = description;
-        this.type = type;
+        this.discountType = discountType;
+        this.expiredType = expiredType;
         this.fixedAmount = fixedAmount;
         this.fixedRate = fixedRate;
         this.maxDiscountAmount = maxDiscountAmount;
@@ -96,6 +100,20 @@ public class CouponTemplate {
             this.fixedRate = 0L;
         }
     }
+
+    public LocalDateTime getIssuedCouponExpiredAt() {
+        if (this.expiredAt == null || this.startAt == null) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,"쿠폰 만료일자 또는 시작일자가 존재하지 않습니다.");
+        }
+        if(ExpiredType.FIXED_DATE == this.expiredType){
+            return this.expiredAt;
+        }
+        if (ExpiredType.DURATION_BASED == this.expiredType) {
+            this.expiredAt = this.expiredAt.plus(Duration.between(this.startAt, LocalDateTime.now()));
+        }
+        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,"쿠폰 만료일자 타입이 FIXED_DATE 또는 DURATION_BASED 가 아닙니다");
+    }
+
 
     // 고정 날짜 만료 또는 생성일 기준 만료로 나뉨
     // 추후 기능 추가할 예정

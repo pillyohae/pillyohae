@@ -101,7 +101,7 @@ public class Order extends BaseTimeEntity {
 
         Long tempDiscountAmount;
 
-        if (CouponTemplate.DiscountType.FIXED_AMOUNT.equals(issuedCoupon.getCouponTemplate().getType())) {
+        if (CouponTemplate.DiscountType.FIXED_AMOUNT.equals(issuedCoupon.getCouponTemplate().getDiscountType())) {
 
             tempDiscountAmount = issuedCoupon.getCouponTemplate().getFixedAmount();
         } else {

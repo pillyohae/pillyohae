@@ -21,7 +21,7 @@ public class CouponController {
     private final CouponService couponService;
 
 
-    @PostMapping("/create")
+    @PostMapping
     public ResponseEntity<CreateCouponTemplateResponseDto> createCouponTemplate(@RequestBody @Valid CreateCouponTemplateRequestDto createCouponTemplateRequestDto,
                                                                                 Authentication authentication) {
         return ResponseEntity.status(HttpStatus.CREATED)

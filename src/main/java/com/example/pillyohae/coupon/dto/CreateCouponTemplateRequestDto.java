@@ -19,6 +19,8 @@ public class CreateCouponTemplateRequestDto {
     private String couponDescription;
     @NotNull
     private CouponTemplate.DiscountType discountType;
+    @NotNull
+    private CouponTemplate.ExpiredType expiredType;
     @PositiveOrZero
     @NotNull
     private Long fixedAmount;
@@ -42,20 +44,21 @@ public class CreateCouponTemplateRequestDto {
 
     @NotNull
     @Future          // 만료 시간은 반드시 미래여야 함
-    private LocalDateTime expireAt;
+    private LocalDateTime expiredAt;
 
 
 
-    public CreateCouponTemplateRequestDto(String couponName, String couponDescription, CouponTemplate.DiscountType discountType, Long fixedAmount, Long fixedRate, Long maxDiscountAmount, Long minimumPrice, LocalDateTime startAt, LocalDateTime expireAt, Integer maxIssueCount) {
+    public CreateCouponTemplateRequestDto(String couponName, String couponDescription, CouponTemplate.DiscountType discountType, CouponTemplate.ExpiredType expiredType, Long fixedAmount, Long fixedRate, Long maxDiscountAmount, Long minimumPrice, LocalDateTime startAt, LocalDateTime expiredAt, Integer maxIssueCount) {
         this.couponName = couponName;
         this.couponDescription = couponDescription;
         this.discountType = discountType;
+        this.expiredType = expiredType;
         this.fixedAmount = fixedAmount;
         this.fixedRate = fixedRate;
         this.maxDiscountAmount = maxDiscountAmount;
         this.minimumPrice = minimumPrice;
         this.startAt = startAt;
-        this.expireAt = expireAt;
+        this.expiredAt = expiredAt;
         this.maxIssueCount = maxIssueCount;
     }
 }
