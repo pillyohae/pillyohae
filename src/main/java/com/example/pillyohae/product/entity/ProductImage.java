@@ -32,6 +32,9 @@ public class ProductImage {
     @Column
     private Long fileSize;
 
+//    @Column
+//    private Integer position;
+
     @CreatedDate
     @Column
     private LocalDateTime uploadedAt;
@@ -48,6 +51,7 @@ public class ProductImage {
         this.contentType = contentType;
         this.fileSize = fileSize;
         this.product = product;
+//        this.position = position;
 
 
     }

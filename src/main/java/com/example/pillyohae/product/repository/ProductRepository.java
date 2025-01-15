@@ -12,6 +12,8 @@ public interface ProductRepository extends JpaRepository<Product, Long>, Product
 
     Page<Product> findProductsByUserId(Long userId, Pageable pageable);
 
+//    @Query("select p from Product p left join fetch p.images where p.productId = :productId")
+//    Optional<Product> findProductById(@Param("productId") Long productId);
 
     List<Product> findByProductIdIn(Collection<Long> productIds);
 
