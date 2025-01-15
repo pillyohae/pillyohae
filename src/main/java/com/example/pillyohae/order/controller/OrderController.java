@@ -30,7 +30,7 @@ public class OrderController {
 
         return ResponseEntity.ok(orderService.createOrderByProducts(authentication.getName(), requestDto));
 
-}
+    }
 
     @PutMapping("/orderItems/{orderItemId}/status")
     public ResponseEntity<SellerOrderItemStatusChangeResponseDto> changeOrderItemStatus(
@@ -40,15 +40,6 @@ public class OrderController {
         return ResponseEntity.ok(
             orderService.changeOrderItemStatus(authentication.getName(), orderItemId,
                     orderProductStatus));
-    }
-    // 쿠폰 사용
-    @PatchMapping ("/{orderId}/coupon")
-    public ResponseEntity<OrderUseCouponResponseDto> useCoupon(
-            Authentication authentication,
-            @PathVariable(name = "orderId") UUID orderId,
-            @RequestParam(name = "couponId") Long couponId) {
-        return ResponseEntity.ok(
-                orderService.useCoupon(authentication.getName(),orderId,couponId));
     }
 
     @GetMapping("/{orderId}")

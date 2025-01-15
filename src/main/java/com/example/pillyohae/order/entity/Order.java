@@ -97,10 +97,6 @@ public class Order extends BaseTimeEntity {
         issuedCoupon.useCoupon(this);
     }
 
-    public void updateShippingAddress(ShippingAddress shippingAddress) {
-        this.shippingAddress = shippingAddress;
-    }
-
     private Long calculateDiscountAmount(IssuedCoupon issuedCoupon) {
 
         Long tempDiscountAmount;
@@ -157,24 +153,15 @@ public class Order extends BaseTimeEntity {
         if (orderProducts.isEmpty()) {
             throw new IllegalStateException("주문 상품이 없습니다.");
         }
-        this.orderName = createOrderName();
-    }
-
-    private String createOrderName() {
         OrderProduct firstProduct = orderProducts.get(0);
         int productCount = orderProducts.size();
-
-        return productCount == 1
-                ? String.format("%s %d개", firstProduct.getProductName(), firstProduct.getQuantity())
-                : String.format("%s %d개 외 %d건", firstProduct.getProductName(),
-                firstProduct.getQuantity(), productCount - 1);
+        this.orderName = formatOrderName(firstProduct.getProductName(), firstProduct.getQuantity(), productCount);
     }
 
-    public String makeOrderName(String firstProductName, Integer firstProductQuantity, Integer productKinds ){
-        if (productKinds == 1){
-            return firstProductName + " " + firstProductQuantity + " 개";
-        }
-        return firstProductName + " " + firstProductQuantity + "개" + " 외 " + (productKinds - 1) + " 건" ;
+    private String formatOrderName(String firstProductName, int quantity, int totalProducts) {
+        return totalProducts == 1
+                ? String.format("%s %d개", firstProductName, quantity)
+                : String.format("%s %d개 외 %d건", firstProductName, quantity, totalProducts - 1);
     }
 
 
