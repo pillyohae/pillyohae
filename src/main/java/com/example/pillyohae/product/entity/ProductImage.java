@@ -1,6 +1,5 @@
-package com.example.pillyohae.global.entity;
+package com.example.pillyohae.product.entity;
 
-import com.example.pillyohae.product.entity.Product;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -15,7 +14,7 @@ import java.time.LocalDateTime;
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class FileStorage {
+public class ProductImage {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -43,7 +42,7 @@ public class FileStorage {
 
 
     @Builder
-    public FileStorage(String fileUrl, String fileKey, String contentType, Long fileSize, Product product) {
+    public ProductImage(String fileUrl, String fileKey, String contentType, Long fileSize, Product product) {
         this.fileUrl = fileUrl;
         this.fileKey = fileKey;
         this.contentType = contentType;

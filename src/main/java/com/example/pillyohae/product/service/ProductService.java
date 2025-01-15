@@ -2,11 +2,11 @@ package com.example.pillyohae.product.service;
 
 import com.example.pillyohae.global.S3.S3Service;
 import com.example.pillyohae.global.dto.UploadFileInfo;
-import com.example.pillyohae.global.entity.FileStorage;
 import com.example.pillyohae.global.exception.CustomResponseStatusException;
 import com.example.pillyohae.global.exception.code.ErrorCode;
 import com.example.pillyohae.product.dto.*;
 import com.example.pillyohae.product.entity.Product;
+import com.example.pillyohae.product.entity.ProductImage;
 import com.example.pillyohae.product.repository.ImageStorageRepository;
 import com.example.pillyohae.product.repository.ProductRepository;
 import com.example.pillyohae.user.entity.User;
@@ -210,7 +210,7 @@ public class ProductService {
         UploadFileInfo imageInfo = s3Service.uploadFile(image);
 
         // FileStorage 객체 생성
-        FileStorage saveImage = new FileStorage(imageInfo.fileUrl(), imageInfo.fileKey(), image.getContentType(), image.getSize(), findProduct);
+        ProductImage saveImage = new ProductImage(imageInfo.fileUrl(), imageInfo.fileKey(), image.getContentType(), image.getSize(), findProduct);
 
         // DB에 저장
         imageStorageRepository.save(saveImage);
@@ -225,5 +225,15 @@ public class ProductService {
     }
 
 
+    public void deleteImage(Long productId, Long imageId) {
+
+        findById(productId);
+
+        ProductImage findImage = imageStorageRepository.findById(imageId)
+            .orElseThrow(() -> new CustomResponseStatusException(ErrorCode.NOT_FOUND_File));
+
+        s3Service.deleteFile(findImage.getFileKey());
+        imageStorageRepository.deleteById(imageId);
+    }
 }
 

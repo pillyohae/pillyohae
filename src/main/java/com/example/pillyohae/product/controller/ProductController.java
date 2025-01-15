@@ -148,5 +148,14 @@ public class ProductController {
         return new ResponseEntity<>(uploadFileInfo, HttpStatus.OK);
     }
 
+    @DeleteMapping("/products/{productId}/images/{imageId}")
+    public ResponseEntity<Void> deleteImage(
+        @PathVariable Long productId,
+        @PathVariable Long imageId
+    ) {
+        productService.deleteImage(productId, imageId);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
 
 }
