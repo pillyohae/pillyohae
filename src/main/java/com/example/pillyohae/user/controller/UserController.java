@@ -3,6 +3,7 @@ package com.example.pillyohae.user.controller;
 import com.example.pillyohae.order.dto.BuyerOrderDetailInfo;
 import com.example.pillyohae.order.dto.BuyerOrderSearchResponseDto;
 import com.example.pillyohae.order.service.OrderService;
+import com.example.pillyohae.refresh.service.RefreshTokenService;
 import com.example.pillyohae.user.dto.TokenResponse;
 import com.example.pillyohae.user.dto.UserCreateRequestDto;
 import com.example.pillyohae.user.dto.UserCreateResponseDto;
@@ -27,6 +28,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -43,6 +45,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
 
     private final UserService userService;
+    private final RefreshTokenService refreshTokenService;
     private final OrderService orderService;
 
     /**
@@ -94,13 +97,27 @@ public class UserController {
      * @return 정상적으로 완료 시 OK 상태코드 반환
      */
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(HttpServletRequest request,
-        HttpServletResponse response, Authentication authentication) {
-
+    public ResponseEntity<Void> logout(
+        HttpServletRequest request, HttpServletResponse response, Authentication authentication,
+        @CookieValue(value = "refreshToken", required = false) String refreshToken
+    ) {
+        
         if (authentication != null && authentication.isAuthenticated()) {
             new SecurityContextLogoutHandler().logout(request, response, authentication);
 
-            return new ResponseEntity<>(HttpStatus.OK);
+            if (refreshToken != null) {
+                refreshTokenService.deleteRefreshToken(refreshToken);
+            }
+
+            ResponseCookie expiredCookie = ResponseCookie.from("refreshToken", "")
+                .httpOnly(true)
+                .path("/")
+                .maxAge(0)
+                .build();
+
+            return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, expiredCookie.toString())
+                .build();
         }
 
         throw new UsernameNotFoundException("로그인이 먼저 필요합니다.");
