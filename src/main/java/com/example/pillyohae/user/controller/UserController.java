@@ -3,7 +3,14 @@ package com.example.pillyohae.user.controller;
 import com.example.pillyohae.order.dto.BuyerOrderDetailInfo;
 import com.example.pillyohae.order.dto.BuyerOrderSearchResponseDto;
 import com.example.pillyohae.order.service.OrderService;
-import com.example.pillyohae.user.dto.*;
+import com.example.pillyohae.refresh.service.RefreshTokenService;
+import com.example.pillyohae.user.dto.TokenResponse;
+import com.example.pillyohae.user.dto.UserCreateRequestDto;
+import com.example.pillyohae.user.dto.UserCreateResponseDto;
+import com.example.pillyohae.user.dto.UserDeleteRequestDto;
+import com.example.pillyohae.user.dto.UserLoginRequestDto;
+import com.example.pillyohae.user.dto.UserProfileResponseDto;
+import com.example.pillyohae.user.dto.UserProfileUpdateRequestDto;
 import com.example.pillyohae.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -21,10 +28,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
-import org.springframework.web.bind.annotation.*;
-
-import java.time.LocalDateTime;
-import java.util.UUID;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -41,8 +45,15 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
 
     private final UserService userService;
+    private final RefreshTokenService refreshTokenService;
     private final OrderService orderService;
 
+    /**
+     * 사용자 회원가입
+     *
+     * @param requestDto 회원가입 관련 정보를 담고있는 요청 DTO
+     * @return 정상 처리시 CREATED 상태코드, 사용자 기본 정보 반환
+     */
     @PostMapping("/signup")
     public ResponseEntity<UserCreateResponseDto> createUser(
         @Valid @RequestBody UserCreateRequestDto requestDto
@@ -51,6 +62,12 @@ public class UserController {
         return new ResponseEntity<>(responseDto, HttpStatus.CREATED);
     }
 
+    /**
+     * 사용자 로그인
+     *
+     * @param requestDto 로그인 관련 정보를 담고있는 요청 DTO
+     * @return 정상 처리시 헤더에 액세스토큰, 쿠키에 리프레시 토큰을 반환
+     */
     @PostMapping("/login")
     public ResponseEntity<Void> login(
         @Valid @RequestBody UserLoginRequestDto requestDto
@@ -71,19 +88,50 @@ public class UserController {
             .build();
     }
 
+    /**
+     * 사용자 로그아웃
+     *
+     * @param request        HTTP 요청 정보를 담고있는 객체
+     * @param response       HTTP 응답 정보를 담고있는 객체
+     * @param authentication 토큰을 통해 얻어온 사용자 정보를 담고있는 인증 객체
+     * @return 정상적으로 완료 시 OK 상태코드 반환
+     */
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(HttpServletRequest request,
-        HttpServletResponse response, Authentication authentication) {
-
+    public ResponseEntity<Void> logout(
+        HttpServletRequest request, HttpServletResponse response, Authentication authentication,
+        @CookieValue(value = "refreshToken", required = false) String refreshToken
+    ) {
+        
         if (authentication != null && authentication.isAuthenticated()) {
             new SecurityContextLogoutHandler().logout(request, response, authentication);
 
-            return new ResponseEntity<>(HttpStatus.OK);
+            if (refreshToken != null) {
+                refreshTokenService.deleteRefreshToken(refreshToken);
+            }
+
+            ResponseCookie expiredCookie = ResponseCookie.from("refreshToken", "")
+                .httpOnly(true)
+                .path("/")
+                .maxAge(0)
+                .build();
+
+            return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, expiredCookie.toString())
+                .build();
         }
 
         throw new UsernameNotFoundException("로그인이 먼저 필요합니다.");
     }
 
+    /**
+     * 사용자 삭제
+     *
+     * @param requestDto     비밀번호를 담고있는 요청 DTO
+     * @param authentication 토큰을 통해 얻어온 사용자 정보를 담고있는 인증 객체
+     * @param request        HTTP 요청 정보를 담고있는 객체
+     * @param response       HTTP 응답 정보를 담고있는 객체
+     * @return 정상적으로 완료 시 OK 상태코드 반환
+     */
     @DeleteMapping
     public ResponseEntity<Void> deleteUser(
         @Valid @RequestBody UserDeleteRequestDto requestDto, Authentication authentication,
@@ -96,6 +144,12 @@ public class UserController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    /**
+     * 사용자 프로필 조회
+     *
+     * @param authentication 토큰을 통해 얻어온 사용자 정보를 담고있는 인증 객체
+     * @return 정상적으로 완료 시 사용자 기본 정보를 반환
+     */
     @GetMapping("/profile")
     public ResponseEntity<UserProfileResponseDto> getProfile(
         Authentication authentication
@@ -104,6 +158,13 @@ public class UserController {
         return new ResponseEntity<>(userService.getProfile(authentication), HttpStatus.OK);
     }
 
+    /**
+     * 사용자 프로필 정보 수정 : 이름, 주소, 패스워드 수정 가능
+     *
+     * @param requestDto     수정할 데이터의 정보가 담겨있는 DTO
+     * @param authentication 토큰을 통해 얻어온 사용자 정보를 담고있는 인증 객체
+     * @return 정상적으로 완료 시 OK 상태코드와 수정된 정보를 반환
+     */
     @PutMapping("/profile")
     public ResponseEntity<UserProfileResponseDto> updateProfile(
         @Valid @RequestBody UserProfileUpdateRequestDto requestDto,
@@ -140,6 +201,7 @@ public class UserController {
     public ResponseEntity<BuyerOrderDetailInfo> findOrderDetailInfo(
         Authentication authentication, @PathVariable(name = "orderId") UUID orderId
     ) {
-        return ResponseEntity.ok(orderService.getOrderDetailAfterPayment(authentication.getName(), orderId));
+        return ResponseEntity.ok(
+            orderService.getOrderDetailAfterPayment(authentication.getName(), orderId));
     }
 }

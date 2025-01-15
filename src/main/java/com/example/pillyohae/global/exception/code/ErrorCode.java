@@ -22,7 +22,7 @@ public enum ErrorCode {
     IS_NULL(HttpStatus.BAD_REQUEST, "NULL 값이 들어왔습니다."),
     COMMON_INVALID_PARAM(HttpStatus.BAD_REQUEST, "요청한 값이 올바르지 않습니다."),
     NO_SUCH_METHOD(HttpStatus.BAD_REQUEST, "메소드를 찾을 수 없습니다."),
-    INVALID_AUTHENTICATION(HttpStatus.BAD_REQUEST, "비밀번호가 올바르지 않습니다."),
+    INVALID_PASSWORD(HttpStatus.BAD_REQUEST, "비밀번호가 올바르지 않습니다."),
     FORBIDDEN_DELETED_USER_LOGIN(HttpStatus.BAD_REQUEST, "탈퇴한 사용자는 로그인할 수 없습니다."),
 
     /**
@@ -42,8 +42,6 @@ public enum ErrorCode {
      * unAuthorized
      */
     NOT_ALLOW_USER(HttpStatus.UNAUTHORIZED, "USER 권한은 사용할 수 없는 기능입니다"),
-    NOT_ALLOW_DEVELOPER(HttpStatus.UNAUTHORIZED, "DEVELOPER 역할은 사용할 수 없는 기능입니다"),
-    NOT_ALLOW_MANAGER(HttpStatus.UNAUTHORIZED, "MANAGER 역할은 사용할 수 없는 기능입니다"),
 
     /**
      * Jwt error

@@ -4,7 +4,7 @@ import com.example.pillyohae.coupon.entity.CouponTemplate;
 import com.example.pillyohae.coupon.entity.IssuedCoupon;
 import com.example.pillyohae.global.entity.BaseTimeEntity;
 import com.example.pillyohae.global.entity.address.ShippingAddress;
-import com.example.pillyohae.order.entity.status.OrderItemStatus;
+import com.example.pillyohae.order.entity.status.OrderProductStatus;
 import com.example.pillyohae.order.entity.status.OrderStatus;
 import com.example.pillyohae.user.entity.User;
 import jakarta.persistence.*;
@@ -63,15 +63,23 @@ public class Order extends BaseTimeEntity {
     @JoinColumn(name = "user_id")
     private User user;
 
-    // 결제 하기전 주문 생성
-    public Order(User user) {
+    // 결제를 위한 주문 생성
+    public Order(User user, ShippingAddress shippingAddress) {
         this.user = user;
+        this.shippingAddress = shippingAddress;
         // 초기 상태 결제 대기중
         this.status = OrderStatus.PENDING;
     }
 
-    // 쿠폰 적용
+    public void updateTotalPrice() {
+        this.totalPrice = orderProducts.stream()
+                .mapToLong(OrderProduct::getPrice)
+                .sum();
+    }
+
+    // 쿠폰 유효 확인 후 적용
     public void applyCoupon(IssuedCoupon issuedCoupon) {
+
         if (issuedCoupon == null || issuedCoupon.getCouponTemplate() == null) {
             throw new IllegalArgumentException("유효하지 않은 쿠폰입니다");
         }
@@ -83,24 +91,28 @@ public class Order extends BaseTimeEntity {
         }
 
         this.issuedCoupon = issuedCoupon;
+
         this.discountAmount = discountAmount;
+
         issuedCoupon.useCoupon(this);
     }
 
-    public void updateShippingAddress(ShippingAddress shippingAddress) {
-        this.shippingAddress = shippingAddress;
-    }
-
     private Long calculateDiscountAmount(IssuedCoupon issuedCoupon) {
+
         Long tempDiscountAmount;
+
         if (CouponTemplate.DiscountType.FIXED_AMOUNT.equals(issuedCoupon.getCouponTemplate().getType())) {
+
             tempDiscountAmount = issuedCoupon.getCouponTemplate().getFixedAmount();
         } else {
             // fixed rate는 %단위
             tempDiscountAmount = totalPrice * issuedCoupon.getCouponTemplate().getFixedRate() / 100;
         }
+
         Long maxDiscount = issuedCoupon.getCouponTemplate().getMaxDiscountAmount();
+
         if (maxDiscount < tempDiscountAmount) {
+
             tempDiscountAmount = maxDiscount;
         }
 
@@ -109,34 +121,48 @@ public class Order extends BaseTimeEntity {
 
     // order에 대한 status 업데이트
     public void updateStatus(OrderStatus newStatus) {
-        if (status.canTransitionTo(newStatus)) {
-            this.status = newStatus;
-        } else {
+        if (this.status == null) {
+            throw new IllegalStateException("현재 주문 상태가 없습니다.");
+        }
+        if (!status.canTransitionTo(newStatus)) {
             throw new IllegalStateException(
-                    "현재 상태(" + status.getValue() + ")에서 " + newStatus.getValue() + " 상태로 변경할 수 없습니다."
+                    String.format("현재 상태(%s)에서 %s 상태로 변경할 수 없습니다.",
+                            status.getValue(), newStatus.getValue())
             );
         }
+        this.status = newStatus;
     }
 
     // order 품목별 status 업데이트
-    public OrderItemStatus updateItemStatus(Long itemId, OrderItemStatus newStatus) {
+    public OrderProductStatus updateProductStatus(Long itemId, OrderProductStatus newStatus) {
+
         for (OrderProduct item : this.orderProducts) {
+
             if (item.getId().equals(itemId)) {
+
                 item.updateStatus(newStatus);
+
                 return item.getStatus();
             }
         }
+
         throw new IllegalArgumentException("해당 ID의 품목을 찾을 수 없습니다: " + itemId);
     }
 
+    public void updateOrderName() {
+        if (orderProducts.isEmpty()) {
+            throw new IllegalStateException("주문 상품이 없습니다.");
+        }
+        OrderProduct firstProduct = orderProducts.get(0);
+        int productCount = orderProducts.size();
+        this.orderName = formatOrderName(firstProduct.getProductName(), firstProduct.getQuantity(), productCount);
+    }
 
+    private String formatOrderName(String firstProductName, int quantity, int totalProducts) {
+        return totalProducts == 1
+                ? String.format("%s %d개", firstProductName, quantity)
+                : String.format("%s %d개 외 %d건", firstProductName, quantity, totalProducts - 1);
+    }
 
-//    public Double updateTotalPrice() {
-//        this.totalPrice = 0.0;
-//        for (OrderItem item : this.orderItems) {
-//            this.totalPrice += item.getPrice();
-//        }
-//        return this.totalPrice;
-//    }
 
 }

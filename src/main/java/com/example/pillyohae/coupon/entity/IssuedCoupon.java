@@ -52,19 +52,26 @@ public class IssuedCoupon {
         validateExpireAt();
     }
 
-    public void validateExpireAt() {
+    public void validateExpireAt()
+    {
         if (expiredAt == null) {
+
             throw new IllegalArgumentException("만료일은 필수 값입니다.");
         }
+
         if (expiredAt.isBefore(issuedAt)) {
+
             throw new IllegalArgumentException("만료일은 발급일 이후여야 합니다.");
         }
     }
 
     //사용한 쿠폰에 정보 저장
     public void useCoupon(Order order) {
+
         this.usedAt = LocalDateTime.now();
+
         this.usedOrder = order;
+
         this.status = CouponStatus.USED;
     }
 

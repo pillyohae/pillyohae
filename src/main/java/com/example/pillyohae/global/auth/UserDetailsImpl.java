@@ -1,4 +1,4 @@
-package com.example.pillyohae.global.config.auth;
+package com.example.pillyohae.global.auth;
 
 import com.example.pillyohae.user.entity.User;
 import com.example.pillyohae.user.entity.type.Role;
@@ -15,6 +15,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 public class UserDetailsImpl implements UserDetails {
 
     private final User user;
+
+    public Long getUserId() {
+        return user.getId();
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
