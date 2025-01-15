@@ -83,7 +83,6 @@ public class JwtProvider {
             .subject(email)
             .issuedAt(currentDate)
             .expiration(expireDate)
-            .claim("userId", user.getId())
             .claim("role", user.getRole())
             .signWith(Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8)), Jwts.SIG.HS256)
             .compact();
@@ -100,8 +99,13 @@ public class JwtProvider {
     }
 
     public boolean validateRefreshToken(String token) {
-        Claims claims = this.getClaims(token);
-        return !claims.getExpiration().before(new Date());
+        try {
+            Claims claims = this.getClaims(token);
+            return !claims.getExpiration().before(new Date());
+        } catch (ExpiredJwtException e) {
+            log.error("Invalid Refresh Token: {}", e.getMessage());
+            return false;
+        }
     }
 
     private Claims getClaims(String token) {
