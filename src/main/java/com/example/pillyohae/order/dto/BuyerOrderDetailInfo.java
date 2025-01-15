@@ -1,6 +1,6 @@
 package com.example.pillyohae.order.dto;
 
-import com.example.pillyohae.order.entity.status.OrderItemStatus;
+import com.example.pillyohae.order.entity.status.OrderProductStatus;
 import com.querydsl.core.annotations.QueryProjection;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,14 +23,14 @@ public class BuyerOrderDetailInfo {
         private String orderItemName;
         private Integer orderItemQuantity;
         private Long orderItemPrice;
-        private OrderItemStatus orderItemStatus;
+        private OrderProductStatus orderProductStatus;
         @QueryProjection
-        public BuyerOrderProductInfo(Long orderItemId, String orderItemName, Integer orderItemQuantity, Long orderItemPrice, OrderItemStatus orderItemStatus) {
+        public BuyerOrderProductInfo(Long orderItemId, String orderItemName, Integer orderItemQuantity, Long orderItemPrice, OrderProductStatus orderProductStatus) {
             this.orderItemId = orderItemId;
             this.orderItemName = orderItemName;
             this.orderItemQuantity = orderItemQuantity;
             this.orderItemPrice = orderItemPrice;
-            this.orderItemStatus = orderItemStatus;
+            this.orderProductStatus = orderProductStatus;
         }
     }
 }

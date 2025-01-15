@@ -8,12 +8,24 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
+/**
+ * Creates an order by delegating to the external processing service.
+ *
+ * @see com.example.pillyohae.order.service.OrderService#createOrderByProducts(String, OrderCreateRequestDto)
+ */
+
+
 @Getter
 @NoArgsConstructor
 public class OrderCreateRequestDto {
     @NotNull
     private List<ProductOrderInfo> productInfos;
     private List<Long> couponIds;
+
+    public OrderCreateRequestDto(List<ProductOrderInfo> productInfos, List<Long> couponIds) {
+        this.productInfos = productInfos;
+        this.couponIds = couponIds;
+    }
 
     @Getter
     @NoArgsConstructor
@@ -24,5 +36,10 @@ public class OrderCreateRequestDto {
         @NotNull
         @Positive @Max(20)
         private Integer quantity;
+
+        public ProductOrderInfo(Long productId, Integer quantity) {
+            this.productId = productId;
+            this.quantity = quantity;
+        }
     }
 }
