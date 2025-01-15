@@ -47,8 +47,8 @@ public class CreateCouponTemplateRequestDto {
     private LocalDateTime expiredAt;
 
 
-
     public CreateCouponTemplateRequestDto(String couponName, String couponDescription, CouponTemplate.DiscountType discountType, CouponTemplate.ExpiredType expiredType, Long fixedAmount, Long fixedRate, Long maxDiscountAmount, Long minimumPrice, LocalDateTime startAt, LocalDateTime expiredAt, Integer maxIssueCount) {
+        validateDiscountTypeFields(discountType, fixedAmount, fixedRate);
         this.couponName = couponName;
         this.couponDescription = couponDescription;
         this.discountType = discountType;
@@ -60,5 +60,14 @@ public class CreateCouponTemplateRequestDto {
         this.startAt = startAt;
         this.expiredAt = expiredAt;
         this.maxIssueCount = maxIssueCount;
+    }
+
+    private void validateDiscountTypeFields(CouponTemplate.DiscountType discountType, Long fixedAmount, Long fixedRate) {
+        if (discountType == CouponTemplate.DiscountType.FIXED_AMOUNT && fixedAmount <= 0) {
+            throw new IllegalArgumentException("정액 할인 쿠폰은 할인 금액이 0보다 커야 합니다");
+        }
+        if (discountType == CouponTemplate.DiscountType.PERCENTAGE && (fixedRate <= 0 || fixedRate > 100)) {
+            throw new IllegalArgumentException("정률 할인 쿠폰은 할인율이 0보다 크고 100 이하여야 합니다");
+        }
     }
 }

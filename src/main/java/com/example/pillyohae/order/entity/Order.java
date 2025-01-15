@@ -12,6 +12,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicUpdate;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -79,16 +81,9 @@ public class Order extends BaseTimeEntity {
 
     // 쿠폰 유효 확인 후 적용
     public void applyCoupon(IssuedCoupon issuedCoupon) {
-
-        if (issuedCoupon == null || issuedCoupon.getCouponTemplate() == null) {
-            throw new IllegalArgumentException("유효하지 않은 쿠폰입니다");
-        }
+        validateCouponToUse(issuedCoupon,this.user);
 
         Long discountAmount = calculateDiscountAmount(issuedCoupon);
-
-        if (discountAmount < 0) {
-            throw new IllegalArgumentException("할인 금액은 음수가 될 수 없습니다");
-        }
 
         this.issuedCoupon = issuedCoupon;
 
@@ -114,6 +109,10 @@ public class Order extends BaseTimeEntity {
         if (maxDiscount < tempDiscountAmount) {
 
             tempDiscountAmount = maxDiscount;
+        }
+
+        if(tempDiscountAmount < 0){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "할인 가격이 음수가 될 수 없습니다");
         }
 
         return tempDiscountAmount;
@@ -162,6 +161,31 @@ public class Order extends BaseTimeEntity {
         return totalProducts == 1
                 ? String.format("%s %d개", firstProductName, quantity)
                 : String.format("%s %d개 외 %d건", firstProductName, quantity, totalProducts - 1);
+    }
+
+    // 쿠폰이 만료되거나 사용될 경우 또는 쿠폰 사용을 금지했을경우 예외
+    private void validateCouponToUse(IssuedCoupon coupon, User user) {
+
+        if (coupon == null || coupon.getCouponTemplate() == null) {
+            throw new IllegalArgumentException("유효하지 않은 쿠폰입니다");
+        }
+
+        if(CouponTemplate.CouponStatus.INACTIVE.equals(coupon.getCouponTemplate().getStatus())){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Coupon is not active");
+        }
+
+        if (!coupon.getUser().equals(user)) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Coupon is not owned by user");
+        }
+
+        if (LocalDateTime.now().isAfter(coupon.getExpiredAt())) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Coupon is expired");
+        }
+
+        if (IssuedCoupon.CouponStatus.USED.equals(coupon.getStatus())) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Coupon is used");
+        }
+
     }
 
 

@@ -224,37 +224,11 @@ public class OrderService {
     private void applyCouponIfPresent(Order order, List<Long> couponIds) {
         if (couponIds != null && !couponIds.isEmpty()) {
 
-            issuedCouponRepository.findById(couponIds.get(0))
-
-                    .ifPresent(order::applyCoupon);
+            issuedCouponRepository.findById(couponIds.get(0)).ifPresent(order::applyCoupon);
         }
     }
 
-    private Double calculateOrderItemPrice(Double price, Integer quantity) {
-        return price * quantity;
-    }
 
 
 
-
-
-    // 쿠폰이 만료되거나 사용될 경우 또는 쿠폰 사용을 금지했을경우 예외
-    private void validateCouponToUse(IssuedCoupon coupon, User user) {
-        if(CouponTemplate.CouponStatus.INACTIVE.equals(coupon.getCouponTemplate().getStatus())){
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Coupon is not active");
-        }
-
-        if (!coupon.getUser().equals(user)) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Coupon is not owned by user");
-        }
-
-        if (LocalDateTime.now().isAfter(coupon.getExpiredAt())) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Coupon is expired");
-        }
-
-        if (IssuedCoupon.CouponStatus.USED.equals(coupon.getStatus())) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Coupon is used");
-        }
-
-    }
 }

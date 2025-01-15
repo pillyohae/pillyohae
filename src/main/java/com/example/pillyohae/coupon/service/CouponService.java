@@ -15,7 +15,9 @@ import com.example.pillyohae.user.entity.type.Role;
 import com.example.pillyohae.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.client.HttpResponseException;
 import org.springframework.http.HttpStatus;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -78,7 +80,7 @@ public class CouponService {
 
         List<CouponTemplate> userCouponTemplates = userIssuedCoupons.stream()
                 .map(IssuedCoupon::getCouponTemplate).toList();
-
+        // 중복 검증
         CouponTemplate couponTemplate = couponTemplateRepository.findById(couponTemplateId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
@@ -86,11 +88,21 @@ public class CouponService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "쿠폰을 중복해서 가질 수 없습니다");
         }
 
-        IssuedCoupon issuedCoupon = new IssuedCoupon(LocalDateTime.now(), couponTemplate.getIssuedCouponExpiredAt(), couponTemplate, user);
+        try {
+            // 쿠폰 발급 로직 낙관적 락을 사용
+            couponTemplate.incrementIssuanceCount();
 
-        issuedCouponRepository.save(issuedCoupon);
+            couponTemplateRepository.save(couponTemplate);
 
-        return new GiveCouponResponseDto(issuedCoupon.getId());
+            IssuedCoupon issuedCoupon = new IssuedCoupon(LocalDateTime.now(), couponTemplate.getIssuedCouponExpiredAt(), couponTemplate, user);
+
+            issuedCouponRepository.save(issuedCoupon);
+
+            return new GiveCouponResponseDto(issuedCoupon.getId());
+
+        } catch (ObjectOptimisticLockingFailureException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
     }
 
 
