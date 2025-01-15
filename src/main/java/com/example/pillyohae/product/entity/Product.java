@@ -1,7 +1,6 @@
 package com.example.pillyohae.product.entity;
 
 import com.example.pillyohae.global.entity.BaseTimeEntity;
-import com.example.pillyohae.global.entity.FileStorage;
 import com.example.pillyohae.product.entity.type.ProductStatus;
 import com.example.pillyohae.user.entity.User;
 import jakarta.persistence.*;
@@ -37,7 +36,7 @@ public class Product extends BaseTimeEntity {
     private User user;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<FileStorage> images = new ArrayList<>();
+    private List<ProductImage> images = new ArrayList<>();
 
     public Product(User user, String productName, String category, String description, String companyName, Long price, ProductStatus status) {
         this.user = user;
