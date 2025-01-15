@@ -1,6 +1,6 @@
 package com.example.pillyohae.order.entity;
 
-import com.example.pillyohae.order.entity.status.OrderItemStatus;
+import com.example.pillyohae.order.entity.status.OrderProductStatus;
 import com.example.pillyohae.user.entity.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Positive;
@@ -35,7 +35,7 @@ public class OrderProduct {
     // 물품마다 다른 status를 갖는다
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private OrderItemStatus status;
+    private OrderProductStatus status;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "seller_id")
@@ -57,13 +57,13 @@ public class OrderProduct {
         this.order = order;
         // 초기 상태
         this.seller = seller;
-        this.status = OrderItemStatus.PENDING;
+        this.status = OrderProductStatus.PENDING;
         order.getOrderProducts().add(this);
     }
 
 
     // Update status with validation
-    public void updateStatus(OrderItemStatus newStatus) {
+    public void updateStatus(OrderProductStatus newStatus) {
         if (status.canTransitionTo(newStatus)) {
             this.status = newStatus;
         } else {

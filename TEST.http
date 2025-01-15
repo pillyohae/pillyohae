@@ -127,16 +127,20 @@ Content-Type: application/json
   "quantity": 1
 }
 
-### 카트로부터 주문 생성
-POST http://localhost:8080/orders/carts/create
+### 주문생성
+POST http://localhost:8080/orders
 Authorization: Bearer {{accessToken}}
+Content-Type: application/json
 
-### 구매가 완료된 후 주문 확인
-GET http://localhost:8080/users/orders/b9126c0e-8e36-4618-879a-33bec9e3f970/orderItems
-Authorization: Bearer {{accessToken}}
-### 구매 전 주문 확인
-GET http://localhost:8080/orders/b9126c0e-8e36-4618-879a-33bec9e3f970
-Authorization: Bearer {{accessToken}}
+{
+  "productInfos": [
+    {
+      "productId": 1,
+      "quantity": 3
+    }
+  ]
+}
+
 
 ###
 GET http://localhost:8080/toss/checkout

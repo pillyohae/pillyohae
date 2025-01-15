@@ -8,6 +8,13 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
+/**
+ * Creates an order by delegating to the external processing service.
+ *
+ * @see com.example.pillyohae.order.service.OrderService#createOrderByProducts(String, OrderCreateRequestDto)
+ */
+
+
 @Getter
 @NoArgsConstructor
 public class OrderCreateRequestDto {
