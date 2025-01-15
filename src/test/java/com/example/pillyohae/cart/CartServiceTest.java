@@ -31,17 +31,38 @@ class CartServiceTest {
     @InjectMocks
     private CartService cartService;
 
+    private static class TestUser {
+
+        private static final String NAME = "joon";
+        private static final String EMAIL = "test@test.com";
+        private static final String PASSWORD = "1234";
+        private static final String ADDRESS = "seoul";
+        private static final Role ROLE = Role.BUYER;
+        private static final Long ID = 1L;
+    }
+
+    private static class TestProducts {
+
+        private static final Long PRICE1 = 2000L;
+        private static final int QUANTITY1 = 3;
+        private static final Long PRICE2 = 1000L;
+        private static final int QUANTITY2 = 1;
+    }
+
+    private static final int EXPECTED_PRODUCT_COUNT = 2;
+    private static final Long EXPECTED_TOTAL_PRICE = 7000L;
+
     @Test
     @DisplayName("장바구니 상품 목록 및 가격 조회")
     void testFindCart() {
 
         //Given
-        User mockUser = new User("joon", "test@test.com", "1234", "", Role.BUYER);
-        ReflectionTestUtils.setField(mockUser, "id", 1L);
+        User mockUser = new User(TestUser.NAME, TestUser.EMAIL, TestUser.PASSWORD, TestUser.ADDRESS, TestUser.ROLE);
+        ReflectionTestUtils.setField(mockUser, "id", TestUser.ID);
 
         List<CartProductDetailResponseDto> mockProducts = List.of(
-            new CartProductDetailResponseDto(null, null, null, null, 2000L, 3),
-            new CartProductDetailResponseDto(null, null, null, null, 1000L, 1)
+            CartProductDetailResponseDto.builder().price(TestProducts.PRICE1).quantity(TestProducts.QUANTITY1).build(),
+            CartProductDetailResponseDto.builder().price(TestProducts.PRICE2).quantity(TestProducts.QUANTITY2).build()
         );
 
         when(userService.findByEmail(mockUser.getEmail())).thenReturn(mockUser);
@@ -52,8 +73,8 @@ class CartServiceTest {
 
         //Then
         assertEquals(mockUser.getId(), result.getUserId());
-        assertEquals(2, result.getProducts().size());
-        assertEquals(7000L, result.getTotalPrice());
+        assertEquals(EXPECTED_PRODUCT_COUNT, result.getProducts().size());
+        assertEquals(EXPECTED_TOTAL_PRICE, result.getTotalPrice());
     }
 
 }
