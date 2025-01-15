@@ -71,6 +71,26 @@ Content-Type: application/json
 
 }
 
+### 쿠폰 생성
+POST http://localhost:8080/coupons
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "couponName": "Welcome Discount",
+  "couponDescription": "Get a 10% discount on your first order!",
+  "discountType": "PERCENTAGE",
+  "expiredType": "DURATION_BASED",
+  "fixedAmount": 0,
+  "fixedRate": 10,
+  "maxDiscountAmount": 5000,
+  "minimumPrice": 20000,
+  "startAt": "2025-01-15T15:36:00",
+  "expiredAt": "2025-02-20T23:59:59",
+  "maxIssueCount": 1000
+}
+
+
 ###
 
 POST http://localhost:8080/users/logout
@@ -116,6 +136,12 @@ Content-Type: application/json
     }
 
 %}
+###
+POST http://localhost:8080/coupons/1/issue
+Authorization: Bearer {{accessToken}}
+###
+
+
 
 ###
 POST http://localhost:8080/carts
@@ -140,6 +166,21 @@ Content-Type: application/json
     }
   ]
 }
+### 주문생성
+POST http://localhost:8080/orders
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "productInfos": [
+    {
+      "productId": 1,
+      "quantity": 3
+    }
+  ],
+  "couponIds": [1]
+}
+
 
 
 ###
