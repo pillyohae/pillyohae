@@ -109,18 +109,6 @@ public class CouponService {
         );
     }
 
-    // 모든 유저에게 대량 발행
-    // 다른 방법으로 변경예정
-    @Transactional
-    public void issueCoupons() {
-        LocalDateTime now = LocalDateTime.now();
-
-        List<Long> updatedCouponIds = couponTemplateRepository.findTemplateIdsByStartAtAndNowState(
-                now,
-                CouponTemplate.CouponStatus.ACTIVE.toString()
-        );
-    }
-
     private Long validateMinimumPrice(Long minimumPrice) {
         if (minimumPrice == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "최소 주문 금액은 필수입니다");
