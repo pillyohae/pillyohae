@@ -11,10 +11,10 @@ public class ValidCouponPeriodValidator
     @Override
     public boolean isValid(CreateCouponTemplateRequestDto dto,
                            ConstraintValidatorContext context) {
-        if (dto.getStartAt() == null || dto.getExpireAt() == null) {
+        if (dto.getStartAt() == null || dto.getExpiredAt() == null) {
             return false;
         }
 
-        return dto.getStartAt().isBefore(dto.getExpireAt());
+        return dto.getStartAt().isBefore(dto.getExpiredAt());
     }
 }
