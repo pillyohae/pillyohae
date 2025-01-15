@@ -17,14 +17,17 @@ public class S3Service {
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
-    public UploadFileInfo uploadFile(MultipartFile file){
+    public UploadFileInfo uploadFile(MultipartFile file) {
         return s3Uploader.uploadFile(file);
     }
 
-    public void deleteFile(String fileKey){
+    /**
+     * @param fileKey
+     * @throws RuntimeException
+     */
+    public void deleteFile(String fileKey) throws RuntimeException {
         try {
             s3Client.deleteObject(new DeleteObjectRequest(bucket, fileKey));
-            System.out.println("File deleted successfully: " + fileKey);
         } catch (Exception e) {
             throw new RuntimeException("Failed to delete file: " + fileKey, e);
         }

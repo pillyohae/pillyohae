@@ -206,8 +206,11 @@ public class ProductService {
         // Product 조회
         Product findProduct = findById(productId);
 
+//        productRepository.findProductById(productId);
+
         // 파일 업로드 로직 호출
         UploadFileInfo imageInfo = s3Service.uploadFile(image);
+
 
         // FileStorage 객체 생성
         ProductImage saveImage = new ProductImage(imageInfo.fileUrl(), imageInfo.fileKey(), image.getContentType(), image.getSize(), findProduct);
@@ -219,21 +222,40 @@ public class ProductService {
         return new UploadFileInfo(saveImage.getFileUrl(), saveImage.getFileKey());
     }
 
-    public Product findById(Long productId) {
-        return productRepository.findById(productId)
-            .orElseThrow(() -> new CustomResponseStatusException(ErrorCode.NOT_FOUND_PRODUCT));
-    }
 
+    /**
+     * 이미지 삭제
+     *
+     * @param productId 상품 id
+     * @param imageId   이미지파일 id
+     * @param email     사용자 이메일
+     */
+    @Transactional
+    public void deleteImage(Long productId, Long imageId, String email) {
 
-    public void deleteImage(Long productId, Long imageId) {
+        Product findProduct = findById(productId);
 
-        findById(productId);
+        User user = userService.findByEmail(email);
+
+        if (!findProduct.getUser().getId().equals(user.getId())) {
+            throw new AccessDeniedException("권한이 없습니다.");
+        } // 사용자 외 관리자도 삭제 할 수 있나??
 
         ProductImage findImage = imageStorageRepository.findById(imageId)
             .orElseThrow(() -> new CustomResponseStatusException(ErrorCode.NOT_FOUND_File));
 
-        s3Service.deleteFile(findImage.getFileKey());
+        if (!findImage.getProduct().getProductId().equals(productId)) {
+            throw new CustomResponseStatusException(ErrorCode.INVALID_IMAGE_PRODUCT_MATCH);
+        }
+
         imageStorageRepository.deleteById(imageId);
+        s3Service.deleteFile(findImage.getFileKey());
+
+    }
+
+    public Product findById(Long productId) {
+        return productRepository.findById(productId)
+            .orElseThrow(() -> new CustomResponseStatusException(ErrorCode.NOT_FOUND_PRODUCT));
     }
 }
 
