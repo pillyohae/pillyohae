@@ -159,7 +159,7 @@ public class RefreshTokenService {
             String accessToken = bearerToken.substring(7);
 
             // 토큰 유효성 검증
-            if (jwtProvider.validToken(accessToken)) {
+            if (!jwtProvider.validToken(accessToken)) {
                 // 유효하지 않은 토큰이라면 블랙리스트 추가 작업 건너뜀
                 log.warn("Attempting to blacklist invalid token");
                 return;
