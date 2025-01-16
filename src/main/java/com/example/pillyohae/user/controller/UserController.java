@@ -43,6 +43,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import static com.example.pillyohae.global.constant.TokenPrefix.TOKEN_PREFIX;
+
 @Slf4j
 @RestController
 @RequestMapping("/users")
