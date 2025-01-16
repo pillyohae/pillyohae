@@ -30,7 +30,7 @@ public class OrderQueryRepositoryImpl implements OrderQueryRepository {
         if (queryFactory == null) {
             throw new IllegalStateException("QueryFactory is not initialized");
         }
-        return queryFactory.select(new QOrderPageResponseDto_OrderInfo(order.id, order.status, order.orderName, order.paidAt, order.imageUrl))
+        return queryFactory.select(new QOrderPageResponseDto_OrderInfoDto(order.id, order.status, order.orderName, order.paidAt, order.imageUrl))
                 .from(order)
                 .leftJoin(order.user)
                 .where(dateEq(startAt, endAt), order.user.id.eq(userId))
@@ -38,6 +38,7 @@ public class OrderQueryRepositoryImpl implements OrderQueryRepository {
                 .offset(pageNumber * pageSize)
                 .limit(pageSize)
                 .fetch();
+
     }
 
     // orderitem에 저장된 내용을 가져옴
