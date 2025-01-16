@@ -149,6 +149,11 @@ public class Order extends BaseTimeEntity {
         throw new IllegalArgumentException("해당 ID의 품목을 찾을 수 없습니다: " + itemId);
     }
 
+    public void paid(){
+        this.paidAt = LocalDateTime.now();
+        this.status = OrderStatus.PAYMENT_CONFIRMED;
+    }
+
 
 
     // 쿠폰이 만료되거나 사용될 경우 또는 쿠폰 사용을 금지했을경우 예외
