@@ -210,7 +210,7 @@ public class ProductService {
 
         int currentImageCount = imageStorageRepository.countByProduct_ProductId(findProduct.getProductId());
         if (currentImageCount >= 5) {
-            throw new IllegalStateException("이미지는 최대 5개까지 업로드할 수 있습니다.");
+            throw new CustomResponseStatusException(ErrorCode.CANNOT_OVERLOAD_FILE);
         }
 
         // 파일 업로드 로직 호출
