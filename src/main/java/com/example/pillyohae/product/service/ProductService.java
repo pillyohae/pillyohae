@@ -271,6 +271,7 @@ public class ProductService {
      * @param email      사용자 이메일
      * @return UpdateImageResponseDto
      */
+    @Transactional
     public UpdateImageResponseDto updateImages(Long productId, UpdateImageRequestDto requestDto, String email) {
 
         Product findProduct = findById(productId);
