@@ -148,5 +148,23 @@ public class ProductController {
         return new ResponseEntity<>(uploadFileInfo, HttpStatus.OK);
     }
 
+    /**
+     * 이미지 삭제
+     *
+     * @param userDetails 사용자 정보
+     * @param productId   상품 id
+     * @param imageId     이미지 id
+     * @return x
+     */
+    @DeleteMapping("/products/{productId}/images/{imageId}")
+    public ResponseEntity<Void> deleteImage(
+        @AuthenticationPrincipal UserDetails userDetails,
+        @PathVariable Long productId,
+        @PathVariable Long imageId
+    ) {
+        productService.deleteImage(productId, imageId, userDetails.getUsername());
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
 
 }

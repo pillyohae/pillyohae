@@ -2,11 +2,11 @@ package com.example.pillyohae.product.service;
 
 import com.example.pillyohae.global.S3.S3Service;
 import com.example.pillyohae.global.dto.UploadFileInfo;
-import com.example.pillyohae.global.entity.FileStorage;
 import com.example.pillyohae.global.exception.CustomResponseStatusException;
 import com.example.pillyohae.global.exception.code.ErrorCode;
 import com.example.pillyohae.product.dto.*;
 import com.example.pillyohae.product.entity.Product;
+import com.example.pillyohae.product.entity.ProductImage;
 import com.example.pillyohae.product.repository.ImageStorageRepository;
 import com.example.pillyohae.product.repository.ProductRepository;
 import com.example.pillyohae.user.entity.User;
@@ -206,11 +206,14 @@ public class ProductService {
         // Product 조회
         Product findProduct = findById(productId);
 
+//        productRepository.findProductById(productId);
+
         // 파일 업로드 로직 호출
         UploadFileInfo imageInfo = s3Service.uploadFile(image);
 
+
         // FileStorage 객체 생성
-        FileStorage saveImage = new FileStorage(imageInfo.fileUrl(), imageInfo.fileKey(), image.getContentType(), image.getSize(), findProduct);
+        ProductImage saveImage = new ProductImage(imageInfo.fileUrl(), imageInfo.fileKey(), image.getContentType(), image.getSize(), findProduct);
 
         // DB에 저장
         imageStorageRepository.save(saveImage);
@@ -219,11 +222,40 @@ public class ProductService {
         return new UploadFileInfo(saveImage.getFileUrl(), saveImage.getFileKey());
     }
 
+
+    /**
+     * 이미지 삭제
+     *
+     * @param productId 상품 id
+     * @param imageId   이미지파일 id
+     * @param email     사용자 이메일
+     */
+    @Transactional
+    public void deleteImage(Long productId, Long imageId, String email) {
+
+        Product findProduct = findById(productId);
+
+        User user = userService.findByEmail(email);
+
+        if (!findProduct.getUser().getId().equals(user.getId())) {
+            throw new AccessDeniedException("권한이 없습니다.");
+        } // 사용자 외 관리자도 삭제 할 수 있나??
+
+        ProductImage findImage = imageStorageRepository.findById(imageId)
+            .orElseThrow(() -> new CustomResponseStatusException(ErrorCode.NOT_FOUND_File));
+
+        if (!findImage.getProduct().getProductId().equals(productId)) {
+            throw new CustomResponseStatusException(ErrorCode.INVALID_IMAGE_PRODUCT_MATCH);
+        }
+
+        imageStorageRepository.deleteById(imageId);
+        s3Service.deleteFile(findImage.getFileKey());
+
+    }
+
     public Product findById(Long productId) {
         return productRepository.findById(productId)
             .orElseThrow(() -> new CustomResponseStatusException(ErrorCode.NOT_FOUND_PRODUCT));
     }
-
-
 }
 
