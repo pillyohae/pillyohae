@@ -37,6 +37,7 @@ public enum ErrorCode {
      */
     S3_UPLOADER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "S3 업로드 중 오류가 발생하였습니다."),
     BAD_FORMAT(HttpStatus.BAD_REQUEST, "허용된 파일 형식이 아닙니다."),
+    INVALID_IMAGE_PRODUCT_MATCH(HttpStatus.BAD_REQUEST, "상품에 해당하는 이미지가 아닙니다."),
 
     /**
      * unAuthorized

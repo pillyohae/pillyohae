@@ -42,12 +42,4 @@ public class OrderController {
                     orderProductStatus));
     }
 
-    @GetMapping("/{orderId}")
-    public ResponseEntity<BuyerOrderDetailInfo> getOrderDetailBeforePayment(
-            Authentication authentication,
-            @PathVariable(name = "orderId") UUID orderId) {
-        return ResponseEntity.ok(orderService.getOrderDetailBeforePayment(authentication.getName(), orderId));
-    }
-
-
 }

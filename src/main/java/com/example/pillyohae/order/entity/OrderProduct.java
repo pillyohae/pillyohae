@@ -49,12 +49,16 @@ public class OrderProduct {
     @JoinColumn(name = "order_id")
     private Order order;
 
+    @Column(nullable = false)
+    private String imageUrl;
+
     // 결제 하기전에 상품 갯수 및 식별정보 및 주문 식별 정보만 설정
-    public OrderProduct(Integer quantity, Long price , Long productId, User seller ,Order order) {
+    public OrderProduct(Integer quantity, Long price , Long productId, User seller , String imageUrl, Order order) {
         this.quantity = quantity;
         this.price = price;
         this.productId = productId;
         this.order = order;
+        this.imageUrl = imageUrl;
         // 초기 상태
         this.seller = seller;
         this.status = OrderProductStatus.PENDING;

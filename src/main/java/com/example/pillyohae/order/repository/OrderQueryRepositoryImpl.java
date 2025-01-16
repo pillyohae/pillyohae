@@ -1,9 +1,7 @@
 package com.example.pillyohae.order.repository;
 
-import com.example.pillyohae.order.dto.BuyerOrderDetailInfo;
-import com.example.pillyohae.order.dto.BuyerOrderInfo;
-import com.example.pillyohae.order.dto.QBuyerOrderDetailInfo_BuyerOrderProductInfo;
-import com.example.pillyohae.order.dto.QBuyerOrderInfo;
+import com.example.pillyohae.order.dto.*;
+
 import com.example.pillyohae.order.entity.QOrder;
 import com.example.pillyohae.order.entity.QOrderProduct;
 import com.example.pillyohae.product.entity.QProduct;
@@ -24,12 +22,15 @@ public class OrderQueryRepositoryImpl implements OrderQueryRepository {
         this.queryFactory = queryFactory;
     }
 
+
+
+
     @Override
-    public List<BuyerOrderInfo> findBuyerOrders(Long userId, LocalDateTime startAt, LocalDateTime endAt, Long pageNumber, Long pageSize) {
+    public List<OrderPageResponseDto.OrderInfoDto> findOrders(Long userId, LocalDateTime startAt, LocalDateTime endAt, Long pageNumber, Long pageSize) {
         if (queryFactory == null) {
             throw new IllegalStateException("QueryFactory is not initialized");
         }
-        return queryFactory.select(new QBuyerOrderInfo(order.id, order.status, order.orderName, order.paidAt))
+        return queryFactory.select(new QOrderPageResponseDto_OrderInfoDto(order.id, order.status, order.orderName, order.paidAt, order.imageUrl))
                 .from(order)
                 .leftJoin(order.user)
                 .where(dateEq(startAt, endAt), order.user.id.eq(userId))
@@ -37,40 +38,32 @@ public class OrderQueryRepositoryImpl implements OrderQueryRepository {
                 .offset(pageNumber * pageSize)
                 .limit(pageSize)
                 .fetch();
+
     }
 
     // orderitem에 저장된 내용을 가져옴
     @Override
-    public List<BuyerOrderDetailInfo.BuyerOrderProductInfo> findBuyerOrderDetailAfterPayment(UUID orderId) {
+    public List<OrderDetailResponseDto.OrderProductDto> findOrderProductsByOrderId(UUID orderId) {
         if (queryFactory == null) {
             throw new IllegalStateException("QueryFactory is not initialized");
         }
 
-        return queryFactory.select(new QBuyerOrderDetailInfo_BuyerOrderProductInfo(orderProduct.id, orderProduct.productName, orderProduct.quantity, orderProduct.price, orderProduct.status))
+        return queryFactory.select(new QOrderDetailResponseDto_OrderProductDto(orderProduct.id, orderProduct.productName, orderProduct.quantity, orderProduct.price, orderProduct.status))
+                .from(orderProduct)
                 .where(orderProduct.order.id.eq(orderId))
                 .fetch();
 
     }
 
-    // 실시간으로 product로부터 정보를 가져옴
     @Override
-    public List<BuyerOrderDetailInfo.BuyerOrderProductInfo> findBuyerOrderDetailBeforePayment(UUID orderId) {
+    public OrderDetailResponseDto.OrderInfoDto findOrderDetailOrderInfoDtoByOrderId(UUID orderId) {
         if (queryFactory == null) {
             throw new IllegalStateException("QueryFactory is not initialized");
         }
-
-        return queryFactory
-                .select(new QBuyerOrderDetailInfo_BuyerOrderProductInfo(
-                        orderProduct.id,
-                        product.productName,
-                        orderProduct.quantity,
-                        product.price,
-                        orderProduct.status))
-                .from(orderProduct)
-                .innerJoin(product)
-                .on(orderProduct.productId.eq(product.productId))
-                .where(orderProduct.order.id.eq(orderId))  // 단일 조건으로 수정
-                .fetch();
+        return queryFactory.select(new QOrderDetailResponseDto_OrderInfoDto(order.id, order.status, order.orderName, order.paidAt, order.imageUrl, order.shippingAddress))
+                .from(order)
+                .where(order.id.eq(orderId))
+                .fetchOne();
 
     }
 

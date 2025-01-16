@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -25,21 +26,16 @@ public class CouponController {
     public ResponseEntity<CreateCouponTemplateResponseDto> createCouponTemplate(@RequestBody @Valid CreateCouponTemplateRequestDto createCouponTemplateRequestDto,
                                                                                 Authentication authentication) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(couponService.createCouponTemplate(authentication.getName(), createCouponTemplateRequestDto));
+                .body(couponService.createCouponTemplate(createCouponTemplateRequestDto));
     }
 
 
     @PostMapping("/{couponTemplateId}/issue")
     public ResponseEntity<GiveCouponResponseDto> giveCoupon(
             @PathVariable(name = "couponTemplateId") Long couponTemplateId, Authentication authentication) {
+
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(couponService.giveCoupon(authentication.getName(), couponTemplateId));
-    }
-
-    // order를 보고 맞는 조건의 쿠폰들을 조회
-    @GetMapping("/orders/{orderId}")
-    public ResponseEntity<FindCouponListToUseResponseDto> getCouponListToUse( Authentication authentication, @PathVariable(name = "orderId") UUID orderId) {
-        return ResponseEntity.ok(couponService.findCouponListToUse(authentication.getName(), orderId));
     }
 
 
