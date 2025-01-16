@@ -73,13 +73,9 @@ public class OrderService {
 
     // buyer의 order 내역 조회
     @Transactional
-    public OrderPageResponseDto findOrder(String email, LocalDateTime startAt, LocalDateTime endAt, Long pageNumber, Long pageSize) {
+    public OrderPageResponseDto findOrders(String email, LocalDateTime startAt, LocalDateTime endAt, Long pageNumber, Long pageSize) {
 
         User user = userService.findByEmail(email);
-
-        if (startAt.isAfter(endAt)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Start date must be before end date");
-        }
 
         if (pageNumber < 0 || pageSize <= 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid pagination parameters");
@@ -93,9 +89,26 @@ public class OrderService {
 
     }
 
+    @Transactional
+    public OrderPageSellerResponseDto findSellerOrders(String email, LocalDateTime startAt, LocalDateTime endAt, Long pageNumber, Long pageSize) {
+
+        User user = userService.findByEmail(email);
+
+        if (pageNumber < 0 || pageSize <= 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid pagination parameters");
+        }
+
+        List<OrderPageSellerResponseDto.OrderInfoDto> orderInfoDtoList = orderRepository.findSellerOrders(user.getId(), startAt, endAt, pageNumber, pageSize);
+
+        OrderPageSellerResponseDto.PageInfo pageInfo = new OrderPageSellerResponseDto.PageInfo(pageNumber, pageSize);
+
+        return new OrderPageSellerResponseDto(orderInfoDtoList, pageInfo);
+
+    }
+
     // 주문 정보와 주문 상품 정보를 따로 조회
     @Transactional
-    public OrderDetailResponseDto getOrderDetail(String email, UUID orderId) {
+    public OrderDetailResponseDto findOrderDetail(String email, UUID orderId) {
 
         User user = userService.findByEmail(email);
 
@@ -115,6 +128,30 @@ public class OrderService {
         OrderDetailResponseDto.OrderInfoDto orderInfoDto = orderRepository.findOrderDetailOrderInfoDtoByOrderId(orderId);
 
         return new OrderDetailResponseDto(orderInfoDto, productInfos);
+
+    }
+
+    @Transactional
+    public OrderDetailSellerResponseDto findOrderDetailSeller(String email, UUID orderId) {
+
+        User user = userService.findByEmail(email);
+
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
+
+        if (OrderStatus.PENDING.equals(order.getStatus())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Order is in pending");
+        }
+
+        OrderDetailSellerResponseDto.OrderProductDto productInfo = orderRepository.findOrderDetailSellerProductDtoByOrderId(orderId,user.getId());
+
+        OrderDetailSellerResponseDto.OrderInfoDto orderInfoDto = orderRepository.findOrderDetailSellerInfoDtoByOrderId(orderId);
+
+        if (productInfo == null){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "들어온 주문이 없습니다");
+        }
+
+        return new OrderDetailSellerResponseDto(orderInfoDto,productInfo);
 
     }
 

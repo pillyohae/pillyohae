@@ -3,7 +3,9 @@ package com.example.pillyohae.user.controller;
 import com.example.pillyohae.coupon.dto.FindCouponListResponseDto;
 import com.example.pillyohae.coupon.service.CouponService;
 import com.example.pillyohae.order.dto.OrderDetailResponseDto;
+import com.example.pillyohae.order.dto.OrderDetailSellerResponseDto;
 import com.example.pillyohae.order.dto.OrderPageResponseDto;
+import com.example.pillyohae.order.dto.OrderPageSellerResponseDto;
 import com.example.pillyohae.order.service.OrderService;
 import com.example.pillyohae.refresh.service.RefreshTokenService;
 import com.example.pillyohae.user.dto.TokenResponse;
@@ -214,15 +216,12 @@ public class UserController {
     @GetMapping("/orders")
     public ResponseEntity<OrderPageResponseDto> findAllOrdersByBuyer(
         Authentication authentication,
-        @RequestParam(name = "startAt") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startAt,
-        @RequestParam(name = "endAt") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endAt,
+        @RequestParam(name = "startAt", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startAt,
+        @RequestParam(name = "endAt", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endAt,
         @RequestParam(name = "pageNumber", defaultValue = "0") @Min(0) Long pageNumber,
         @RequestParam(name = "pageSize", defaultValue = "10") @Min(1) @Max(100) Long pageSize
     ) {
-        if (endAt.isBefore(startAt)) {
-            throw new IllegalArgumentException("End date must be after start date");
-        }
-        return ResponseEntity.ok(orderService.findOrder(
+        return ResponseEntity.ok(orderService.findOrders(
             authentication.getName(),
             startAt,
             endAt,
@@ -238,11 +237,11 @@ public class UserController {
      * @return 정상적으로 완료시 OK 상태코드와 주문 상세 정보를 반환
      */
     @GetMapping("/orders/{orderId}/orderItems")
-    public ResponseEntity<OrderDetailResponseDto> findOrderDetailInfo(
+    public ResponseEntity<OrderDetailResponseDto> findOrderDetail(
         Authentication authentication, @PathVariable(name = "orderId") UUID orderId
     ) {
         return ResponseEntity.ok(
-            orderService.getOrderDetail(authentication.getName(), orderId));
+            orderService.findOrderDetail(authentication.getName(), orderId));
     }
 
     /**
@@ -254,5 +253,32 @@ public class UserController {
     @GetMapping("/coupons")
     public ResponseEntity<FindCouponListResponseDto> getCouponListToUse(Authentication authentication, @RequestParam(required = false) Long totalPrice ) {
         return ResponseEntity.ok(couponService.findCouponListToUse(authentication.getName(), totalPrice));
+    }
+
+
+    @GetMapping("/sellers/orders")
+    public ResponseEntity<OrderPageSellerResponseDto> findAllSellerOrders(
+            Authentication authentication,
+            @RequestParam(name = "startAt",required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startAt,
+            @RequestParam(name = "endAt",required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endAt,
+            @RequestParam(name = "pageNumber", defaultValue = "0") @Min(0) Long pageNumber,
+            @RequestParam(name = "pageSize", defaultValue = "10") @Min(1) @Max(100) Long pageSize
+    ) {
+        return ResponseEntity.ok(orderService.findSellerOrders(
+                authentication.getName(),
+                startAt,
+                endAt,
+                pageNumber,
+                pageSize
+        ));
+    }
+
+    @GetMapping("/sellers/orders/{orderId}")
+    public ResponseEntity<OrderDetailSellerResponseDto> findOrderDetailSeller(
+            Authentication authentication, @PathVariable(name = "orderId") UUID orderId
+    ) {
+
+        return ResponseEntity.ok(
+                orderService.findOrderDetailSeller(authentication.getName(), orderId));
     }
 }
