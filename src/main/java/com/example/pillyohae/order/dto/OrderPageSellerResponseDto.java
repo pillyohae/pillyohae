@@ -1,7 +1,6 @@
 package com.example.pillyohae.order.dto;
 
 import com.example.pillyohae.order.entity.status.OrderProductStatus;
-import com.example.pillyohae.order.entity.status.OrderStatus;
 import com.querydsl.core.annotations.QueryProjection;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,11 +12,11 @@ import java.util.UUID;
 @Getter
 public class OrderPageSellerResponseDto {
 
-    private final List<OrderInfoDto> OrderInfoDtos;
+    private final List<OrderInfoDto> orderInfoDtos;
     private final PageInfo pageInfo;
 
-    public OrderPageSellerResponseDto(List<OrderInfoDto> OrderInfoDtos, PageInfo pageInfo) {
-        this.OrderInfoDtos = OrderInfoDtos;
+    public OrderPageSellerResponseDto(List<OrderInfoDto> orderInfoDtos, PageInfo pageInfo) {
+        this.orderInfoDtos = orderInfoDtos;
         this.pageInfo = pageInfo;
     }
 
