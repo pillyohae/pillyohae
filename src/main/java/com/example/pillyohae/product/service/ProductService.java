@@ -21,6 +21,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class ProductService {
@@ -206,6 +208,11 @@ public class ProductService {
         // Product 조회
         Product findProduct = findById(productId);
 
+        int currentImageCount = imageStorageRepository.countByProduct_ProductId(findProduct.getProductId());
+        if (currentImageCount >= 5) {
+            throw new IllegalStateException("이미지는 최대 5개까지 업로드할 수 있습니다.");
+        }
+
         // 파일 업로드 로직 호출
         UploadFileInfo imageInfo = s3Service.uploadFile(image);
 
@@ -254,6 +261,57 @@ public class ProductService {
         imageStorageRepository.deleteById(imageId);
         s3Service.deleteFile(findImage.getFileKey()); // TODO s3삭제 시 주문페이지에서 이미지는 어떻게 할 것인지 정하기
 
+    }
+
+    /**
+     * 이미지 수정
+     *
+     * @param productId  상품 id
+     * @param requestDto 이미지 수정 시 필요한 요청사항
+     * @param email      사용자 이메일
+     * @return UpdateImageResponseDto
+     */
+    public UpdateImageResponseDto updateImages(Long productId, UpdateImageRequestDto requestDto, String email) {
+
+        Product findProduct = findById(productId);
+
+        User user = userService.findByEmail(email);
+
+        if (!findProduct.getUser().getId().equals(user.getId())) {
+            throw new AccessDeniedException("권한이 없습니다.");
+        }
+
+        // 순서를 바꿀 이미지
+        ProductImage findProductImage = imageStorageRepository.findById(requestDto.getImageId())
+            .orElseThrow(() -> new CustomResponseStatusException(ErrorCode.NOT_FOUND_File));
+
+        // productId에 해당하는 이미지들의 리스트
+        List<ProductImage> images = imageStorageRepository.findByProduct_ProductId(productId);
+
+        Integer originalPosition = findProductImage.getPosition();
+        Integer updatedPosition = requestDto.getPosition();
+
+        // 기존 포지션 < 바뀔 포지션
+        if (originalPosition < updatedPosition) { // 효율이 떨어지는 코드, 이후 래팩토링필요
+
+            for (ProductImage targetPosition : images) {
+                if (originalPosition < targetPosition.getPosition() && targetPosition.getPosition() <= updatedPosition) {
+                    targetPosition.downPosition();
+                }
+            }
+        } else {
+            for (ProductImage targetPosition : images) {
+                if (updatedPosition <= targetPosition.getPosition() && targetPosition.getPosition() < originalPosition) {
+                    targetPosition.upPosition();
+                }
+            }
+        }
+
+        findProductImage.updatePosition(requestDto.getPosition());
+
+        imageStorageRepository.save(findProductImage);
+
+        return UpdateImageResponseDto.toDto(findProductImage);
     }
 
     public Product findById(Long productId) {

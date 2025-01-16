@@ -52,7 +52,18 @@ public class ProductImage {
         this.fileSize = fileSize;
         this.position = position;
         this.product = product;
+    }
 
+    public void updatePosition(Integer position) {
+        this.position = position;
+    }
 
+    public void downPosition() {
+        this.position--;
+    }
+
+    public void upPosition() {
+
+        this.position++;
     }
 }

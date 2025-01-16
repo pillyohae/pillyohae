@@ -166,5 +166,15 @@ public class ProductController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @PutMapping("/products/{productId}/images")
+    public ResponseEntity<UpdateImageResponseDto> updateImage(
+        @AuthenticationPrincipal UserDetails userDetails,
+        @PathVariable Long productId,
+        @RequestBody UpdateImageRequestDto requestDto
+    ) {
+        UpdateImageResponseDto updateImage = productService.updateImages(productId, requestDto, userDetails.getUsername());
+        return new ResponseEntity<>(updateImage, HttpStatus.OK);
+    }
+
 
 }
