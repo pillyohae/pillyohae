@@ -1,7 +1,9 @@
 package com.example.pillyohae.user.controller;
 
-import com.example.pillyohae.order.dto.BuyerOrderDetailInfo;
-import com.example.pillyohae.order.dto.BuyerOrderSearchResponseDto;
+import com.example.pillyohae.coupon.dto.FindCouponListToUseResponseDto;
+import com.example.pillyohae.coupon.service.CouponService;
+import com.example.pillyohae.order.dto.OrderDetailResponseDto;
+import com.example.pillyohae.order.dto.OrderPageResponseDto;
 import com.example.pillyohae.order.service.OrderService;
 import com.example.pillyohae.refresh.service.RefreshTokenService;
 import com.example.pillyohae.user.dto.TokenResponse;
@@ -47,6 +49,7 @@ public class UserController {
     private final UserService userService;
     private final RefreshTokenService refreshTokenService;
     private final OrderService orderService;
+    private final CouponService couponService;
 
     /**
      * 사용자 회원가입
@@ -176,8 +179,17 @@ public class UserController {
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
 
+    /**
+     * 사용자 주문 조회
+     * @param authentication 토큰을 통해 얻어온 사용자 정보를 담고있는 인증 객체
+     * @param startAt 조회 기준 시작 날짜
+     * @param endAt 조회 기준 끝 날자
+     * @param pageNumber 조회할 페이지
+     * @param pageSize 조회할 페이지의 크기
+     * @return 정상적으로 완료시 OK 상태코드와 주문 정보를 반환
+     */
     @GetMapping("/orders")
-    public ResponseEntity<BuyerOrderSearchResponseDto> findAllOrdersByBuyer(
+    public ResponseEntity<OrderPageResponseDto> findAllOrdersByBuyer(
         Authentication authentication,
         @RequestParam(name = "startAt") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startAt,
         @RequestParam(name = "endAt") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endAt,
@@ -196,12 +208,28 @@ public class UserController {
         ));
     }
 
-    // 결제된 order의 snapshot을 본다
+    /**
+     * 사용자 주문 상세 조회
+     * @param authentication 토큰을 통해 얻어온 사용자 정보를 담고있는 인증 객체
+     * @param orderId 주문 식별자
+     * @return 정상적으로 완료시 OK 상태코드와 주문 상세 정보를 반환
+     */
     @GetMapping("/orders/{orderId}/orderItems")
-    public ResponseEntity<BuyerOrderDetailInfo> findOrderDetailInfo(
+    public ResponseEntity<OrderDetailResponseDto> findOrderDetailInfo(
         Authentication authentication, @PathVariable(name = "orderId") UUID orderId
     ) {
         return ResponseEntity.ok(
-            orderService.getOrderDetailAfterPayment(authentication.getName(), orderId));
+            orderService.getOrderDetail(authentication.getName(), orderId));
+    }
+
+    /**
+     * 주문에 맞는 사용자 쿠폰 목록 조회
+     * @param authentication 토큰을 통해 얻어온 사용자 정보를 담고있는 인증 객체
+     * @param orderId 주문 식별자
+     * @return 정상적으로 완료시 OK 상태코드와 사용 가능한 쿠폰 목록 정보를 반환
+     */
+    @GetMapping("orders/{orderId}/coupons")
+    public ResponseEntity<FindCouponListToUseResponseDto> getCouponListToUse(Authentication authentication, @PathVariable(name = "orderId") UUID orderId) {
+        return ResponseEntity.ok(couponService.findCouponListToUse(authentication.getName(), orderId));
     }
 }

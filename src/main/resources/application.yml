@@ -75,6 +75,7 @@ security: # SecurityProperties의 prefix와 일치
     - "/users/sellers/**"
     - "/products"
     - "/products/**"
+    - "/coupons"
   method-specific-patterns:
     GET:
       - "/products/*"
