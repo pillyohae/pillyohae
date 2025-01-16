@@ -55,7 +55,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<CommonResponse<String>> handleAuthenticationException(
         AuthenticationException ex) {
-        return CommonResponse.fail(ErrorCode.BAD_REQUEST_TOKEN, ex.getMessage());
+        return CommonResponse.fail(ErrorCode.UNAUTHORIZED_TOKEN, ex.getMessage());
     }
 
     @ExceptionHandler(AccessDeniedException.class)
