@@ -1,6 +1,6 @@
 package com.example.pillyohae.order.dto;
 
-import com.example.pillyohae.order.entity.status.OrderStatus;
+import com.example.pillyohae.order.entity.status.OrderProductStatus;
 import com.querydsl.core.annotations.QueryProjection;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,12 +10,12 @@ import java.util.List;
 import java.util.UUID;
 
 @Getter
-public class OrderPageResponseDto {
+public class OrderPageSellerResponseDto {
 
     private final List<OrderInfoDto> orderInfoDtos;
     private final PageInfo pageInfo;
 
-    public OrderPageResponseDto(List<OrderInfoDto> orderInfoDtos, PageInfo pageInfo) {
+    public OrderPageSellerResponseDto(List<OrderInfoDto> orderInfoDtos, PageInfo pageInfo) {
         this.orderInfoDtos = orderInfoDtos;
         this.pageInfo = pageInfo;
     }
@@ -24,20 +24,24 @@ public class OrderPageResponseDto {
     @NoArgsConstructor(force = true)
     public static class OrderInfoDto {
         private final UUID orderId;
-        private final OrderStatus orderStatus;
+        private final Long orderProductId;
+        private final OrderProductStatus orderStatus;
         private final String orderName;
         private final LocalDateTime paidAt;
         private final String imageUrl;
         private final Long orderPrice;
+        private final Integer quantity;
 
         @QueryProjection
-        public OrderInfoDto(UUID orderId, OrderStatus orderStatus, String orderName, LocalDateTime paidAt, String imageUrl, Long orderPrice) {
+        public OrderInfoDto(UUID orderId, Long orderProductId, OrderProductStatus orderStatus, String orderName, LocalDateTime paidAt, String imageUrl, Long orderPrice, Integer quantity) {
             this.orderId = orderId;
+            this.orderProductId = orderProductId;
             this.orderStatus = orderStatus;
             this.orderName = orderName;
             this.paidAt = paidAt;
             this.imageUrl = imageUrl;
             this.orderPrice = orderPrice;
+            this.quantity = quantity;
         }
     }
 
