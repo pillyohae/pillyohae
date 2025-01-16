@@ -142,8 +142,8 @@ public class CartService {
     @Transactional
     public void deleteAll(String email) {
 
-        User findUser = userService.findByEmail(email);
+        User user = userService.findByEmail(email);
 
-        cartRepository.deleteAllByUserId(findUser.getId());
+        cartRepository.deleteByUserId(user.getId());
     }
 }
