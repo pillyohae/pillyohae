@@ -32,8 +32,8 @@ public class ProductImage {
     @Column
     private Long fileSize;
 
-//    @Column
-//    private Integer position;
+    @Column
+    private Integer position;
 
     @CreatedDate
     @Column
@@ -45,13 +45,13 @@ public class ProductImage {
 
 
     @Builder
-    public ProductImage(String fileUrl, String fileKey, String contentType, Long fileSize, Product product) {
+    public ProductImage(String fileUrl, String fileKey, String contentType, Long fileSize, Integer position, Product product) {
         this.fileUrl = fileUrl;
         this.fileKey = fileKey;
         this.contentType = contentType;
         this.fileSize = fileSize;
+        this.position = position;
         this.product = product;
-//        this.position = position;
 
 
     }

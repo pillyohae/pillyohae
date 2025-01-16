@@ -206,14 +206,17 @@ public class ProductService {
         // Product 조회
         Product findProduct = findById(productId);
 
-//        productRepository.findProductById(productId);
-
         // 파일 업로드 로직 호출
         UploadFileInfo imageInfo = s3Service.uploadFile(image);
 
+//        // 기존 이미지 리스트에서 position 설정
+//        Integer nextPosition = findProduct.getImages().size() + 1;
+
+        Integer nextPosition = imageStorageRepository.findMaxPositionByProductId(findProduct.getProductId())
+            .orElse(0) + 1;
 
         // FileStorage 객체 생성
-        ProductImage saveImage = new ProductImage(imageInfo.fileUrl(), imageInfo.fileKey(), image.getContentType(), image.getSize(), findProduct);
+        ProductImage saveImage = new ProductImage(imageInfo.fileUrl(), imageInfo.fileKey(), image.getContentType(), image.getSize(), nextPosition, findProduct);
 
         // DB에 저장
         imageStorageRepository.save(saveImage);
@@ -249,7 +252,7 @@ public class ProductService {
         }
 
         imageStorageRepository.deleteById(imageId);
-        s3Service.deleteFile(findImage.getFileKey());
+        s3Service.deleteFile(findImage.getFileKey()); // TODO s3삭제 시 주문페이지에서 이미지는 어떻게 할 것인지 정하기
 
     }
 
