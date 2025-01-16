@@ -22,6 +22,7 @@ import jakarta.validation.constraints.Min;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -37,10 +38,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+@Slf4j
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
@@ -87,7 +90,7 @@ public class UserController {
 
         return ResponseEntity.ok()
             .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + tokenResponse.getAccessToken())
+            .header(HttpHeaders.AUTHORIZATION, TOKEN_PREFIX + tokenResponse.getAccessToken())
             .build();
     }
 
@@ -101,28 +104,46 @@ public class UserController {
      */
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(
-        HttpServletRequest request, HttpServletResponse response, Authentication authentication,
-        @CookieValue(value = "refreshToken", required = false) String refreshToken
+        HttpServletRequest request,
+        HttpServletResponse response,
+        Authentication authentication,
+        @CookieValue(value = "refreshToken", required = false) String refreshToken,
+        @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String accessToken
     ) {
-        
+        //인증 객체가 null 이 아니고 해당 객체가 인증된 상태라면
         if (authentication != null && authentication.isAuthenticated()) {
-            new SecurityContextLogoutHandler().logout(request, response, authentication);
+            try {
+                // 1. SecurityContext 정리
+                new SecurityContextLogoutHandler().logout(request, response, authentication);
 
-            if (refreshToken != null) {
-                refreshTokenService.deleteRefreshToken(refreshToken);
+                // 2. 리프레시 토큰 삭제
+                if (refreshToken != null) {
+                    refreshTokenService.deleteRefreshToken(authentication);
+                }
+
+                // 3. 액세스 토큰 블랙리스트 추가 Authorization header 에 담긴 값이 Bearer 로 시작할 경우
+                if (accessToken != null && accessToken.startsWith(TOKEN_PREFIX)) {
+                    refreshTokenService.addToBlacklist(accessToken);
+                }
+
+                // 4. 리프레시 토큰 쿠키 만료
+                ResponseCookie expiredCookie = ResponseCookie.from("refreshToken", "")
+                    .httpOnly(true)
+                    .path("/")
+                    .maxAge(0)
+                    .secure(false)
+                    .build();
+
+                return ResponseEntity.ok()
+                    .header(HttpHeaders.SET_COOKIE, expiredCookie.toString())
+                    .build();
+            } catch (Exception ex) {
+                log.error("로그아웃 실패", ex);
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
             }
-
-            ResponseCookie expiredCookie = ResponseCookie.from("refreshToken", "")
-                .httpOnly(true)
-                .path("/")
-                .maxAge(0)
-                .build();
-
-            return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, expiredCookie.toString())
-                .build();
         }
 
+        //로그인 한 상태가 아니라면
         throw new UsernameNotFoundException("로그인이 먼저 필요합니다.");
     }
 
