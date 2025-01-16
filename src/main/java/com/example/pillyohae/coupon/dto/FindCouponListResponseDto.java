@@ -10,10 +10,10 @@ import java.util.List;
 
 @Getter
 @NoArgsConstructor
-public class FindCouponListToUseResponseDto {
+public class FindCouponListResponseDto {
     private List<CouponInfo> couponList;
 
-    public FindCouponListToUseResponseDto(List<CouponInfo> couponList) {
+    public FindCouponListResponseDto(List<CouponInfo> couponList) {
         this.couponList = couponList;
     }
 
@@ -24,13 +24,14 @@ public class FindCouponListToUseResponseDto {
         private String couponName;
         private String couponDescription;
         private CouponTemplate.DiscountType discountType;
-        private Double fixedAmount;
-        private Double fixedRate;
-        private Double maxDiscountAmount;
-        private LocalDateTime expireAt;
+        private Long fixedAmount;
+        private Long fixedRate;
+        private Long maxDiscountAmount;
+        private Long minimumPrice;
+        private LocalDateTime expiredAt;
 
         @QueryProjection
-        public CouponInfo(Long couponId, String couponName, String couponDescription, CouponTemplate.DiscountType discountType, Double fixedAmount, Double fixedRate, Double maxDiscountAmount, LocalDateTime expireAt) {
+        public CouponInfo(Long couponId, String couponName, String couponDescription, CouponTemplate.DiscountType discountType, Long fixedAmount, Long fixedRate, Long maxDiscountAmount, Long minimumPrice, LocalDateTime expiredAt) {
             this.couponId = couponId;
             this.couponName = couponName;
             this.couponDescription = couponDescription;
@@ -38,7 +39,8 @@ public class FindCouponListToUseResponseDto {
             this.fixedAmount = fixedAmount;
             this.fixedRate = fixedRate;
             this.maxDiscountAmount = maxDiscountAmount;
-            this.expireAt = expireAt;
+            this.minimumPrice = minimumPrice;
+            this.expiredAt = expiredAt;
         }
     }
 }

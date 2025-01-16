@@ -11,9 +11,9 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Getter
-@Embeddable
+@MappedSuperclass
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public abstract class Address {
+public class Address {
     @Column(nullable = false)
     private String receiverName;
 

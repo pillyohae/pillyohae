@@ -1,7 +1,11 @@
 package com.example.pillyohae.user.controller;
 
-import com.example.pillyohae.order.dto.BuyerOrderDetailInfo;
-import com.example.pillyohae.order.dto.BuyerOrderSearchResponseDto;
+import com.example.pillyohae.coupon.dto.FindCouponListResponseDto;
+import com.example.pillyohae.coupon.service.CouponService;
+import com.example.pillyohae.order.dto.OrderDetailResponseDto;
+import com.example.pillyohae.order.dto.OrderDetailSellerResponseDto;
+import com.example.pillyohae.order.dto.OrderPageResponseDto;
+import com.example.pillyohae.order.dto.OrderPageSellerResponseDto;
 import com.example.pillyohae.order.service.OrderService;
 import com.example.pillyohae.refresh.service.RefreshTokenService;
 import com.example.pillyohae.user.dto.TokenResponse;
@@ -20,6 +24,7 @@ import jakarta.validation.constraints.Min;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -35,10 +40,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import static com.example.pillyohae.global.constant.TokenPrefix.TOKEN_PREFIX;
+
+@Slf4j
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
@@ -47,6 +56,7 @@ public class UserController {
     private final UserService userService;
     private final RefreshTokenService refreshTokenService;
     private final OrderService orderService;
+    private final CouponService couponService;
 
     /**
      * 사용자 회원가입
@@ -84,7 +94,7 @@ public class UserController {
 
         return ResponseEntity.ok()
             .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + tokenResponse.getAccessToken())
+            .header(HttpHeaders.AUTHORIZATION, TOKEN_PREFIX + tokenResponse.getAccessToken())
             .build();
     }
 
@@ -98,28 +108,46 @@ public class UserController {
      */
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(
-        HttpServletRequest request, HttpServletResponse response, Authentication authentication,
-        @CookieValue(value = "refreshToken", required = false) String refreshToken
+        HttpServletRequest request,
+        HttpServletResponse response,
+        Authentication authentication,
+        @CookieValue(value = "refreshToken", required = false) String refreshToken,
+        @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String accessToken
     ) {
-        
+        //인증 객체가 null 이 아니고 해당 객체가 인증된 상태라면
         if (authentication != null && authentication.isAuthenticated()) {
-            new SecurityContextLogoutHandler().logout(request, response, authentication);
+            try {
+                // 1. SecurityContext 정리
+                new SecurityContextLogoutHandler().logout(request, response, authentication);
 
-            if (refreshToken != null) {
-                refreshTokenService.deleteRefreshToken(refreshToken);
+                // 2. 리프레시 토큰 삭제
+                if (refreshToken != null) {
+                    refreshTokenService.deleteRefreshToken(authentication);
+                }
+
+                // 3. 액세스 토큰 블랙리스트 추가 Authorization header 에 담긴 값이 Bearer 로 시작할 경우
+                if (accessToken != null && accessToken.startsWith(TOKEN_PREFIX)) {
+                    refreshTokenService.addToBlacklist(accessToken);
+                }
+
+                // 4. 리프레시 토큰 쿠키 만료
+                ResponseCookie expiredCookie = ResponseCookie.from("refreshToken", "")
+                    .httpOnly(true)
+                    .path("/")
+                    .maxAge(0)
+                    .secure(false)
+                    .build();
+
+                return ResponseEntity.ok()
+                    .header(HttpHeaders.SET_COOKIE, expiredCookie.toString())
+                    .build();
+            } catch (Exception ex) {
+                log.error("로그아웃 실패", ex);
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
             }
-
-            ResponseCookie expiredCookie = ResponseCookie.from("refreshToken", "")
-                .httpOnly(true)
-                .path("/")
-                .maxAge(0)
-                .build();
-
-            return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, expiredCookie.toString())
-                .build();
         }
 
+        //로그인 한 상태가 아니라면
         throw new UsernameNotFoundException("로그인이 먼저 필요합니다.");
     }
 
@@ -176,18 +204,24 @@ public class UserController {
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
 
+    /**
+     * 사용자 주문 조회
+     * @param authentication 토큰을 통해 얻어온 사용자 정보를 담고있는 인증 객체
+     * @param startAt 조회 기준 시작 날짜
+     * @param endAt 조회 기준 끝 날자
+     * @param pageNumber 조회할 페이지
+     * @param pageSize 조회할 페이지의 크기
+     * @return 정상적으로 완료시 OK 상태코드와 주문 정보를 반환
+     */
     @GetMapping("/orders")
-    public ResponseEntity<BuyerOrderSearchResponseDto> findAllOrdersByBuyer(
+    public ResponseEntity<OrderPageResponseDto> findAllOrdersByBuyer(
         Authentication authentication,
-        @RequestParam(name = "startAt") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startAt,
-        @RequestParam(name = "endAt") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endAt,
+        @RequestParam(name = "startAt", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startAt,
+        @RequestParam(name = "endAt", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endAt,
         @RequestParam(name = "pageNumber", defaultValue = "0") @Min(0) Long pageNumber,
         @RequestParam(name = "pageSize", defaultValue = "10") @Min(1) @Max(100) Long pageSize
     ) {
-        if (endAt.isBefore(startAt)) {
-            throw new IllegalArgumentException("End date must be after start date");
-        }
-        return ResponseEntity.ok(orderService.findOrder(
+        return ResponseEntity.ok(orderService.findOrders(
             authentication.getName(),
             startAt,
             endAt,
@@ -196,12 +230,55 @@ public class UserController {
         ));
     }
 
-    // 결제된 order의 snapshot을 본다
+    /**
+     * 사용자 주문 상세 조회
+     * @param authentication 토큰을 통해 얻어온 사용자 정보를 담고있는 인증 객체
+     * @param orderId 주문 식별자
+     * @return 정상적으로 완료시 OK 상태코드와 주문 상세 정보를 반환
+     */
     @GetMapping("/orders/{orderId}/orderItems")
-    public ResponseEntity<BuyerOrderDetailInfo> findOrderDetailInfo(
+    public ResponseEntity<OrderDetailResponseDto> findOrderDetail(
         Authentication authentication, @PathVariable(name = "orderId") UUID orderId
     ) {
         return ResponseEntity.ok(
-            orderService.getOrderDetailAfterPayment(authentication.getName(), orderId));
+            orderService.findOrderDetail(authentication.getName(), orderId));
+    }
+
+    /**
+     *
+     * @param authentication 토큰을 통해 얻어온 사용자 정보를 담고있는 인증 객체
+     * @param totalPrice 주문에 사용할 쿠폰 조회시 현재 주문 총 금액
+     * @return 정상적으로 완료시 OK 상태코드와 사용 가능한 쿠폰 목록 정보를 반환
+     */
+    @GetMapping("/coupons")
+    public ResponseEntity<FindCouponListResponseDto> getCouponListToUse(Authentication authentication, @RequestParam(required = false) Long totalPrice ) {
+        return ResponseEntity.ok(couponService.findCouponListToUse(authentication.getName(), totalPrice));
+    }
+
+
+    @GetMapping("/sellers/orders")
+    public ResponseEntity<OrderPageSellerResponseDto> findAllSellerOrders(
+            Authentication authentication,
+            @RequestParam(name = "startAt",required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startAt,
+            @RequestParam(name = "endAt",required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endAt,
+            @RequestParam(name = "pageNumber", defaultValue = "0") @Min(0) Long pageNumber,
+            @RequestParam(name = "pageSize", defaultValue = "10") @Min(1) @Max(100) Long pageSize
+    ) {
+        return ResponseEntity.ok(orderService.findSellerOrders(
+                authentication.getName(),
+                startAt,
+                endAt,
+                pageNumber,
+                pageSize
+        ));
+    }
+
+    @GetMapping("/sellers/orders/{orderId}")
+    public ResponseEntity<OrderDetailSellerResponseDto> findOrderDetailSeller(
+            Authentication authentication, @PathVariable(name = "orderId") UUID orderId
+    ) {
+
+        return ResponseEntity.ok(
+                orderService.findOrderDetailSeller(authentication.getName(), orderId));
     }
 }

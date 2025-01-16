@@ -2,29 +2,24 @@ package com.example.pillyohae.coupon.service;
 
 import com.example.pillyohae.coupon.dto.CreateCouponTemplateRequestDto;
 import com.example.pillyohae.coupon.dto.CreateCouponTemplateResponseDto;
-import com.example.pillyohae.coupon.dto.FindCouponListToUseResponseDto;
+import com.example.pillyohae.coupon.dto.FindCouponListResponseDto;
 import com.example.pillyohae.coupon.dto.GiveCouponResponseDto;
 import com.example.pillyohae.coupon.entity.CouponTemplate;
 import com.example.pillyohae.coupon.entity.IssuedCoupon;
 import com.example.pillyohae.coupon.repository.CouponTemplateRepository;
 import com.example.pillyohae.coupon.repository.IssuedCouponRepository;
-import com.example.pillyohae.order.entity.Order;
 import com.example.pillyohae.order.repository.OrderRepository;
 import com.example.pillyohae.user.entity.User;
-import com.example.pillyohae.user.entity.type.Role;
 import com.example.pillyohae.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.client.HttpResponseException;
 import org.springframework.http.HttpStatus;
-import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -38,13 +33,7 @@ public class CouponService {
 
 
     @Transactional
-    public CreateCouponTemplateResponseDto createCouponTemplate(String email,
-                                                                CreateCouponTemplateRequestDto requestDto) {
-        User user = userService.findByEmail(email);
-        // 추후에 admin으로 변경해야함
-        if (user.getRole() != Role.SELLER) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "관리자만 쿠폰을 만들 수 있습니다.");
-        }
+    public CreateCouponTemplateResponseDto createCouponTemplate(CreateCouponTemplateRequestDto requestDto) {
 
         CouponTemplate couponTemplate = CouponTemplate.builder()
                 .name(requestDto.getCouponName())
@@ -58,6 +47,7 @@ public class CouponService {
                 .expiredAt(requestDto.getExpiredAt())
                 .maxIssuanceCount(requestDto.getMaxIssueCount())
                 .minimumPrice(validateMinimumPrice(requestDto.getMinimumPrice()))
+                .couponLifetime(requestDto.getCouponLifetime())
                 .build();
 
         couponTemplateRepository.save(couponTemplate);
@@ -70,64 +60,52 @@ public class CouponService {
     public GiveCouponResponseDto giveCoupon(String email, Long couponTemplateId) {
 
         User user = userService.findByEmail(email);
-
-        if (user.getRole() != Role.BUYER) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "BUYER만 받을 수 있습니다");
-        }
         // issued coupon과 coupon template을 한번에 가져옴
         List<IssuedCoupon> userIssuedCoupons = issuedCouponRepository.findIssuedCouponsWithTemplateByUserId(
                 user.getId());
 
-        List<CouponTemplate> userCouponTemplates = userIssuedCoupons.stream()
-                .map(IssuedCoupon::getCouponTemplate).toList();
-        // 중복 검증
         CouponTemplate couponTemplate = couponTemplateRepository.findById(couponTemplateId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
+        validDuplicateCoupon(userIssuedCoupons, couponTemplate);
+
+        IssuedCoupon issuedCoupon = issueCoupon(couponTemplate, user);
+
+        return new GiveCouponResponseDto(issuedCoupon.getId());
+    }
+
+    private IssuedCoupon issueCoupon(CouponTemplate couponTemplate, User user) {
+        if(couponTemplate.getStartAt().isAfter(LocalDateTime.now())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "아직 발급 시작이 안되었습니다");
+        }
+        IssuedCoupon issuedCoupon = new IssuedCoupon(LocalDateTime.now(), couponTemplate.getIssuedCouponExpiredAt(), couponTemplate, user);
+        issuedCouponRepository.save(issuedCoupon);
+        try {
+            couponTemplate.incrementIssuanceCount();
+        }catch (Exception e){
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,"발급중 오류가 발생하였습니다");
+        }
+        return issuedCoupon;
+    }
+
+    private void validDuplicateCoupon(List<IssuedCoupon> userIssuedCoupons, CouponTemplate couponTemplate) {
+        List<CouponTemplate> userCouponTemplates = userIssuedCoupons.stream()
+                .map(IssuedCoupon::getCouponTemplate).toList();
+
         if (userCouponTemplates.contains(couponTemplate)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "쿠폰을 중복해서 가질 수 없습니다");
-        }
-
-        try {
-            // 쿠폰 발급 로직 낙관적 락을 사용
-            couponTemplate.incrementIssuanceCount();
-
-            couponTemplateRepository.save(couponTemplate);
-
-            IssuedCoupon issuedCoupon = new IssuedCoupon(LocalDateTime.now(), couponTemplate.getIssuedCouponExpiredAt(), couponTemplate, user);
-
-            issuedCouponRepository.save(issuedCoupon);
-
-            return new GiveCouponResponseDto(issuedCoupon.getId());
-
-        } catch (ObjectOptimisticLockingFailureException e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
 
 
     @Transactional
-    public FindCouponListToUseResponseDto findCouponListToUse(String email, UUID orderId) {
-        if (email == null || orderId == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "이메일과 주문 ID는 필수입니다");
+    public FindCouponListResponseDto findCouponListToUse(String email, Long totalPrice) {
+        if (email == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "로그인이 되어야 합니다");
         }
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(
-                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "order not found")
-                );
         User user = userService.findByEmail(email);
-        if (!order.getUser().getId().equals(user.getId())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "해당 주문에 대한 권한이 없습니다");
-        }
-
-        Long totalPrice = order.getTotalPrice();
-        if (totalPrice == null) {
-            log.warn("주문 금액이 없는 주문 발견: {}", orderId);
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "유효하지 않은 주문입니다. 주문 금액이 없습니다.");
-        }
-
-        return new FindCouponListToUseResponseDto(
-                issuedCouponRepository.findCouponListToUse(totalPrice, user.getId())
+        return new FindCouponListResponseDto(
+                issuedCouponRepository.findCouponListByPriceAndUserId(totalPrice, user.getId())
         );
     }
 

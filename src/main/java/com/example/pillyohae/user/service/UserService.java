@@ -81,14 +81,17 @@ public class UserService {
 
         // 이 과정에서 Provider 가 인증 처리를 진행 (사용자 정보 조회, 비밀번호 검증)
         Authentication authentication = authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(requestDto.getEmail(),
-                requestDto.getPassword()));
+            new UsernamePasswordAuthenticationToken(
+                requestDto.getEmail(),
+                requestDto.getPassword()
+            )
+        );
 
         // 인증 객체를 SecurityContext에 저장
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         // access, refresh 토큰 생성 후 반환
-        String accessToken = jwtProvider.generateToken(authentication);
+        String accessToken = jwtProvider.generateAccessToken(authentication);
         String refreshToken = jwtProvider.generateRefreshToken(authentication);
 
         refreshTokenService.saveRefreshToken(user.getId(), refreshToken);
@@ -115,6 +118,9 @@ public class UserService {
         if (!passwordEncoder.matches(requestDto.getPassword(), user.getPassword())) {
             throw new CustomResponseStatusException(ErrorCode.INVALID_PASSWORD);
         }
+
+        // 리프레시 토큰 삭제
+        refreshTokenService.deleteRefreshToken(authentication);
 
         user.deleteUser();
     }

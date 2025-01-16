@@ -70,8 +70,60 @@ Content-Type: application/json
 
 
 }
+### 정액 기한 만료 유지 쿠폰 생성
+POST http://localhost:8080/coupons
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
 
-### 쿠폰 생성
+{
+  "couponName": "Welcome Discount",
+  "couponDescription": "Get a 10% discount on your first order!",
+  "discountType": "FIXED_AMOUNT",
+  "expiredType": "FIXED_DATE",
+  "fixedAmount": 10000,
+  "minimumPrice": 20000,
+  "startAt": "2025-01-16T14:13:30",
+  "expiredAt": "2025-02-20T23:59:59",
+  "maxIssueCount": 1000
+}
+### 정액 일정 기간 유지 쿠폰 생성
+POST http://localhost:8080/coupons
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "couponName": "Welcome Discount",
+  "couponDescription": "Get a 10% discount on your first order!",
+  "discountType": "FIXED_AMOUNT",
+  "expiredType": "DURATION_BASED",
+  "fixedAmount": 10000,
+  "minimumPrice": 20000,
+  "startAt": "2025-01-16T14:13:30",
+  "expiredAt": "2025-02-20T23:59:59",
+  "maxIssueCount": 1000,
+  "couponLifetime": 3
+}
+
+### 정률 기한 만료 쿠폰 생성
+POST http://localhost:8080/coupons
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "couponName": "Welcome Discount",
+  "couponDescription": "Get a 10% discount on your first order!",
+  "discountType": "PERCENTAGE",
+  "expiredType": "FIXED_DATE",
+  "fixedRate": 10,
+  "maxDiscountAmount": 5000,
+  "minimumPrice": 15000,
+  "startAt": "2025-01-16T14:13:30",
+  "expiredAt": "2025-02-20T23:59:59",
+  "maxIssueCount": 1000
+}
+
+
+### 정률 일정 기간 유지 쿠폰 생성
 POST http://localhost:8080/coupons
 Authorization: Bearer {{accessToken}}
 Content-Type: application/json
@@ -81,13 +133,13 @@ Content-Type: application/json
   "couponDescription": "Get a 10% discount on your first order!",
   "discountType": "PERCENTAGE",
   "expiredType": "DURATION_BASED",
-  "fixedAmount": 0,
   "fixedRate": 10,
   "maxDiscountAmount": 5000,
-  "minimumPrice": 20000,
-  "startAt": "2025-01-15T15:36:00",
+  "minimumPrice": 15000,
+  "startAt": "2025-01-16T14:13:30",
   "expiredAt": "2025-02-20T23:59:59",
-  "maxIssueCount": 1000
+  "maxIssueCount": 1000,
+  "couponLifetime": 3
 }
 
 
@@ -141,9 +193,13 @@ POST http://localhost:8080/coupons/1/issue
 Authorization: Bearer {{accessToken}}
 ###
 
-
-
 ###
+GET http://localhost:8080/users/coupons?totalPrice = 15000
+Authorization: Bearer {{accessToken}}
+
+
+
+### 카트 생성
 POST http://localhost:8080/carts
 Authorization: Bearer {{accessToken}}
 Content-Type: application/json
@@ -166,6 +222,23 @@ Content-Type: application/json
     }
   ]
 }
+
+### 판매자 주문 조회
+GET http://localhost:8080/users/sellers/orders
+Authorization: Bearer {{accessToken}}
+
+### 판매자 주문 상세 조회
+GET http://localhost:8080/users/sellers/orders/7d8e81e0-2279-4d93-b1b0-1dbc9c57e63b
+Authorization: Bearer {{accessToken}}
+
+### 구매자 주문 조회
+GET http://localhost:8080/users/orders
+Authorization: Bearer {{accessToken}}
+
+### 구매자 상세 조회
+GET http://localhost:8080/users/orders/c246ac35-2994-4c02-a62c-991320681bdd/orderItems
+Authorization: Bearer {{accessToken}}
+
 ### 주문생성
 POST http://localhost:8080/orders
 Authorization: Bearer {{accessToken}}

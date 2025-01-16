@@ -1,16 +1,24 @@
 package com.example.pillyohae.order.repository;
 
-import com.example.pillyohae.order.dto.BuyerOrderDetailInfo;
-import com.example.pillyohae.order.dto.BuyerOrderInfo;
+import com.example.pillyohae.order.dto.OrderDetailResponseDto;
+import com.example.pillyohae.order.dto.OrderDetailSellerResponseDto;
+import com.example.pillyohae.order.dto.OrderPageResponseDto;
+import com.example.pillyohae.order.dto.OrderPageSellerResponseDto;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
 public interface OrderQueryRepository {
-    List<BuyerOrderInfo> findBuyerOrders(Long userId, LocalDateTime startAt, LocalDateTime endAt, Long pageNumber, Long pageSize);
+    List<OrderPageResponseDto.OrderInfoDto> findOrders(Long userId, LocalDateTime startAt, LocalDateTime endAt, Long pageNumber, Long pageSize);
 
-    List<BuyerOrderDetailInfo.BuyerOrderProductInfo> findBuyerOrderDetailAfterPayment(UUID orderId);
+    List<OrderPageSellerResponseDto.OrderInfoDto> findSellerOrders(Long userId, LocalDateTime startAt, LocalDateTime endAt, Long pageNumber, Long pageSize);
 
-    List<BuyerOrderDetailInfo.BuyerOrderProductInfo> findBuyerOrderDetailBeforePayment(UUID orderId);
+    List<OrderDetailResponseDto.OrderProductDto> findOrderProductsByOrderId(UUID orderId);
+
+    OrderDetailResponseDto.OrderInfoDto findOrderDetailOrderInfoDtoByOrderId(UUID orderId);
+
+    OrderDetailSellerResponseDto.OrderInfoDto findOrderDetailSellerInfoDtoByOrderId(UUID orderId);
+
+    OrderDetailSellerResponseDto.OrderProductDto findOrderDetailSellerProductDtoByOrderId(UUID orderId, Long userId);
 }

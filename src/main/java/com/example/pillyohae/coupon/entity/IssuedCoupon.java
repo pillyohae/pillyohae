@@ -2,21 +2,33 @@ package com.example.pillyohae.coupon.entity;
 
 import com.example.pillyohae.order.entity.Order;
 import com.example.pillyohae.user.entity.User;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "issued_coupon", indexes = {
-        @Index(name = "idx_issued_coupon_user",
-                columnList = "user_id,used_at,expire_at")
+    @Index(name = "idx_issued_coupon_user",
+        columnList = "user_id,used_at,expired_at")
 })
 public class IssuedCoupon {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -43,7 +55,8 @@ public class IssuedCoupon {
     @JoinColumn(name = "user_id")
     private User user;              // 쿠폰 소유 사용자
 
-    public IssuedCoupon(LocalDateTime issuedAt, LocalDateTime expiredAt, CouponTemplate couponTemplate, User user) {
+    public IssuedCoupon(LocalDateTime issuedAt, LocalDateTime expiredAt,
+        CouponTemplate couponTemplate, User user) {
         this.issuedAt = issuedAt;
         this.expiredAt = expiredAt;
         this.couponTemplate = couponTemplate;
@@ -52,8 +65,7 @@ public class IssuedCoupon {
         validateExpireAt();
     }
 
-    public void validateExpireAt()
-    {
+    public void validateExpireAt() {
         if (expiredAt == null) {
 
             throw new IllegalArgumentException("만료일은 필수 값입니다.");
