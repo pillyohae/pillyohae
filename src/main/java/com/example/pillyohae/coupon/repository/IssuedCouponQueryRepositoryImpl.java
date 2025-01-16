@@ -1,7 +1,7 @@
 package com.example.pillyohae.coupon.repository;
 
-import com.example.pillyohae.coupon.dto.FindCouponListToUseResponseDto;
-import com.example.pillyohae.coupon.dto.QFindCouponListToUseResponseDto_CouponInfo;
+import com.example.pillyohae.coupon.dto.FindCouponListResponseDto;
+import com.example.pillyohae.coupon.dto.QFindCouponListResponseDto_CouponInfo;
 import com.example.pillyohae.coupon.entity.CouponTemplate;
 import com.example.pillyohae.coupon.entity.QCouponTemplate;
 import com.example.pillyohae.coupon.entity.QIssuedCoupon;
@@ -23,9 +23,9 @@ public class IssuedCouponQueryRepositoryImpl implements IssuedCouponQueryReposit
     // 유저가 가진 쿠폰중에 최소사용금액이 결제 총액보다 낮은경우를 찾음
     // 쿠폰의 만료 여부는 발행된 유저의 쿠폰의 expired_at을 통해 함.
     @Override
-    public List<FindCouponListToUseResponseDto.CouponInfo> findCouponListByPriceAndUserId(Long price, Long userId) {
+    public List<FindCouponListResponseDto.CouponInfo> findCouponListByPriceAndUserId(Long price, Long userId) {
         return queryFactory
-                .select(new QFindCouponListToUseResponseDto_CouponInfo(
+                .select(new QFindCouponListResponseDto_CouponInfo(
                         issuedCoupon.id,
                         couponTemplate.name,
                         couponTemplate.description,

@@ -1,6 +1,6 @@
 package com.example.pillyohae.user.controller;
 
-import com.example.pillyohae.coupon.dto.FindCouponListToUseResponseDto;
+import com.example.pillyohae.coupon.dto.FindCouponListResponseDto;
 import com.example.pillyohae.coupon.service.CouponService;
 import com.example.pillyohae.order.dto.OrderDetailResponseDto;
 import com.example.pillyohae.order.dto.OrderPageResponseDto;
@@ -42,6 +42,8 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import static com.example.pillyohae.global.constant.TokenPrefix.TOKEN_PREFIX;
 
 @Slf4j
 @RestController
@@ -244,12 +246,13 @@ public class UserController {
     }
 
     /**
-     * 주문에 맞는 사용자 쿠폰 목록 조회
+     *
      * @param authentication 토큰을 통해 얻어온 사용자 정보를 담고있는 인증 객체
+     * @param totalPrice 주문에 사용할 쿠폰 조회시 현재 주문 총 금액
      * @return 정상적으로 완료시 OK 상태코드와 사용 가능한 쿠폰 목록 정보를 반환
      */
     @GetMapping("/coupons")
-    public ResponseEntity<FindCouponListToUseResponseDto> getCouponListToUse(Authentication authentication, @RequestParam(required = false) Long totalPrice ) {
+    public ResponseEntity<FindCouponListResponseDto> getCouponListToUse(Authentication authentication, @RequestParam(required = false) Long totalPrice ) {
         return ResponseEntity.ok(couponService.findCouponListToUse(authentication.getName(), totalPrice));
     }
 }

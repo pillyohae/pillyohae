@@ -2,7 +2,7 @@ package com.example.pillyohae.coupon.service;
 
 import com.example.pillyohae.coupon.dto.CreateCouponTemplateRequestDto;
 import com.example.pillyohae.coupon.dto.CreateCouponTemplateResponseDto;
-import com.example.pillyohae.coupon.dto.FindCouponListToUseResponseDto;
+import com.example.pillyohae.coupon.dto.FindCouponListResponseDto;
 import com.example.pillyohae.coupon.dto.GiveCouponResponseDto;
 import com.example.pillyohae.coupon.entity.CouponTemplate;
 import com.example.pillyohae.coupon.entity.IssuedCoupon;
@@ -99,12 +99,12 @@ public class CouponService {
 
 
     @Transactional
-    public FindCouponListToUseResponseDto findCouponListToUse(String email, Long totalPrice) {
+    public FindCouponListResponseDto findCouponListToUse(String email, Long totalPrice) {
         if (email == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "로그인이 되어야 합니다");
         }
         User user = userService.findByEmail(email);
-        return new FindCouponListToUseResponseDto(
+        return new FindCouponListResponseDto(
                 issuedCouponRepository.findCouponListByPriceAndUserId(totalPrice, user.getId())
         );
     }
