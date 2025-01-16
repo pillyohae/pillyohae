@@ -2,7 +2,6 @@ package com.example.pillyohae.coupon.controller;
 
 import com.example.pillyohae.coupon.dto.CreateCouponTemplateRequestDto;
 import com.example.pillyohae.coupon.dto.CreateCouponTemplateResponseDto;
-import com.example.pillyohae.coupon.dto.FindCouponListToUseResponseDto;
 import com.example.pillyohae.coupon.dto.GiveCouponResponseDto;
 import com.example.pillyohae.coupon.service.CouponService;
 import jakarta.validation.Valid;
@@ -10,10 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/coupons")
