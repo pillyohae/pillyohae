@@ -59,7 +59,9 @@ public class ProductImage {
     }
 
     public void downPosition() {
-        this.position--;
+        if (this.position > 0) {
+            this.position--;
+        }
     }
 
     public void upPosition() {
