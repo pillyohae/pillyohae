@@ -8,23 +8,18 @@ import com.example.pillyohae.coupon.entity.CouponTemplate;
 import com.example.pillyohae.coupon.entity.IssuedCoupon;
 import com.example.pillyohae.coupon.repository.CouponTemplateRepository;
 import com.example.pillyohae.coupon.repository.IssuedCouponRepository;
-import com.example.pillyohae.order.entity.Order;
 import com.example.pillyohae.order.repository.OrderRepository;
 import com.example.pillyohae.user.entity.User;
-import com.example.pillyohae.user.entity.type.Role;
 import com.example.pillyohae.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.client.HttpResponseException;
 import org.springframework.http.HttpStatus;
-import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -104,27 +99,13 @@ public class CouponService {
 
 
     @Transactional
-    public FindCouponListToUseResponseDto findCouponListToUse(String email, UUID orderId) {
-        if (email == null || orderId == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "이메일과 주문 ID는 필수입니다");
+    public FindCouponListToUseResponseDto findCouponListToUse(String email, Long totalPrice) {
+        if (email == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "로그인이 되어야 합니다");
         }
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(
-                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "order not found")
-                );
         User user = userService.findByEmail(email);
-        if (!order.getUser().getId().equals(user.getId())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "해당 주문에 대한 권한이 없습니다");
-        }
-
-        Long totalPrice = order.getTotalPrice();
-        if (totalPrice == null) {
-            log.warn("주문 금액이 없는 주문 발견: {}", orderId);
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "유효하지 않은 주문입니다. 주문 금액이 없습니다.");
-        }
-
         return new FindCouponListToUseResponseDto(
-                issuedCouponRepository.findCouponListToUse(totalPrice, user.getId())
+                issuedCouponRepository.findCouponListByPriceAndUserId(totalPrice, user.getId())
         );
     }
 
