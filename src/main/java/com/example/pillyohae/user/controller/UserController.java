@@ -225,11 +225,10 @@ public class UserController {
     /**
      * 주문에 맞는 사용자 쿠폰 목록 조회
      * @param authentication 토큰을 통해 얻어온 사용자 정보를 담고있는 인증 객체
-     * @param orderId 주문 식별자
      * @return 정상적으로 완료시 OK 상태코드와 사용 가능한 쿠폰 목록 정보를 반환
      */
-    @GetMapping("orders/{orderId}/coupons")
-    public ResponseEntity<FindCouponListToUseResponseDto> getCouponListToUse(Authentication authentication, @PathVariable(name = "orderId") UUID orderId) {
-        return ResponseEntity.ok(couponService.findCouponListToUse(authentication.getName(), orderId));
+    @GetMapping("/coupons")
+    public ResponseEntity<FindCouponListToUseResponseDto> getCouponListToUse(Authentication authentication, @RequestParam(required = false) Long totalPrice ) {
+        return ResponseEntity.ok(couponService.findCouponListToUse(authentication.getName(), totalPrice));
     }
 }
