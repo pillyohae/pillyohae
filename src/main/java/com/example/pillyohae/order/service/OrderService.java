@@ -44,7 +44,8 @@ public class OrderService {
      * 주문 생성에 필요한 정보를 만들고
      * order entity를 생성합니다. 그리고 orderProduct를 생성하고 저장합니다.
      * requestDto에서 쿠폰이 있다면 쿠폰을 order에 적용합니다.
-     * @param email 유저 email
+     *
+     * @param email      유저 email
      * @param requestDto 주문정보 및 쿠폰정보
      * @return 생성된 order entity의 id
      */
@@ -84,11 +85,11 @@ public class OrderService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid pagination parameters");
         }
 
-        List<OrderPageResponseDto.OrderInfo> orderInfoList = orderRepository.findOrders(user.getId(), startAt, endAt, pageNumber, pageSize);
+        List<OrderPageResponseDto.OrderInfoDto> orderInfoDtoList = orderRepository.findOrders(user.getId(), startAt, endAt, pageNumber, pageSize);
 
         OrderPageResponseDto.PageInfo pageInfo = new OrderPageResponseDto.PageInfo(pageNumber, pageSize);
 
-        return new OrderPageResponseDto(orderInfoList, pageInfo);
+        return new OrderPageResponseDto(orderInfoDtoList, pageInfo);
 
     }
 
@@ -101,7 +102,7 @@ public class OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
 
-        if(OrderStatus.PENDING.equals(order.getStatus())){
+        if (OrderStatus.PENDING.equals(order.getStatus())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Order is in pending");
         }
 
@@ -113,7 +114,7 @@ public class OrderService {
 
         OrderDetailResponseDto.OrderInfoDto orderInfoDto = orderRepository.findOrderDetailOrderInfoDtoByOrderId(orderId);
 
-        return new OrderDetailResponseDto(orderInfoDto,productInfos);
+        return new OrderDetailResponseDto(orderInfoDto, productInfos);
 
     }
 
@@ -154,19 +155,24 @@ public class OrderService {
     private Order createOrder(User user, List<Product> products, List<OrderCreateRequestDto.ProductOrderInfo> productOrderInfos) {
         // TODO: Replace dummy address with actual user address in the future
         ShippingAddress shippingAddress = createShippingAddress();
-        String orderName = makeOrderName(products,productOrderInfos);
+        String orderName = makeOrderName(products, productOrderInfos);
         String imageUrl = "no image";
-        if(!products.get(0).getImages().isEmpty()){
-            imageUrl=products.get(0).getImages().get(0).getFileUrl();
+        if (products.get(0).getImages() != null && !products.get(0).getImages().isEmpty()) {
+            imageUrl = products.get(0).getImages().get(0).getFileUrl();
         }
-        Long totalPrice = calculateTotalPrice(productOrderInfos,products);
+        Long totalPrice = calculateTotalPrice(productOrderInfos, products);
         return new Order(user, shippingAddress, imageUrl, totalPrice, orderName);
     }
 
     private Long calculateTotalPrice(List<OrderCreateRequestDto.ProductOrderInfo> productOrderInfos, List<Product> products) {
         Long totalPrice = 0L;
-        for(OrderCreateRequestDto.ProductOrderInfo productOrderInfo : productOrderInfos){
-            totalPrice += products.stream().filter(product -> product.getProductId().equals(productOrderInfo.getProductId())).findFirst().get().getPrice() * productOrderInfo.getQuantity();
+        // 각 제품의 수량과 가격을 매칭하여 총액을 계산합니다
+        for (OrderCreateRequestDto.ProductOrderInfo productOrderInfo : productOrderInfos) {
+            Product matchingProduct = products.stream()
+                    .filter(product -> product.getProductId().equals(productOrderInfo.getProductId()))
+                    .findFirst()
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product not found"));
+            totalPrice += matchingProduct.getPrice() * productOrderInfo.getQuantity();
         }
         return totalPrice;
     }
@@ -193,7 +199,7 @@ public class OrderService {
     ) {
         Product product = findProductById(purchaseProducts, productInfo.getProductId());
         String imageUrl = "no image";
-        if(!product.getImages().isEmpty()){
+        if (product.getImages() != null && !product.getImages().isEmpty()) {
             imageUrl = product.getImages().get(0).getFileUrl();
         }
         return new OrderProduct(
@@ -217,7 +223,8 @@ public class OrderService {
     public String makeOrderName(List<Product> products, List<OrderCreateRequestDto.ProductOrderInfo> productInfos) {
         Product firstProduct = products.get(0);
         int productCount = products.size();
-        int firstProductQuantity = productInfos.stream().filter(productOrderInfo -> Objects.equals(productOrderInfo.getProductId(), products.get(0).getProductId())).findFirst().get().getQuantity();
+        int firstProductQuantity = productInfos.stream().filter(productOrderInfo -> Objects.equals(productOrderInfo.getProductId(), products.get(0).getProductId()))
+                .findFirst().orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product info not found")).getQuantity();
         return formatOrderName(firstProduct.getProductName(), firstProductQuantity, productCount);
     }
 
@@ -233,8 +240,6 @@ public class OrderService {
             issuedCouponRepository.findById(couponIds.get(0)).ifPresent(order::applyCoupon);
         }
     }
-
-
 
 
 }

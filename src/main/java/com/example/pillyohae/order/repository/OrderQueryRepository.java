@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.UUID;
 
 public interface OrderQueryRepository {
-    List<OrderPageResponseDto.OrderInfo> findOrders(Long userId, LocalDateTime startAt, LocalDateTime endAt, Long pageNumber, Long pageSize);
+    List<OrderPageResponseDto.OrderInfoDto> findOrders(Long userId, LocalDateTime startAt, LocalDateTime endAt, Long pageNumber, Long pageSize);
 
     List<OrderDetailResponseDto.OrderProductDto> findOrderProductsByOrderId(UUID orderId);
 

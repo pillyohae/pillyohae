@@ -26,7 +26,7 @@ public class OrderQueryRepositoryImpl implements OrderQueryRepository {
 
 
     @Override
-    public List<OrderPageResponseDto.OrderInfo> findOrders(Long userId, LocalDateTime startAt, LocalDateTime endAt, Long pageNumber, Long pageSize) {
+    public List<OrderPageResponseDto.OrderInfoDto> findOrders(Long userId, LocalDateTime startAt, LocalDateTime endAt, Long pageNumber, Long pageSize) {
         if (queryFactory == null) {
             throw new IllegalStateException("QueryFactory is not initialized");
         }
@@ -48,6 +48,7 @@ public class OrderQueryRepositoryImpl implements OrderQueryRepository {
         }
 
         return queryFactory.select(new QOrderDetailResponseDto_OrderProductDto(orderProduct.id, orderProduct.productName, orderProduct.quantity, orderProduct.price, orderProduct.status))
+                .from(orderProduct)
                 .where(orderProduct.order.id.eq(orderId))
                 .fetch();
 

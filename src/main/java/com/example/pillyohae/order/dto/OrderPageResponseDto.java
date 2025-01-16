@@ -12,17 +12,17 @@ import java.util.UUID;
 @Getter
 public class OrderPageResponseDto {
 
-    private final List<OrderInfo> orderInfos;
+    private final List<OrderInfoDto> orderInfoDtos;
     private final PageInfo pageInfo;
 
-    public OrderPageResponseDto(List<OrderInfo> orderInfos, PageInfo pageInfo) {
-        this.orderInfos = orderInfos;
+    public OrderPageResponseDto(List<OrderInfoDto> orderInfoDtos, PageInfo pageInfo) {
+        this.orderInfoDtos = orderInfoDtos;
         this.pageInfo = pageInfo;
     }
 
     @Getter
     @NoArgsConstructor(force = true)
-    public class OrderInfo {
+    public static class OrderInfoDto {
         private final UUID orderId;
         private final OrderStatus orderStatus;
         private final String orderName;
@@ -30,7 +30,7 @@ public class OrderPageResponseDto {
         private final String imageUrl;
 
         @QueryProjection
-        public OrderInfo(UUID orderId, OrderStatus orderStatus, String orderName, LocalDateTime paidAt, String imageUrl) {
+        public OrderInfoDto(UUID orderId, OrderStatus orderStatus, String orderName, LocalDateTime paidAt, String imageUrl) {
             this.orderId = orderId;
             this.orderStatus = orderStatus;
             this.orderName = orderName;

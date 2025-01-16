@@ -12,26 +12,25 @@ import java.util.List;
 import java.util.UUID;
 
 @Getter
-@NoArgsConstructor
 public class OrderDetailResponseDto {
 
-    private OrderInfoDto orderInfo;
-    private List<OrderProductDto> orderProducts;
+    private final OrderInfoDto orderInfo;
+    private final List<OrderProductDto> orderProducts;
 
     public OrderDetailResponseDto(OrderInfoDto orderInfo, List<OrderProductDto> orderProducts) {
         this.orderInfo = orderInfo;
         this.orderProducts = orderProducts;
     }
 
-    @NoArgsConstructor
+    @NoArgsConstructor(force = true)
     @Getter
     public static class OrderInfoDto{
-        private UUID orderId;
-        private OrderStatus orderStatus;
-        private String orderName;
-        private LocalDateTime paidAt;
-        private String imageUrl;
-        private ShippingAddress shippingAddress;
+        private final UUID orderId;
+        private final OrderStatus orderStatus;
+        private final String orderName;
+        private final LocalDateTime paidAt;
+        private final String imageUrl;
+        private final ShippingAddress shippingAddress;
 
         @QueryProjection
         public OrderInfoDto(UUID orderId, OrderStatus orderStatus, String orderName, LocalDateTime paidAt, String imageUrl, ShippingAddress shippingAddress) {
@@ -44,14 +43,14 @@ public class OrderDetailResponseDto {
         }
     }
 
-    @NoArgsConstructor
+    @NoArgsConstructor(force = true)
     @Getter
     public static class OrderProductDto {
-        private Long orderItemId;
-        private String orderItemName;
-        private Integer orderItemQuantity;
-        private Long orderItemPrice;
-        private OrderProductStatus orderProductStatus;
+        private final Long orderItemId;
+        private final String orderItemName;
+        private final Integer orderItemQuantity;
+        private final Long orderItemPrice;
+        private final OrderProductStatus orderProductStatus;
         @QueryProjection
         public OrderProductDto(Long orderItemId, String orderItemName, Integer orderItemQuantity, Long orderItemPrice, OrderProductStatus orderProductStatus) {
             this.orderItemId = orderItemId;

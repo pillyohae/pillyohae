@@ -228,7 +228,7 @@ public class UserController {
      * @param orderId 주문 식별자
      * @return 정상적으로 완료시 OK 상태코드와 사용 가능한 쿠폰 목록 정보를 반환
      */
-    @GetMapping("coupons/orders/{orderId}")
+    @GetMapping("orders/{orderId}/coupons")
     public ResponseEntity<FindCouponListToUseResponseDto> getCouponListToUse(Authentication authentication, @PathVariable(name = "orderId") UUID orderId) {
         return ResponseEntity.ok(couponService.findCouponListToUse(authentication.getName(), orderId));
     }
