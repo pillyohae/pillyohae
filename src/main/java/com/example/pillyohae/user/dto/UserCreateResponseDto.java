@@ -1,5 +1,6 @@
 package com.example.pillyohae.user.dto;
 
+import com.example.pillyohae.global.entity.address.ShippingAddress;
 import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -11,7 +12,7 @@ public class UserCreateResponseDto {
     private final Long userId;
     private final String name;
     private final String email;
-    private final String address;
+    private final ShippingAddress address;
     private final LocalDateTime createdAt;
 
 }
