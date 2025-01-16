@@ -1,8 +1,6 @@
 package com.example.pillyohae.order.service;
 
 import com.example.pillyohae.cart.repository.CartRepository;
-import com.example.pillyohae.coupon.entity.CouponTemplate;
-import com.example.pillyohae.coupon.entity.IssuedCoupon;
 import com.example.pillyohae.coupon.repository.IssuedCouponRepository;
 import com.example.pillyohae.global.entity.address.ShippingAddress;
 import com.example.pillyohae.order.dto.*;
@@ -20,12 +18,12 @@ import com.example.pillyohae.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -41,7 +39,15 @@ public class OrderService {
     private final IssuedCouponRepository issuedCouponRepository;
 
 
-    // 상품 주문 생성
+    /**
+     * product 들에 대한 검증을 먼저 하고
+     * 주문 생성에 필요한 정보를 만들고
+     * order entity를 생성합니다. 그리고 orderProduct를 생성하고 저장합니다.
+     * requestDto에서 쿠폰이 있다면 쿠폰을 order에 적용합니다.
+     * @param email 유저 email
+     * @param requestDto 주문정보 및 쿠폰정보
+     * @return 생성된 order entity의 id
+     */
     @Transactional
     public OrderCreateResponseDto createOrderByProducts(String email, OrderCreateRequestDto requestDto) {
 
@@ -51,22 +57,22 @@ public class OrderService {
 
         validateProducts(purchaseProducts);
 
-        Order order = createOrder(user);
+        Order order = createOrder(user, purchaseProducts, requestDto.getProductInfos());
 
         List<OrderProduct> orderProducts = createOrderProducts(purchaseProducts, requestDto.getProductInfos(), order);
         // order와 orderProduct를 저장할때 order에 총액과 orderName을 설정합니다.
-        Order savedOrder = saveOrderAndProducts(order, orderProducts);
+        Order savedOrder = orderRepository.save(order);
+
+        orderProductRepository.saveAll(orderProducts);
 
         applyCouponIfPresent(savedOrder, requestDto.getCouponIds());
 
         return new OrderCreateResponseDto(savedOrder.getId());
     }
 
-
-
     // buyer의 order 내역 조회
     @Transactional
-    public BuyerOrderSearchResponseDto findOrder(String email, LocalDateTime startAt, LocalDateTime endAt, Long pageNumber, Long pageSize) {
+    public OrderPageResponseDto findOrder(String email, LocalDateTime startAt, LocalDateTime endAt, Long pageNumber, Long pageSize) {
 
         User user = userService.findByEmail(email);
 
@@ -78,17 +84,17 @@ public class OrderService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid pagination parameters");
         }
 
-        List<BuyerOrderInfo> orderInfoList = orderRepository.findBuyerOrders(user.getId(), startAt, endAt, pageNumber, pageSize);
+        List<OrderPageResponseDto.OrderInfo> orderInfoList = orderRepository.findOrders(user.getId(), startAt, endAt, pageNumber, pageSize);
 
-        BuyerOrderSearchResponseDto.PageInfo pageInfo = new BuyerOrderSearchResponseDto.PageInfo(pageNumber, pageSize);
+        OrderPageResponseDto.PageInfo pageInfo = new OrderPageResponseDto.PageInfo(pageNumber, pageSize);
 
-        return new BuyerOrderSearchResponseDto(orderInfoList, pageInfo);
+        return new OrderPageResponseDto(orderInfoList, pageInfo);
 
     }
 
-    // 결제가 모두 완료된 order 단건 조회
+    // 주문 정보와 주문 상품 정보를 따로 조회
     @Transactional
-    public BuyerOrderDetailInfo getOrderDetailAfterPayment(String email, UUID orderId) {
+    public OrderDetailResponseDto getOrderDetail(String email, UUID orderId) {
 
         User user = userService.findByEmail(email);
 
@@ -102,32 +108,13 @@ public class OrderService {
         if (!order.getUser().equals(user)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Order is not owned by user");
         }
-        // orderItem에 저장된 정보로 조회
-        List<BuyerOrderDetailInfo.BuyerOrderProductInfo> itemInfos = orderRepository.findBuyerOrderDetailAfterPayment(orderId);
 
-        return new BuyerOrderDetailInfo(itemInfos);
-    }
+        List<OrderDetailResponseDto.OrderProductDto> productInfos = orderRepository.findOrderProductsByOrderId(orderId);
 
-    // 결제가 완료되기 전 order 단건조회
-    @Transactional
-    public BuyerOrderDetailInfo getOrderDetailBeforePayment(String email, UUID orderId) {
+        OrderDetailResponseDto.OrderInfoDto orderInfoDto = orderRepository.findOrderDetailOrderInfoDtoByOrderId(orderId);
 
-        User user = userService.findByEmail(email);
+        return new OrderDetailResponseDto(orderInfoDto,productInfos);
 
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
-
-        if(!OrderStatus.PENDING.equals(order.getStatus())){
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Order is not in pending");
-        }
-
-        if (!order.getUser().equals(user)) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Order is not owned by user");
-        }
-
-        List<BuyerOrderDetailInfo.BuyerOrderProductInfo> itemInfos = orderRepository.findBuyerOrderDetailBeforePayment(orderId);
-
-        return new BuyerOrderDetailInfo(itemInfos);
     }
 
     // seller orderItem 상태 수정
@@ -153,7 +140,7 @@ public class OrderService {
                 .map(OrderCreateRequestDto.ProductOrderInfo::getProductId)
                 .toList();
 
-        return productRepository.findByProductIdIn(productIds);
+        return productRepository.findByProductIdInJoinImage(productIds);
     }
 
     private void validateProducts(List<Product> products) {
@@ -164,11 +151,24 @@ public class OrderService {
         }
     }
 
-    private Order createOrder(User user) {
+    private Order createOrder(User user, List<Product> products, List<OrderCreateRequestDto.ProductOrderInfo> productOrderInfos) {
         // TODO: Replace dummy address with actual user address in the future
         ShippingAddress shippingAddress = createShippingAddress();
+        String orderName = makeOrderName(products,productOrderInfos);
+        String imageUrl = "no image";
+        if(!products.get(0).getImages().isEmpty()){
+            imageUrl=products.get(0).getImages().get(0).getFileUrl();
+        }
+        Long totalPrice = calculateTotalPrice(productOrderInfos,products);
+        return new Order(user, shippingAddress, imageUrl, totalPrice, orderName);
+    }
 
-        return new Order(user, shippingAddress);
+    private Long calculateTotalPrice(List<OrderCreateRequestDto.ProductOrderInfo> productOrderInfos, List<Product> products) {
+        Long totalPrice = 0L;
+        for(OrderCreateRequestDto.ProductOrderInfo productOrderInfo : productOrderInfos){
+            totalPrice += products.stream().filter(product -> product.getProductId().equals(productOrderInfo.getProductId())).findFirst().get().getPrice() * productOrderInfo.getQuantity();
+        }
+        return totalPrice;
     }
 
     private ShippingAddress createShippingAddress() {
@@ -192,11 +192,17 @@ public class OrderService {
             Order order
     ) {
         Product product = findProductById(purchaseProducts, productInfo.getProductId());
+        String imageUrl = "no image";
+        if(!product.getImages().isEmpty()){
+            imageUrl = product.getImages().get(0).getFileUrl();
+        }
         return new OrderProduct(
                 productInfo.getQuantity(),
                 product.getPrice(),
                 product.getProductId(),
                 product.getUser(),
+                // 제품의 가장 첫 사진을 저장
+                imageUrl,
                 order
         );
     }
@@ -208,17 +214,17 @@ public class OrderService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product not found"));
     }
 
-    private Order saveOrderAndProducts(Order order, List<OrderProduct> orderProducts) {
+    public String makeOrderName(List<Product> products, List<OrderCreateRequestDto.ProductOrderInfo> productInfos) {
+        Product firstProduct = products.get(0);
+        int productCount = products.size();
+        int firstProductQuantity = productInfos.stream().filter(productOrderInfo -> Objects.equals(productOrderInfo.getProductId(), products.get(0).getProductId())).findFirst().get().getQuantity();
+        return formatOrderName(firstProduct.getProductName(), firstProductQuantity, productCount);
+    }
 
-        Order savedOrder = orderRepository.save(order);
-
-        order.updateTotalPrice();
-
-        order.updateOrderName();
-
-        orderProductRepository.saveAll(orderProducts);
-
-        return savedOrder;
+    private String formatOrderName(String firstProductName, int quantity, int totalProducts) {
+        return totalProducts == 1
+                ? String.format("%s %d개", firstProductName, quantity)
+                : String.format("%s %d개 외 %d건", firstProductName, quantity, totalProducts - 1);
     }
 
     private void applyCouponIfPresent(Order order, List<Long> couponIds) {

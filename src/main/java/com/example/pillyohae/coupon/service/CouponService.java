@@ -38,13 +38,7 @@ public class CouponService {
 
 
     @Transactional
-    public CreateCouponTemplateResponseDto createCouponTemplate(String email,
-                                                                CreateCouponTemplateRequestDto requestDto) {
-        User user = userService.findByEmail(email);
-        // 추후에 admin으로 변경해야함
-        if (user.getRole() != Role.SELLER) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "관리자만 쿠폰을 만들 수 있습니다.");
-        }
+    public CreateCouponTemplateResponseDto createCouponTemplate(CreateCouponTemplateRequestDto requestDto) {
 
         CouponTemplate couponTemplate = CouponTemplate.builder()
                 .name(requestDto.getCouponName())
@@ -58,6 +52,7 @@ public class CouponService {
                 .expiredAt(requestDto.getExpiredAt())
                 .maxIssuanceCount(requestDto.getMaxIssueCount())
                 .minimumPrice(validateMinimumPrice(requestDto.getMinimumPrice()))
+                .couponLifetime(requestDto.getCouponLifetime())
                 .build();
 
         couponTemplateRepository.save(couponTemplate);
@@ -70,38 +65,40 @@ public class CouponService {
     public GiveCouponResponseDto giveCoupon(String email, Long couponTemplateId) {
 
         User user = userService.findByEmail(email);
-
-        if (user.getRole() != Role.BUYER) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "BUYER만 받을 수 있습니다");
-        }
         // issued coupon과 coupon template을 한번에 가져옴
         List<IssuedCoupon> userIssuedCoupons = issuedCouponRepository.findIssuedCouponsWithTemplateByUserId(
                 user.getId());
 
-        List<CouponTemplate> userCouponTemplates = userIssuedCoupons.stream()
-                .map(IssuedCoupon::getCouponTemplate).toList();
-        // 중복 검증
         CouponTemplate couponTemplate = couponTemplateRepository.findById(couponTemplateId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
+        validDuplicateCoupon(userIssuedCoupons, couponTemplate);
+
+        IssuedCoupon issuedCoupon = issueCoupon(couponTemplate, user);
+
+        return new GiveCouponResponseDto(issuedCoupon.getId());
+    }
+
+    private IssuedCoupon issueCoupon(CouponTemplate couponTemplate, User user) {
+        if(couponTemplate.getStartAt().isAfter(LocalDateTime.now())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "아직 발급 시작이 안되었습니다");
+        }
+        IssuedCoupon issuedCoupon = new IssuedCoupon(LocalDateTime.now(), couponTemplate.getIssuedCouponExpiredAt(), couponTemplate, user);
+        issuedCouponRepository.save(issuedCoupon);
+        try {
+            couponTemplate.incrementIssuanceCount();
+        }catch (Exception e){
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,"발급중 오류가 발생하였습니다");
+        }
+        return issuedCoupon;
+    }
+
+    private void validDuplicateCoupon(List<IssuedCoupon> userIssuedCoupons, CouponTemplate couponTemplate) {
+        List<CouponTemplate> userCouponTemplates = userIssuedCoupons.stream()
+                .map(IssuedCoupon::getCouponTemplate).toList();
+
         if (userCouponTemplates.contains(couponTemplate)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "쿠폰을 중복해서 가질 수 없습니다");
-        }
-
-        try {
-            // 쿠폰 발급 로직 낙관적 락을 사용
-            couponTemplate.incrementIssuanceCount();
-
-            couponTemplateRepository.save(couponTemplate);
-
-            IssuedCoupon issuedCoupon = new IssuedCoupon(LocalDateTime.now(), couponTemplate.getIssuedCouponExpiredAt(), couponTemplate, user);
-
-            issuedCouponRepository.save(issuedCoupon);
-
-            return new GiveCouponResponseDto(issuedCoupon.getId());
-
-        } catch (ObjectOptimisticLockingFailureException e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
 

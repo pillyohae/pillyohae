@@ -1,24 +1,28 @@
 package com.example.pillyohae.coupon.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.DynamicInsert;
+import org.hibernate.annotations.DynamicUpdate;
 import org.springframework.http.HttpStatus;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@DynamicUpdate
+@DynamicInsert
 @Table(name = "coupon_template", indexes = {
         @Index(name = "idx_coupon_template_status_price",
                 columnList = "status,minimum_price")
@@ -35,24 +39,28 @@ public class CouponTemplate {
     @Column(nullable = false)
     private String description;
 
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private DiscountType discountType;
 
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private ExpiredType expiredType;
 
     @PositiveOrZero
-    private Long fixedAmount = 0L;
+    private Long fixedAmount;
 
     // %단위로 저장
     @PositiveOrZero
-    @Max(100)
-    private Long fixedRate = 0L;
+    @Min(0) @Max(100)
+    private Long fixedRate;
 
     @Column(nullable = false)
     @PositiveOrZero
-    private Long minimumPrice = 0L;
+    private Long minimumPrice;
 
+    //만약 최대 할인금액을 설정하지 않았을경우 금액제한이 없다고 가정
+    //default 값이 들어가도록 설정
     @Column(nullable = false)
     @Positive
     private Long maxDiscountAmount;
@@ -72,6 +80,9 @@ public class CouponTemplate {
     @Enumerated(EnumType.STRING)
     private CouponStatus status;
 
+    @Column
+    private Period couponLifetime;
+
     @Version  // 낙관적 락을 위한 버전 필드
     private Long version;
 
@@ -84,7 +95,7 @@ public class CouponTemplate {
     private List<IssuedCoupon> issuedCoupons = new ArrayList<>();
 
     @Builder
-    public CouponTemplate(String name, String description, DiscountType discountType, ExpiredType expiredType, Long fixedAmount, Long fixedRate, Long maxDiscountAmount, Long minimumPrice, LocalDateTime startAt, LocalDateTime expiredAt, Integer maxIssuanceCount) {
+    public CouponTemplate(String name, String description, DiscountType discountType, ExpiredType expiredType, Long fixedAmount, Long fixedRate, Long maxDiscountAmount, Long minimumPrice, LocalDateTime startAt, LocalDateTime expiredAt, Integer maxIssuanceCount, Integer couponLifetime) {
         this.name = name;
         this.description = description;
         this.discountType = discountType;
@@ -96,35 +107,32 @@ public class CouponTemplate {
         this.minimumPrice = minimumPrice;
         this.expiredAt = expiredAt;
         this.maxIssuanceCount = maxIssuanceCount;
+        if(couponLifetime == null) {
+            couponLifetime = 0;
+        }
+        this.couponLifetime = Period.ofDays(couponLifetime);
+
         this.status = CouponStatus.ACTIVE;
         this.currentIssuanceCount = 0;
     }
 
-    @PrePersist
-    @PreUpdate
-    private void ensureDefaultValues() {
-        if (this.fixedAmount == null) {
-            this.fixedAmount = 0L;
-        }
-        if (this.fixedRate == null) {
-            this.fixedRate = 0L;
-        }
-    }
-
     public LocalDateTime getIssuedCouponExpiredAt() {
+
         if (this.expiredAt == null || this.startAt == null) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,"쿠폰 만료일자 또는 시작일자가 존재하지 않습니다.");
         }
+
         if(ExpiredType.FIXED_DATE == this.expiredType){
             return this.expiredAt;
         }
+
         if (ExpiredType.DURATION_BASED == this.expiredType) {
-            return this.expiredAt.plus(Duration.between(this.startAt, LocalDateTime.now()));
+            return LocalDateTime.now().plus(couponLifetime);
         }
+
         throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,"쿠폰 만료일자 타입이 FIXED_DATE 또는 DURATION_BASED 가 아닙니다");
     }
 
-    //낙관적 락 적용
     public synchronized void incrementIssuanceCount() {
         validateTemplate();
         validateIssuanceLimit();
@@ -139,9 +147,6 @@ public class CouponTemplate {
     private void validateTemplate() {
         if (status != CouponStatus.ACTIVE) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"사용 가능한 쿠폰이 아닙니다. 현재 상태: " + status);
-        }
-        if (!LocalDateTime.now().isAfter(this.startAt)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"발급 시간이 아직 안되었습니다.");
         }
     }
     // 쿠폰 한도 검증

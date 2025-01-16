@@ -7,6 +7,7 @@ import com.example.pillyohae.global.entity.address.ShippingAddress;
 import com.example.pillyohae.order.entity.status.OrderProductStatus;
 import com.example.pillyohae.order.entity.status.OrderStatus;
 import com.example.pillyohae.user.entity.User;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -28,15 +29,17 @@ public class Order extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
-
     // snapshot 결제 완료후 저장
+    @Column(nullable = false)
     private Long totalPrice;
-
     // snapshot 결제 완료후 저장
     private Long discountAmount;
-
     // snapshot 결제 완료후 저장
+    @Column(nullable = false)
     private String orderName;
+
+    @Column(nullable = false)
+    private String imageUrl;
 
     // 주문 생성 후 실제 결제가 되고나서 값이 지정됨
     @Column
@@ -65,18 +68,16 @@ public class Order extends BaseTimeEntity {
     @JoinColumn(name = "user_id")
     private User user;
 
+
     // 결제를 위한 주문 생성
-    public Order(User user, ShippingAddress shippingAddress) {
+    public Order(User user, ShippingAddress shippingAddress, String imageUrl, Long totalPrice, String orderName) {
         this.user = user;
         this.shippingAddress = shippingAddress;
+        this.imageUrl = imageUrl;
+        this.totalPrice = totalPrice;
+        this.orderName = orderName;
         // 초기 상태 결제 대기중
         this.status = OrderStatus.PENDING;
-    }
-
-    public void updateTotalPrice() {
-        this.totalPrice = orderProducts.stream()
-                .mapToLong(OrderProduct::getPrice)
-                .sum();
     }
 
     // 쿠폰 유효 확인 후 적용
@@ -148,20 +149,7 @@ public class Order extends BaseTimeEntity {
         throw new IllegalArgumentException("해당 ID의 품목을 찾을 수 없습니다: " + itemId);
     }
 
-    public void updateOrderName() {
-        if (orderProducts.isEmpty()) {
-            throw new IllegalStateException("주문 상품이 없습니다.");
-        }
-        OrderProduct firstProduct = orderProducts.get(0);
-        int productCount = orderProducts.size();
-        this.orderName = formatOrderName(firstProduct.getProductName(), firstProduct.getQuantity(), productCount);
-    }
 
-    private String formatOrderName(String firstProductName, int quantity, int totalProducts) {
-        return totalProducts == 1
-                ? String.format("%s %d개", firstProductName, quantity)
-                : String.format("%s %d개 외 %d건", firstProductName, quantity, totalProducts - 1);
-    }
 
     // 쿠폰이 만료되거나 사용될 경우 또는 쿠폰 사용을 금지했을경우 예외
     private void validateCouponToUse(IssuedCoupon coupon, User user) {
