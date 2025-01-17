@@ -173,6 +173,13 @@ public class OrderService {
         return new SellerOrderItemStatusChangeResponseDto(orderProduct.getId(), orderProduct.getStatus().getValue());
     }
 
+    @Transactional
+    public void updateOrderPaid (UUID orderId){
+        Order paidOrder = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
+        paidOrder.paid();
+    }
+
     private List<Product> fetchProducts(List<OrderCreateRequestDto.ProductOrderInfo> productInfos) {
         List<Long> productIds = productInfos.stream()
                 .map(OrderCreateRequestDto.ProductOrderInfo::getProductId)

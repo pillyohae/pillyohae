@@ -55,21 +55,4 @@ public class Payment {
         this.balanceAmount = balanceAmount;
         this.method = method;
     }
-
-    public static class PaymentBuilder {
-        public PaymentBuilder fromDto(PaymentDataDto dto) {
-            this.mid = dto.getMid();
-            this.version = dto.getVersion();
-            this.paymentKey = dto.getPaymentKey();
-            this.status = dto.getStatus();
-            this.orderId = dto.getOrderId();
-            this.orderName = dto.getOrderName();
-            this.requestedAt = dto.getRequestedAt();
-            this.approvedAt = dto.getApprovedAt();
-            this.totalAmount = dto.getTotalAmount();
-            this.balanceAmount = dto.getBalanceAmount();
-            this.method = dto.getMethod();
-            return this;
-        }
-    }
 }

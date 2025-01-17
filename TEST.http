@@ -223,22 +223,6 @@ Content-Type: application/json
   ]
 }
 
-### 판매자 주문 조회
-GET http://localhost:8080/users/sellers/orders
-Authorization: Bearer {{accessToken}}
-
-### 판매자 주문 상세 조회
-GET http://localhost:8080/users/sellers/orders/7d8e81e0-2279-4d93-b1b0-1dbc9c57e63b
-Authorization: Bearer {{accessToken}}
-
-### 구매자 주문 조회
-GET http://localhost:8080/users/orders
-Authorization: Bearer {{accessToken}}
-
-### 구매자 상세 조회
-GET http://localhost:8080/users/orders/c246ac35-2994-4c02-a62c-991320681bdd/orderItems
-Authorization: Bearer {{accessToken}}
-
 ### 주문생성
 POST http://localhost:8080/orders
 Authorization: Bearer {{accessToken}}
@@ -256,7 +240,24 @@ Content-Type: application/json
 
 
 
+### 판매자 주문 조회
+GET http://localhost:8080/users/sellers/orders
+Authorization: Bearer {{accessToken}}
+
+### 판매자 주문 상세 조회
+GET http://localhost:8080/users/sellers/orders/7d8e81e0-2279-4d93-b1b0-1dbc9c57e63b
+Authorization: Bearer {{accessToken}}
+
+### 구매자 주문 조회
+GET http://localhost:8080/users/orders
+Authorization: Bearer {{accessToken}}
+
+### 구매자 상세 조회
+GET http://localhost:8080/users/orders/c246ac35-2994-4c02-a62c-991320681bdd/orderItems
+Authorization: Bearer {{accessToken}}
+
+
 ###
-GET http://localhost:8080/toss/checkout
+GET http://localhost:8080/orders/1ddee748-61ba-4c15-9bee-a57a98696aa6/toss/checkout
 Authorization: Bearer {{accessToken}}
 
