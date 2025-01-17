@@ -258,6 +258,6 @@ Authorization: Bearer {{accessToken}}
 
 
 ###
-GET http://localhost:8080/orders/c935a1c4-fcfe-4cc6-9248-b9df827a6694/toss/checkout
+GET http://localhost:8080/orders/1ddee748-61ba-4c15-9bee-a57a98696aa6/toss/checkout
 Authorization: Bearer {{accessToken}}
 

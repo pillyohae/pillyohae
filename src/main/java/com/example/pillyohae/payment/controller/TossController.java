@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 
 @RestController
-@RequestMapping
+@RequestMapping("/toss")
 @RequiredArgsConstructor
 public class TossController {
 
