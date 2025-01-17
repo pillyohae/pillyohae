@@ -9,6 +9,9 @@ import com.example.pillyohae.user.entity.QUser;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -24,33 +27,57 @@ public class OrderQueryRepositoryImpl implements OrderQueryRepository {
 
 
     @Override
-    public List<OrderPageResponseDto.OrderInfoDto> findOrders(Long userId, LocalDateTime startAt, LocalDateTime endAt, Long pageNumber, Long pageSize) {
-        return queryFactory.select(new QOrderPageResponseDto_OrderInfoDto(order.id, order.status, order.orderName, order.paidAt, order.imageUrl, order.totalPrice))
+    public Page<OrderInfoDto> findOrders(Long userId, LocalDateTime startAt, LocalDateTime endAt, Pageable pageable) {
+        List<OrderInfoDto> content = queryFactory
+                .select(new QOrderInfoDto(
+                        order.id,
+                        order.status,
+                        order.orderName,
+                        order.paidAt,
+                        order.imageUrl,
+                        order.totalPrice
+                ))
                 .from(order)
                 .leftJoin(order.user)
-                .where(dateEq(startAt, endAt), order.user.id.eq(userId))
+                .where(dateEq(startAt, endAt),
+                        order.user.id.eq(userId))
                 .orderBy(order.paidAt.desc())
-                .offset(pageNumber * pageSize)
-                .limit(pageSize)
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
                 .fetch();
 
+        // 전체 카운트 쿼리
+        long total = queryFactory
+                .select(order.count())
+                .from(order)
+                .where(dateEq(startAt, endAt),
+                        order.user.id.eq(userId))
+                .fetchOne();
 
+        return new PageImpl<>(content, pageable, total);
     }
 
     @Override
-    public List<OrderPageSellerResponseDto.OrderInfoDto> findSellerOrders(Long userId, LocalDateTime startAt, LocalDateTime endAt, Long pageNumber, Long pageSize) {
-        return queryFactory.select(new QOrderPageSellerResponseDto_OrderInfoDto(order.id, orderProduct.id ,orderProduct.status, order.orderName, order.paidAt, orderProduct.imageUrl, orderProduct.price, orderProduct.quantity))
+    public Page<OrderSellerInfoDto> findSellerOrders(Long userId, LocalDateTime startAt, LocalDateTime endAt, Pageable pageable) {
+        List<OrderSellerInfoDto> content = queryFactory.select(new QOrderSellerInfoDto(order.id, orderProduct.id ,orderProduct.status, order.orderName, order.paidAt, orderProduct.imageUrl, orderProduct.price, orderProduct.quantity))
                 .from(orderProduct)
                 .leftJoin(orderProduct.seller)
                 .leftJoin(orderProduct.order, order)
                 .where(dateEq(startAt, endAt), orderProduct.seller.id.eq(userId), order.paidAt.isNotNull())
                 .orderBy(order.paidAt.desc())
-                .offset(pageNumber * pageSize)
-                .limit(pageSize)
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
                 .fetch();
 
+        // 전체 카운트 쿼리
+        long total = queryFactory
+                .select(orderProduct.count())
+                .from(orderProduct)
+                .where(dateEq(startAt, endAt),
+                        orderProduct.seller.id.eq(userId))
+                .fetchOne();
 
-
+        return new PageImpl<>(content, pageable, total);
     }
 
     // orderitem에 저장된 내용을 가져옴

@@ -255,7 +255,7 @@ GET http://localhost:8080/users/sellers/orders
 Authorization: Bearer {{accessToken}}
 
 ### 판매자 주문 상세 조회
-GET http://localhost:8080/users/sellers/orders/7d8e81e0-2279-4d93-b1b0-1dbc9c57e63b
+GET http://localhost:8080/users/sellers/orders/bd8462cc-828e-438b-8ee2-7eca284ad12e
 Authorization: Bearer {{accessToken}}
 
 ### 구매자 주문 조회
