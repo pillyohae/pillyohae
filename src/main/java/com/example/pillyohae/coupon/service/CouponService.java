@@ -74,17 +74,21 @@ public class CouponService {
         return new GiveCouponResponseDto(issuedCoupon.getId());
     }
 
-    private IssuedCoupon issueCoupon(CouponTemplate couponTemplate, User user) {
+    private synchronized IssuedCoupon issueCoupon(CouponTemplate couponTemplate, User user) {
         if(couponTemplate.getStartAt().isAfter(LocalDateTime.now())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "아직 발급 시작이 안되었습니다");
         }
-        IssuedCoupon issuedCoupon = new IssuedCoupon(LocalDateTime.now(), couponTemplate.getIssuedCouponExpiredAt(), couponTemplate, user);
-        issuedCouponRepository.save(issuedCoupon);
+        IssuedCoupon issuedCoupon;
         try {
             couponTemplate.incrementIssuanceCount();
+            couponTemplateRepository.saveAndFlush(couponTemplate);
+            issuedCoupon= new IssuedCoupon(LocalDateTime.now(), couponTemplate.getIssuedCouponExpiredAt(), couponTemplate, user);
+            issuedCouponRepository.save(issuedCoupon);
         }catch (Exception e){
+            log.error(e.getMessage());
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,"발급중 오류가 발생하였습니다");
         }
+
         return issuedCoupon;
     }
 
