@@ -2,17 +2,20 @@ package com.example.pillyohae.order.repository;
 
 import com.example.pillyohae.order.dto.OrderDetailResponseDto;
 import com.example.pillyohae.order.dto.OrderDetailSellerResponseDto;
-import com.example.pillyohae.order.dto.OrderPageResponseDto;
-import com.example.pillyohae.order.dto.OrderPageSellerResponseDto;
+import com.example.pillyohae.order.dto.OrderInfoDto;
+import com.example.pillyohae.order.dto.OrderSellerInfoDto;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
 public interface OrderQueryRepository {
-    List<OrderPageResponseDto.OrderInfoDto> findOrders(Long userId, LocalDateTime startAt, LocalDateTime endAt, Long pageNumber, Long pageSize);
 
-    List<OrderPageSellerResponseDto.OrderInfoDto> findSellerOrders(Long userId, LocalDateTime startAt, LocalDateTime endAt, Long pageNumber, Long pageSize);
+    Page<OrderInfoDto> findOrders(Long userId, LocalDateTime startAt, LocalDateTime endAt, Pageable pageable);
+
+    Page<OrderSellerInfoDto> findSellerOrders(Long userId, LocalDateTime startAt, LocalDateTime endAt, Pageable pageable);
 
     List<OrderDetailResponseDto.OrderProductDto> findOrderProductsByOrderId(UUID orderId);
 

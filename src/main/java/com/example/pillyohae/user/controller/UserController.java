@@ -1,11 +1,11 @@
 package com.example.pillyohae.user.controller;
 
-import com.example.pillyohae.coupon.dto.FindCouponListResponseDto;
+import com.example.pillyohae.coupon.dto.CouponListResponseDto;
 import com.example.pillyohae.coupon.service.CouponService;
 import com.example.pillyohae.order.dto.OrderDetailResponseDto;
 import com.example.pillyohae.order.dto.OrderDetailSellerResponseDto;
-import com.example.pillyohae.order.dto.OrderPageResponseDto;
-import com.example.pillyohae.order.dto.OrderPageSellerResponseDto;
+import com.example.pillyohae.order.dto.OrderInfoDto;
+import com.example.pillyohae.order.dto.OrderSellerInfoDto;
 import com.example.pillyohae.order.service.OrderService;
 import com.example.pillyohae.refresh.service.RefreshTokenService;
 import com.example.pillyohae.user.dto.TokenResponse;
@@ -25,6 +25,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -214,12 +215,12 @@ public class UserController {
      * @return 정상적으로 완료시 OK 상태코드와 주문 정보를 반환
      */
     @GetMapping("/orders")
-    public ResponseEntity<OrderPageResponseDto> findAllOrdersByBuyer(
+    public ResponseEntity<Page<OrderInfoDto>> findAllOrdersByBuyer(
         Authentication authentication,
         @RequestParam(name = "startAt", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startAt,
         @RequestParam(name = "endAt", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endAt,
-        @RequestParam(name = "pageNumber", defaultValue = "0") @Min(0) Long pageNumber,
-        @RequestParam(name = "pageSize", defaultValue = "10") @Min(1) @Max(100) Long pageSize
+        @RequestParam(name = "pageNumber", defaultValue = "0") @Min(0) Integer pageNumber,
+        @RequestParam(name = "pageSize", defaultValue = "10") @Min(1) @Max(100) Integer pageSize
     ) {
         return ResponseEntity.ok(orderService.findOrders(
             authentication.getName(),
@@ -251,18 +252,18 @@ public class UserController {
      * @return 정상적으로 완료시 OK 상태코드와 사용 가능한 쿠폰 목록 정보를 반환
      */
     @GetMapping("/coupons")
-    public ResponseEntity<FindCouponListResponseDto> getCouponListToUse(Authentication authentication, @RequestParam(required = false) Long totalPrice ) {
+    public ResponseEntity<CouponListResponseDto> getCouponListToUse(Authentication authentication, @RequestParam(required = false) Long totalPrice ) {
         return ResponseEntity.ok(couponService.findCouponListToUse(authentication.getName(), totalPrice));
     }
 
 
     @GetMapping("/sellers/orders")
-    public ResponseEntity<OrderPageSellerResponseDto> findAllSellerOrders(
+    public ResponseEntity<Page<OrderSellerInfoDto>> findAllSellerOrders(
             Authentication authentication,
             @RequestParam(name = "startAt",required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startAt,
             @RequestParam(name = "endAt",required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endAt,
-            @RequestParam(name = "pageNumber", defaultValue = "0") @Min(0) Long pageNumber,
-            @RequestParam(name = "pageSize", defaultValue = "10") @Min(1) @Max(100) Long pageSize
+            @RequestParam(name = "pageNumber", defaultValue = "0") @Min(0) Integer pageNumber,
+            @RequestParam(name = "pageSize", defaultValue = "10") @Min(1) @Max(100) Integer pageSize
     ) {
         return ResponseEntity.ok(orderService.findSellerOrders(
                 authentication.getName(),

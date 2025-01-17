@@ -1,7 +1,7 @@
 package com.example.pillyohae.coupon.repository;
 
-import com.example.pillyohae.coupon.dto.FindCouponListResponseDto;
-import com.example.pillyohae.coupon.dto.QFindCouponListResponseDto_CouponInfo;
+import com.example.pillyohae.coupon.dto.CouponListResponseDto;
+import com.example.pillyohae.coupon.dto.QCouponListResponseDto_CouponInfo;
 import com.example.pillyohae.coupon.entity.CouponTemplate;
 import com.example.pillyohae.coupon.entity.QCouponTemplate;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -17,11 +17,11 @@ public class CouponTemplateQueryRepositoryImpl implements CouponTemplateQueryRep
     private final QCouponTemplate couponTemplate = QCouponTemplate.couponTemplate;
 
     @Override
-    public List<FindCouponListResponseDto.CouponInfo> findCouponList(CouponTemplate.CouponStatus status) {
+    public List<CouponListResponseDto.CouponInfo> findCouponList(CouponTemplate.CouponStatus status) {
         if (queryFactory == null) {
             throw new IllegalStateException("QueryFactory is not initialized");
         }
-        return queryFactory.select(new QFindCouponListResponseDto_CouponInfo(couponTemplate.id,couponTemplate.name,
+        return queryFactory.select(new QCouponListResponseDto_CouponInfo(couponTemplate.id,couponTemplate.name,
                         couponTemplate.description, couponTemplate.discountType,couponTemplate.fixedAmount
                         ,couponTemplate.fixedRate, couponTemplate.maxDiscountAmount,couponTemplate.minimumPrice,couponTemplate.expiredAt))
                 .from(couponTemplate)

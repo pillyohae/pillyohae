@@ -16,6 +16,10 @@ import com.example.pillyohae.user.entity.User;
 import com.example.pillyohae.user.repository.UserRepository;
 import com.example.pillyohae.user.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,7 +54,7 @@ public class OrderService {
      * @return 생성된 order entity의 id
      */
     @Transactional
-    public OrderCreateResponseDto createOrderByProducts(String email, OrderCreateRequestDto requestDto) {
+    public OrderDetailResponseDto createOrderByProducts(String email, OrderCreateRequestDto requestDto) {
 
         User user = userService.findByEmail(email);
 
@@ -68,42 +72,46 @@ public class OrderService {
 
         applyCouponIfPresent(savedOrder, requestDto.getCouponIds());
 
-        return new OrderCreateResponseDto(savedOrder.getId());
+        OrderDetailResponseDto.OrderInfoDto orderInfoDto = new OrderDetailResponseDto.OrderInfoDto(order.getId(),
+                order.getStatus(),order.getOrderName(), order.getTotalPrice(),order.getPaidAt(),
+                order.getImageUrl(),order.getShippingAddress());
+
+        List<OrderDetailResponseDto.OrderProductDto> orderProductDto = orderProducts.stream().map(orderProduct ->
+                new OrderDetailResponseDto.OrderProductDto(
+                        orderProduct.getId(),
+                        orderProduct.getProductName(),
+                        orderProduct.getQuantity(),
+                        orderProduct.getPrice(),
+                        orderProduct.getStatus()
+                )).toList();
+
+        return new OrderDetailResponseDto(orderInfoDto, orderProductDto);
     }
 
     // buyer의 order 내역 조회
     @Transactional
-    public OrderPageResponseDto findOrders(String email, LocalDateTime startAt, LocalDateTime endAt, Long pageNumber, Long pageSize) {
+    public Page<OrderInfoDto> findOrders(String email, LocalDateTime startAt, LocalDateTime endAt, Integer pageNumber, Integer pageSize) {
 
         User user = userService.findByEmail(email);
 
         if (pageNumber < 0 || pageSize <= 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid pagination parameters");
         }
-
-        List<OrderPageResponseDto.OrderInfoDto> orderInfoDtoList = orderRepository.findOrders(user.getId(), startAt, endAt, pageNumber, pageSize);
-
-        OrderPageResponseDto.PageInfo pageInfo = new OrderPageResponseDto.PageInfo(pageNumber, pageSize);
-
-        return new OrderPageResponseDto(orderInfoDtoList, pageInfo);
-
+        Sort sort = Sort.by("paidAt").descending();
+        return orderRepository.findOrders(user.getId(), startAt, endAt, PageRequest.of(pageNumber, pageSize, sort) );
     }
 
     @Transactional
-    public OrderPageSellerResponseDto findSellerOrders(String email, LocalDateTime startAt, LocalDateTime endAt, Long pageNumber, Long pageSize) {
+    public Page<OrderSellerInfoDto> findSellerOrders(String email, LocalDateTime startAt, LocalDateTime endAt, Integer pageNumber, Integer pageSize) {
 
         User user = userService.findByEmail(email);
 
         if (pageNumber < 0 || pageSize <= 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid pagination parameters");
         }
+        Sort sort = Sort.by("paidAt").descending();
 
-        List<OrderPageSellerResponseDto.OrderInfoDto> orderInfoDtoList = orderRepository.findSellerOrders(user.getId(), startAt, endAt, pageNumber, pageSize);
-
-        OrderPageSellerResponseDto.PageInfo pageInfo = new OrderPageSellerResponseDto.PageInfo(pageNumber, pageSize);
-
-        return new OrderPageSellerResponseDto(orderInfoDtoList, pageInfo);
-
+        return orderRepository.findSellerOrders(user.getId(), startAt, endAt,PageRequest.of(pageNumber,pageSize,sort));
     }
 
     // 주문 정보와 주문 상품 정보를 따로 조회
@@ -157,7 +165,7 @@ public class OrderService {
 
     // seller orderItem 상태 수정
     @Transactional
-    public SellerOrderItemStatusChangeResponseDto changeOrderItemStatus(String email, Long orderItemId, OrderProductStatus newStatus) {
+    public OrderItemStatusChangeResponseDto changeOrderItemStatus(String email, Long orderItemId, OrderProductStatus newStatus) {
 
         User seller = userService.findByEmail(email);
 
@@ -170,7 +178,7 @@ public class OrderService {
 
         orderProduct.updateStatus(newStatus);
 
-        return new SellerOrderItemStatusChangeResponseDto(orderProduct.getId(), orderProduct.getStatus().getValue());
+        return new OrderItemStatusChangeResponseDto(orderProduct.getId(), orderProduct.getStatus().getValue());
     }
 
     @Transactional

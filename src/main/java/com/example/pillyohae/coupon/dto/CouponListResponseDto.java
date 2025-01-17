@@ -10,10 +10,10 @@ import java.util.List;
 
 @Getter
 @NoArgsConstructor
-public class FindCouponListResponseDto {
+public class CouponListResponseDto {
     private List<CouponInfo> couponList;
 
-    public FindCouponListResponseDto(List<CouponInfo> couponList) {
+    public CouponListResponseDto(List<CouponInfo> couponList) {
         this.couponList = couponList;
     }
 
