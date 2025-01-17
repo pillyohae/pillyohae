@@ -8,8 +8,9 @@ import lombok.NoArgsConstructor;
 @Embeddable
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ShippingAddress extends Address {
-    public ShippingAddress(String receiverName, String phoneNumber, String zipCode,
-                           String address, String addressDetail) {
-        super(receiverName, phoneNumber, zipCode, address, addressDetail);
+
+    public ShippingAddress(String receiverName, String phoneNumber, String postCode,
+        String roadAddress, String detailAddress) {
+        super(receiverName, phoneNumber, postCode, roadAddress, detailAddress);
     }
 }

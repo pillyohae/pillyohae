@@ -1,11 +1,13 @@
 package com.example.pillyohae.user.entity;
 
 import com.example.pillyohae.coupon.entity.IssuedCoupon;
-import com.example.pillyohae.order.entity.Order;
 import com.example.pillyohae.global.entity.BaseTimeEntity;
+import com.example.pillyohae.global.entity.address.ShippingAddress;
+import com.example.pillyohae.order.entity.Order;
 import com.example.pillyohae.order.entity.OrderProduct;
 import com.example.pillyohae.user.entity.type.Role;
 import com.example.pillyohae.user.entity.type.Status;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -35,7 +37,8 @@ public class User extends BaseTimeEntity {
 
     private String password;
 
-    private String address;
+    @Embedded
+    private ShippingAddress address;
 
     @Enumerated(value = EnumType.STRING)
     private Role role;
@@ -52,7 +55,7 @@ public class User extends BaseTimeEntity {
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<IssuedCoupon> issuedCoupons = new ArrayList<>();
 
-    public User(String name, String email, String password, String address, Role role) {
+    public User(String name, String email, String password, ShippingAddress address, Role role) {
         this.name = name;
         this.email = email;
         this.password = password;
@@ -64,6 +67,7 @@ public class User extends BaseTimeEntity {
     public User() {
 
     }
+
 
     public void deleteUser() {
         this.status = Status.WITHDRAW;

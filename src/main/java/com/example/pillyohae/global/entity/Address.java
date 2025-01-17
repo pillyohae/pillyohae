@@ -2,18 +2,16 @@ package com.example.pillyohae.global.entity;
 
 import com.example.pillyohae.global.validation.ValidPhoneNumber;
 import jakarta.persistence.Column;
-import jakarta.persistence.Embeddable;
-import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Getter
 @MappedSuperclass
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Address {
+
     @Column(nullable = false)
     private String receiverName;
 
@@ -22,20 +20,20 @@ public class Address {
     private String phoneNumber;
 
     @Column(nullable = false)
-    private String zipCode;
+    private String postCode;
 
     @Column(nullable = false)
-    private String address;
+    private String roadAddress;
 
     @Column(nullable = false)
-    private String addressDetail;
+    private String detailAddress;
 
-    protected Address(String receiverName, String phoneNumber, String zipCode,
-                      String address, String addressDetail) {
+    protected Address(String receiverName, String phoneNumber, String postCode,
+        String roadAddress, String detailAddress) {
         this.receiverName = receiverName;
         this.phoneNumber = phoneNumber;
-        this.zipCode = zipCode;
-        this.address = address;
-        this.addressDetail = addressDetail;
+        this.postCode = postCode;
+        this.roadAddress = roadAddress;
+        this.detailAddress = detailAddress;
     }
 }

@@ -1,5 +1,6 @@
 package com.example.pillyohae.user.service;
 
+import com.example.pillyohae.global.entity.address.ShippingAddress;
 import com.example.pillyohae.global.exception.CustomResponseStatusException;
 import com.example.pillyohae.global.exception.code.ErrorCode;
 import com.example.pillyohae.global.util.JwtProvider;
@@ -53,8 +54,16 @@ public class UserService {
             throw new DuplicateKeyException("중복된 이메일 입니다.");
         }
 
+        ShippingAddress address = new ShippingAddress(
+            requestDto.getName(),
+            requestDto.getPhoneNumber(),
+            requestDto.getPostcode(),
+            requestDto.getRoadAddress(),
+            requestDto.getDetailAddress()
+        );
+
         User user = new User(requestDto.getName(), requestDto.getEmail(),
-            passwordEncoder.encode(requestDto.getPassword()), requestDto.getAddress(),
+            passwordEncoder.encode(requestDto.getPassword()), address,
             Role.of(requestDto.getRole()));
 
         User savedUser = userRepository.save(user);
