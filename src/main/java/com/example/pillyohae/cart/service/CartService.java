@@ -1,6 +1,5 @@
 package com.example.pillyohae.cart.service;
 
-import com.amazonaws.services.kms.model.NotFoundException;
 import com.example.pillyohae.cart.dto.CartCreateRequestDto;
 import com.example.pillyohae.cart.dto.CartCreateResponseDto;
 import com.example.pillyohae.cart.dto.CartListResponseDto;
@@ -16,7 +15,6 @@ import com.example.pillyohae.user.service.UserService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -28,7 +26,6 @@ public class CartService {
     private final CartRepository cartRepository;
     private final UserService userService;
     private final ProductService productService;
-
 
     /**
      * 장바구니에 상품을 추가
@@ -43,6 +40,13 @@ public class CartService {
         User findUser = userService.findByEmail(email);
 
         Product findProduct = productService.findById(requestDto.getProductId());
+
+        Cart inCart = cartRepository.findByProductProductId(requestDto.getProductId());
+
+        if (inCart != null) {
+            inCart.updateQuantity(inCart.getQuantity() + requestDto.getQuantity());
+            return new CartCreateResponseDto(inCart.getId(), inCart.getCreatedAt());
+        }
 
         Cart cart = new Cart(findUser, findProduct, requestDto.getQuantity());
 
@@ -67,7 +71,7 @@ public class CartService {
             .mapToLong(product -> product.getPrice() * product.getQuantity())
             .sum();
 
-        return new CartListResponseDto(totalPrice, products);
+        return new CartListResponseDto(user.getId(), totalPrice, products);
     }
 
     /**
@@ -79,11 +83,7 @@ public class CartService {
      * @return 정상 처리 시 응답 DTO
      */
     @Transactional
-    public CartUpdateResponseDto updateCart(
-        Long cartId,
-        String email,
-        CartUpdateRequestDto requestDto
-    ) throws NotFoundException, AccessDeniedException {
+    public CartUpdateResponseDto updateCart(Long cartId, String email, CartUpdateRequestDto requestDto) {
 
         User user = userService.findByEmail(email);
 
@@ -91,7 +91,7 @@ public class CartService {
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "장바구니에서 상품을 찾을 수 없습니다."));
 
         if (!cart.getUser().getId().equals(user.getId())) {
-            throw new AccessDeniedException("권한이 없습니다.");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "권한이 없습니다.");
         }
 
         cart.updateQuantity(requestDto.getQuantity());
@@ -106,7 +106,7 @@ public class CartService {
      * @param email  사용자 이메일
      */
     @Transactional
-    public void deleteCart(Long cartId, String email) throws AccessDeniedException {
+    public void deleteCart(Long cartId, String email) {
 
         User user = userService.findByEmail(email);
 
@@ -114,7 +114,7 @@ public class CartService {
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "장바구니에서 상품을 찾을 수 없습니다."));
 
         if (!cart.getUser().getId().equals(user.getId())) {
-            throw new AccessDeniedException("권한이 없습니다.");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "권한이 없습니다.");
         }
 
         cartRepository.delete(cart);
@@ -131,7 +131,7 @@ public class CartService {
         List<Cart> carts = cartRepository.findCartsWithProductsByUserId(userId);
 
         if (carts.isEmpty()) {
-            throw new NotFoundException("장바구니가 비어있습니다.");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "장바구니가 비어있습니다.");
         }
 
         return carts;
@@ -145,8 +145,8 @@ public class CartService {
     @Transactional
     public void deleteAll(String email) {
 
-        User findUser = userService.findByEmail(email);
+        User user = userService.findByEmail(email);
 
-        cartRepository.deleteAllByUserId(findUser.getId());
+        cartRepository.deleteByUserId(user.getId());
     }
 }

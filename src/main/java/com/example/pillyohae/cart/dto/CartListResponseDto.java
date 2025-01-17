@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CartListResponseDto {
 
+    private final Long userId;
+
     private final Long totalPrice;
 
     private final List<CartProductDetailResponseDto> products;

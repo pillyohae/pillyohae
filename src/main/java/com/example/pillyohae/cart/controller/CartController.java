@@ -102,7 +102,9 @@ public class CartController {
      */
     @DeleteMapping
     public ResponseEntity<Void> deleteAll(@AuthenticationPrincipal UserDetails userDetails) {
+
         cartService.deleteAll(userDetails.getUsername());
+
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
