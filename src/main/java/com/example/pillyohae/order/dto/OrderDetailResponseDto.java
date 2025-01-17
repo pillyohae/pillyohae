@@ -28,15 +28,17 @@ public class OrderDetailResponseDto {
         private final UUID orderId;
         private final OrderStatus orderStatus;
         private final String orderName;
+        private final Long totalPrice;
         private final LocalDateTime paidAt;
         private final String imageUrl;
         private final ShippingAddress shippingAddress;
 
         @QueryProjection
-        public OrderInfoDto(UUID orderId, OrderStatus orderStatus, String orderName, LocalDateTime paidAt, String imageUrl, ShippingAddress shippingAddress) {
+        public OrderInfoDto(UUID orderId, OrderStatus orderStatus, String orderName, Long totalPrice, LocalDateTime paidAt, String imageUrl, ShippingAddress shippingAddress) {
             this.orderId = orderId;
             this.orderStatus = orderStatus;
             this.orderName = orderName;
+            this.totalPrice = totalPrice;
             this.paidAt = paidAt;
             this.imageUrl = imageUrl;
             this.shippingAddress = shippingAddress;

@@ -1,9 +1,9 @@
 package com.example.pillyohae.coupon.controller;
 
-import com.example.pillyohae.coupon.dto.CreateCouponTemplateRequestDto;
+import com.example.pillyohae.coupon.dto.CouponGiveResponseDto;
+import com.example.pillyohae.coupon.dto.CouponTemplateCreateRequestDto;
 import com.example.pillyohae.coupon.dto.CreateCouponTemplateResponseDto;
-import com.example.pillyohae.coupon.dto.FindCouponListResponseDto;
-import com.example.pillyohae.coupon.dto.GiveCouponResponseDto;
+import com.example.pillyohae.coupon.dto.CouponListResponseDto;
 import com.example.pillyohae.coupon.entity.CouponTemplate;
 import com.example.pillyohae.coupon.service.CouponService;
 import jakarta.validation.Valid;
@@ -21,7 +21,7 @@ public class CouponController {
 
 
     @PostMapping
-    public ResponseEntity<CreateCouponTemplateResponseDto> createCouponTemplate(@RequestBody @Valid CreateCouponTemplateRequestDto createCouponTemplateRequestDto,
+    public ResponseEntity<CreateCouponTemplateResponseDto> createCouponTemplate(@RequestBody @Valid CouponTemplateCreateRequestDto createCouponTemplateRequestDto,
                                                                                 Authentication authentication) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(couponService.createCouponTemplate(createCouponTemplateRequestDto));
@@ -29,7 +29,7 @@ public class CouponController {
 
 
     @PostMapping("/{couponTemplateId}/issue")
-    public ResponseEntity<GiveCouponResponseDto> giveCoupon(
+    public ResponseEntity<CouponGiveResponseDto> giveCoupon(
             @PathVariable(name = "couponTemplateId") Long couponTemplateId, Authentication authentication) {
 
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -38,8 +38,8 @@ public class CouponController {
 
     // 공개된 쿠폰 조회
     @GetMapping
-    public ResponseEntity<FindCouponListResponseDto> getAvailableCoupons(Authentication authentication,
-                                                                         @RequestParam(required = false)CouponTemplate.CouponStatus couponStatus) {
+    public ResponseEntity<CouponListResponseDto> getAvailableCoupons(Authentication authentication,
+                                                                     @RequestParam(required = false)CouponTemplate.CouponStatus couponStatus) {
         return ResponseEntity.ok(couponService.findCouponList(couponStatus));
     }
 
