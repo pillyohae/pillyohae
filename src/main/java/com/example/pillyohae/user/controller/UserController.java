@@ -1,6 +1,6 @@
 package com.example.pillyohae.user.controller;
 
-import com.example.pillyohae.coupon.dto.FindCouponListResponseDto;
+import com.example.pillyohae.coupon.dto.CouponListResponseDto;
 import com.example.pillyohae.coupon.service.CouponService;
 import com.example.pillyohae.order.dto.OrderDetailResponseDto;
 import com.example.pillyohae.order.dto.OrderDetailSellerResponseDto;
@@ -251,7 +251,7 @@ public class UserController {
      * @return 정상적으로 완료시 OK 상태코드와 사용 가능한 쿠폰 목록 정보를 반환
      */
     @GetMapping("/coupons")
-    public ResponseEntity<FindCouponListResponseDto> getCouponListToUse(Authentication authentication, @RequestParam(required = false) Long totalPrice ) {
+    public ResponseEntity<CouponListResponseDto> getCouponListToUse(Authentication authentication, @RequestParam(required = false) Long totalPrice ) {
         return ResponseEntity.ok(couponService.findCouponListToUse(authentication.getName(), totalPrice));
     }
 

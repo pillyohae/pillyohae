@@ -1,9 +1,9 @@
 package com.example.pillyohae.coupon.service;
 
-import com.example.pillyohae.coupon.dto.CreateCouponTemplateRequestDto;
+import com.example.pillyohae.coupon.dto.CouponListResponseDto;
+import com.example.pillyohae.coupon.dto.CouponTemplateCreateRequestDto;
 import com.example.pillyohae.coupon.dto.CreateCouponTemplateResponseDto;
-import com.example.pillyohae.coupon.dto.FindCouponListResponseDto;
-import com.example.pillyohae.coupon.dto.GiveCouponResponseDto;
+import com.example.pillyohae.coupon.dto.CouponGiveResponseDto;
 import com.example.pillyohae.coupon.entity.CouponTemplate;
 import com.example.pillyohae.coupon.entity.IssuedCoupon;
 import com.example.pillyohae.coupon.repository.CouponTemplateRepository;
@@ -33,7 +33,7 @@ public class CouponService {
 
 
     @Transactional
-    public CreateCouponTemplateResponseDto createCouponTemplate(CreateCouponTemplateRequestDto requestDto) {
+    public CreateCouponTemplateResponseDto createCouponTemplate(CouponTemplateCreateRequestDto requestDto) {
 
         CouponTemplate couponTemplate = CouponTemplate.builder()
                 .name(requestDto.getCouponName())
@@ -52,12 +52,16 @@ public class CouponService {
 
         couponTemplateRepository.save(couponTemplate);
 
-        return new CreateCouponTemplateResponseDto(couponTemplate.getId());
+        return new CreateCouponTemplateResponseDto(couponTemplate.getName(),couponTemplate.getDescription()
+                ,couponTemplate.getDiscountType(),couponTemplate.getExpiredType(),couponTemplate.getFixedAmount()
+                ,couponTemplate.getFixedRate(),couponTemplate.getMaxDiscountAmount(),couponTemplate.getMinimumPrice()
+                ,couponTemplate.getMaxIssuanceCount(),couponTemplate.getStartAt(),couponTemplate.getExpiredAt()
+                ,couponTemplate.getCouponLifetime().getDays());
     }
 
     // 유저 개인이 발행
     @Transactional
-    public GiveCouponResponseDto giveCoupon(String email, Long couponTemplateId) {
+    public CouponGiveResponseDto giveCoupon(String email, Long couponTemplateId) {
 
         User user = userService.findByEmail(email);
         // issued coupon과 coupon template을 한번에 가져옴
@@ -71,7 +75,9 @@ public class CouponService {
 
         IssuedCoupon issuedCoupon = issueCoupon(couponTemplate, user);
 
-        return new GiveCouponResponseDto(issuedCoupon.getId());
+        return new CouponGiveResponseDto(issuedCoupon.getId(),couponTemplate.getName(),couponTemplate.getDescription()
+                ,couponTemplate.getDiscountType(),couponTemplate.getFixedAmount(),couponTemplate.getFixedRate()
+                ,couponTemplate.getMaxDiscountAmount(),couponTemplate.getMinimumPrice(),issuedCoupon.getExpiredAt());
     }
 
     private synchronized IssuedCoupon issueCoupon(CouponTemplate couponTemplate, User user) {
@@ -103,12 +109,12 @@ public class CouponService {
 
 
     @Transactional
-    public FindCouponListResponseDto findCouponListToUse(String email, Long totalPrice) {
+    public CouponListResponseDto findCouponListToUse(String email, Long totalPrice) {
         if (email == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "로그인이 되어야 합니다");
         }
         User user = userService.findByEmail(email);
-        return new FindCouponListResponseDto(
+        return new CouponListResponseDto(
                 issuedCouponRepository.findCouponListByPriceAndUserId(totalPrice, user.getId())
         );
     }
@@ -123,9 +129,9 @@ public class CouponService {
         return minimumPrice;
     }
 
-    public FindCouponListResponseDto findCouponList(CouponTemplate.CouponStatus status) {
-        List<FindCouponListResponseDto.CouponInfo> couponTemplates = couponTemplateRepository.findCouponList(status);
-        return new FindCouponListResponseDto(couponTemplates);
+    public CouponListResponseDto findCouponList(CouponTemplate.CouponStatus status) {
+        List<CouponListResponseDto.CouponInfo> couponTemplates = couponTemplateRepository.findCouponList(status);
+        return new CouponListResponseDto(couponTemplates);
     }
 
 }

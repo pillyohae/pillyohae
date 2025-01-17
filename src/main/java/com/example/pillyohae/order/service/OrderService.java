@@ -50,7 +50,7 @@ public class OrderService {
      * @return 생성된 order entity의 id
      */
     @Transactional
-    public OrderCreateResponseDto createOrderByProducts(String email, OrderCreateRequestDto requestDto) {
+    public OrderDetailResponseDto createOrderByProducts(String email, OrderCreateRequestDto requestDto) {
 
         User user = userService.findByEmail(email);
 
@@ -68,7 +68,20 @@ public class OrderService {
 
         applyCouponIfPresent(savedOrder, requestDto.getCouponIds());
 
-        return new OrderCreateResponseDto(savedOrder.getId());
+        OrderDetailResponseDto.OrderInfoDto orderInfoDto = new OrderDetailResponseDto.OrderInfoDto(order.getId(),
+                order.getStatus(),order.getOrderName(),order.getPaidAt(),
+                order.getImageUrl(),order.getShippingAddress());
+
+        List<OrderDetailResponseDto.OrderProductDto> orderProductDto = orderProducts.stream().map(orderProduct ->
+                new OrderDetailResponseDto.OrderProductDto(
+                        orderProduct.getId(),
+                        orderProduct.getProductName(),
+                        orderProduct.getQuantity(),
+                        orderProduct.getPrice(),
+                        orderProduct.getStatus()
+                )).toList();
+
+        return new OrderDetailResponseDto(orderInfoDto, orderProductDto);
     }
 
     // buyer의 order 내역 조회
@@ -157,7 +170,7 @@ public class OrderService {
 
     // seller orderItem 상태 수정
     @Transactional
-    public SellerOrderItemStatusChangeResponseDto changeOrderItemStatus(String email, Long orderItemId, OrderProductStatus newStatus) {
+    public OrderItemStatusChangeResponseDto changeOrderItemStatus(String email, Long orderItemId, OrderProductStatus newStatus) {
 
         User seller = userService.findByEmail(email);
 
@@ -170,7 +183,7 @@ public class OrderService {
 
         orderProduct.updateStatus(newStatus);
 
-        return new SellerOrderItemStatusChangeResponseDto(orderProduct.getId(), orderProduct.getStatus().getValue());
+        return new OrderItemStatusChangeResponseDto(orderProduct.getId(), orderProduct.getStatus().getValue());
     }
 
     @Transactional

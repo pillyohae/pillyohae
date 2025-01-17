@@ -2,7 +2,7 @@ package com.example.pillyohae.order.service;
 
 import com.example.pillyohae.global.entity.address.ShippingAddress;
 import com.example.pillyohae.order.dto.OrderCreateRequestDto;
-import com.example.pillyohae.order.dto.OrderCreateResponseDto;
+import com.example.pillyohae.order.dto.OrderDetailResponseDto;
 import com.example.pillyohae.order.entity.Order;
 import com.example.pillyohae.order.repository.OrderRepository;
 import com.example.pillyohae.product.entity.Product;
@@ -15,8 +15,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.Rollback;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,12 +54,12 @@ class OrderServiceTest {
         OrderCreateRequestDto orderCreateRequestDto = new OrderCreateRequestDto(productOrderInfoList, null);
         orderService.createOrderByProducts(email, orderCreateRequestDto);
         // 주문 생성
-        OrderCreateResponseDto responseDto = orderService.createOrderByProducts(email, orderCreateRequestDto);
+        OrderDetailResponseDto responseDto = orderService.createOrderByProducts(email, orderCreateRequestDto);
 
         // 주문이 성공적으로 생성되었는지 검증
-        assertNotNull(responseDto.getId());
+        assertNotNull(responseDto.getOrderInfo());
         // 주문 상세 정보 검증
-        Order order = orderRepository.findById(responseDto.getId()).orElseThrow();
+        Order order = orderRepository.findById(responseDto.getOrderInfo().getOrderId()).orElseThrow();
         assertEquals(email, order.getUser().getEmail());
         assertEquals(1, order.getOrderProducts().size());
         assertEquals(3, order.getOrderProducts().get(0).getQuantity());

@@ -9,8 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.UUID;
-
 @RestController
 @RequestMapping("/orders")
 @RequiredArgsConstructor
@@ -25,7 +23,7 @@ public class OrderController {
      * @return
      */
     @PostMapping
-    public ResponseEntity<OrderCreateResponseDto> createOrder(
+    public ResponseEntity<OrderDetailResponseDto> createOrder(
             Authentication authentication, @RequestBody @Valid OrderCreateRequestDto requestDto) {
 
         return ResponseEntity.ok(orderService.createOrderByProducts(authentication.getName(), requestDto));
@@ -33,7 +31,7 @@ public class OrderController {
     }
 
     @PutMapping("/orderItems/{orderItemId}/status")
-    public ResponseEntity<SellerOrderItemStatusChangeResponseDto> changeOrderItemStatus(
+    public ResponseEntity<OrderItemStatusChangeResponseDto> changeOrderItemStatus(
         Authentication authentication,
         @PathVariable(name = "orderItemId") Long orderItemId,
         @RequestParam OrderProductStatus orderProductStatus) {
