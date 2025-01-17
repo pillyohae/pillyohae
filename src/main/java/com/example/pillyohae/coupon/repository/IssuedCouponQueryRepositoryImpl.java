@@ -24,6 +24,9 @@ public class IssuedCouponQueryRepositoryImpl implements IssuedCouponQueryReposit
     // 쿠폰의 만료 여부는 발행된 유저의 쿠폰의 expired_at을 통해 함.
     @Override
     public List<FindCouponListResponseDto.CouponInfo> findCouponListByPriceAndUserId(Long price, Long userId) {
+        if (queryFactory == null) {
+            throw new IllegalStateException("QueryFactory is not initialized");
+        }
         return queryFactory
                 .select(new QFindCouponListResponseDto_CouponInfo(
                         issuedCoupon.id,

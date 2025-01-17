@@ -123,4 +123,9 @@ public class CouponService {
         return minimumPrice;
     }
 
+    public FindCouponListResponseDto findCouponList(CouponTemplate.CouponStatus status) {
+        List<FindCouponListResponseDto.CouponInfo> couponTemplates = couponTemplateRepository.findCouponList(status);
+        return new FindCouponListResponseDto(couponTemplates);
+    }
+
 }

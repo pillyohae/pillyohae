@@ -2,7 +2,9 @@ package com.example.pillyohae.coupon.controller;
 
 import com.example.pillyohae.coupon.dto.CreateCouponTemplateRequestDto;
 import com.example.pillyohae.coupon.dto.CreateCouponTemplateResponseDto;
+import com.example.pillyohae.coupon.dto.FindCouponListResponseDto;
 import com.example.pillyohae.coupon.dto.GiveCouponResponseDto;
+import com.example.pillyohae.coupon.entity.CouponTemplate;
 import com.example.pillyohae.coupon.service.CouponService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +34,13 @@ public class CouponController {
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(couponService.giveCoupon(authentication.getName(), couponTemplateId));
+    }
+
+    // 공개된 쿠폰 조회
+    @GetMapping
+    public ResponseEntity<FindCouponListResponseDto> getAvailableCoupons(Authentication authentication,
+                                                                         @RequestParam(required = false)CouponTemplate.CouponStatus couponStatus) {
+        return ResponseEntity.ok(couponService.findCouponList(couponStatus));
     }
 
 

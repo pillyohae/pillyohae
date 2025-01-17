@@ -13,43 +13,9 @@ import java.util.List;
 
 
 public interface IssuedCouponRepository extends JpaRepository<IssuedCoupon, Long>, IssuedCouponQueryRepository {
-    // native query mysql batch 처리
-    @Transactional
-    @Modifying
-    @Query(value = "UPDATE issued_coupon " +
-            "SET status = :newStatus " +
-            "WHERE coupon_template_id IN (:templateIds) " +
-            "AND status != :newStatus " +
-            "AND status = :status2 " +
-            "ORDER BY id LIMIT :limit",
-            nativeQuery = true)
-    int updateIssuedCouponStatusByCouponTemplate_Id_In(
-                    List<Long> templateIds,
-                    String newStatus,
-                    String targetStatus,
-                    int limit
-            );
-    int countIssuedCouponByCouponTemplate_IdIn(Collection<Long> couponTemplateIds);
-    @Transactional
-    @Modifying
-    @Query(value = "UPDATE issued_coupon " +
-            "SET status = :newStatus " +
-            "WHERE coupon_template_id = :couponTemplateId " +
-            "AND status != :newStatus " +
-            "AND status = :status2 " +
-            "ORDER BY id LIMIT :limit",
-            nativeQuery = true)
-    int updateIssuedCouponStatusByCouponTemplate_Id(
-            Long couponTemplateId,
-            String newStatus,
-            String targetStatus,
-            int limit
-    );
-
     @Query("SELECT ic FROM IssuedCoupon ic " +
             "JOIN FETCH ic.couponTemplate " +
             "WHERE ic.user.id = :userId")
     List<IssuedCoupon> findIssuedCouponsWithTemplateByUserId(@Param("userId") Long userId);
 
-    int countIssuedCouponByCouponTemplate_Id(Long couponTemplateId);
 }
