@@ -45,7 +45,7 @@ public class PaymentService {
                 (String) tossResult.get(TossPaymentsVariables.VERSION.getValue()),
                 (String) tossResult.get(TossPaymentsVariables.PAYMENTKEY.getValue()),
                 (String) tossResult.get(TossPaymentsVariables.STATUS.getValue()),
-                (String) tossResult.get(TossPaymentsVariables.ORDERID.getValue()),
+                (UUID.fromString((String) tossResult.get(TossPaymentsVariables.ORDERID.getValue()))) ,
                 (String) tossResult.get(TossPaymentsVariables.ORDERNAME.getValue()),
                 (String) tossResult.get(TossPaymentsVariables.REQUESTEDAT.getValue()),
                 (String) tossResult.get(TossPaymentsVariables.APPROVEDAT.getValue()),
@@ -76,7 +76,7 @@ public class PaymentService {
         // 결제 성공시 주문 결제완료로 변경 및 결제 로그 저장
         savePayment(tossResult);
         responseStream.close();
-        orderService.updateOrderPaid((UUID) tossRequest.get("orderId"));
+        orderService.updateOrderPaid((UUID.fromString((String)tossRequest.get("orderId"))));
         return ResponseEntity.status(code).body(tossResult);
     }
 
