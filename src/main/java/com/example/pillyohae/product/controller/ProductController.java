@@ -166,5 +166,23 @@ public class ProductController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    /**
+     * 이미지 위치 수정
+     *
+     * @param userDetails 사용자 정보
+     * @param productId   상품 id
+     * @param requestDto  이미지 위치 수정 시 필요한 요청정보
+     * @return UpdateImageResponseDto
+     */
+    @PutMapping("/products/{productId}/images")
+    public ResponseEntity<UpdateImageResponseDto> updateImage(
+        @AuthenticationPrincipal UserDetails userDetails,
+        @PathVariable Long productId,
+        @RequestBody UpdateImageRequestDto requestDto
+    ) {
+        UpdateImageResponseDto updateImage = productService.updateImages(productId, requestDto, userDetails.getUsername());
+        return new ResponseEntity<>(updateImage, HttpStatus.OK);
+    }
+
 
 }
