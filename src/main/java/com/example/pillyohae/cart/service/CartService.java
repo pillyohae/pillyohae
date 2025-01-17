@@ -41,6 +41,13 @@ public class CartService {
 
         Product findProduct = productService.findById(requestDto.getProductId());
 
+        Cart inCart = cartRepository.findByProductProductId(requestDto.getProductId());
+
+        if (inCart != null) {
+            inCart.updateQuantity(inCart.getQuantity() + requestDto.getQuantity());
+            return new CartCreateResponseDto(inCart.getId(), inCart.getCreatedAt());
+        }
+
         Cart cart = new Cart(findUser, findProduct, requestDto.getQuantity());
 
         cartRepository.save(cart);
@@ -76,11 +83,7 @@ public class CartService {
      * @return 정상 처리 시 응답 DTO
      */
     @Transactional
-    public CartUpdateResponseDto updateCart(
-        Long cartId,
-        String email,
-        CartUpdateRequestDto requestDto
-    ) {
+    public CartUpdateResponseDto updateCart(Long cartId, String email, CartUpdateRequestDto requestDto) {
 
         User user = userService.findByEmail(email);
 
