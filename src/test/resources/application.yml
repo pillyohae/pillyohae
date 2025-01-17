@@ -44,6 +44,16 @@ spring:
         options:
           model: dall-e-3  # 기본 이미지 모델 설정
 
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      lettuce:
+        pool:
+          max-active: 8  # 최대 연결 수
+          max-idle: 8    # 유휴 연결 수
+          min-idle: 0    # 최소 유휴 연결 수
+
 toss:
   secret-key: ${TOSS_SECRET_KEY}
 

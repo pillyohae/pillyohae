@@ -142,6 +142,7 @@ public class CouponTemplate {
         if (this.currentIssuanceCount.equals(this.maxIssuanceCount)) {
             this.status = CouponStatus.INACTIVE;
         }
+
     }
     // 쿠폰 상태 검증
     private void validateTemplate() {

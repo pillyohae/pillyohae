@@ -1,5 +1,6 @@
 package com.example.pillyohae.order.service;
 
+import com.example.pillyohae.global.entity.address.ShippingAddress;
 import com.example.pillyohae.order.dto.OrderCreateRequestDto;
 import com.example.pillyohae.order.dto.OrderCreateResponseDto;
 import com.example.pillyohae.order.entity.Order;
@@ -24,7 +25,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SpringBootTest
-@Transactional
 class OrderServiceTest {
     @Autowired
     private OrderService orderService;
@@ -36,19 +36,18 @@ class OrderServiceTest {
     private UserRepository userRepository;
 
     private String email;
-
+    private ShippingAddress address;
     @BeforeEach
-    @Transactional
     void setUp() {
         email = "Test@tester.com";
-        User testUser = new User("TestUser", email, "password123", "Test Address", Role.SELLER);
+        address = new ShippingAddress("TestUser","010-0000-0000","test-zip","test-road","100-100");
+        User testUser = new User("TestUser", email, "password123", address, Role.SELLER);
         Product product = new Product(testUser, "product1", "test1", "test1", "test1", 10000L, ProductStatus.SELLING);
         userRepository.save(testUser);
         productRepository.save(product);
     }
 
     @Test
-    @Rollback(value = true)
     void createOrderByProductsWithNoCouponTest() {
         OrderCreateRequestDto.ProductOrderInfo productOrderInfo = new OrderCreateRequestDto.ProductOrderInfo(1L, 3);
         Long productId = 1L;

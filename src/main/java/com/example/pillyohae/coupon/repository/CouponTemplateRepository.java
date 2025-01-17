@@ -59,4 +59,6 @@ public interface CouponTemplateRepository extends JpaRepository<CouponTemplate,L
     int countByExpiredAtBetween(LocalDateTime expiredAtAfter, LocalDateTime expiredAtBefore);
 
     int countByExpiredAt(LocalDateTime expiredAt);
+
+    CouponTemplate findByName(String name);
 }
