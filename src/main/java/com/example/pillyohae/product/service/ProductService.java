@@ -261,6 +261,8 @@ public class ProductService {
         imageStorageRepository.deleteById(imageId);
         s3Service.deleteFile(findImage.getFileKey()); // TODO s3삭제 시 주문페이지에서 이미지는 어떻게 할 것인지 정하기
 
+        imageStorageRepository.updatePositionsAfterDelete(productId, findImage.getPosition());
+
     }
 
     /**
