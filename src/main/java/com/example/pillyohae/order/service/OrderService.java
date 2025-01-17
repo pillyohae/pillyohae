@@ -69,7 +69,7 @@ public class OrderService {
         applyCouponIfPresent(savedOrder, requestDto.getCouponIds());
 
         OrderDetailResponseDto.OrderInfoDto orderInfoDto = new OrderDetailResponseDto.OrderInfoDto(order.getId(),
-                order.getStatus(),order.getOrderName(),order.getPaidAt(),
+                order.getStatus(),order.getOrderName(), order.getTotalPrice(),order.getPaidAt(),
                 order.getImageUrl(),order.getShippingAddress());
 
         List<OrderDetailResponseDto.OrderProductDto> orderProductDto = orderProducts.stream().map(orderProduct ->

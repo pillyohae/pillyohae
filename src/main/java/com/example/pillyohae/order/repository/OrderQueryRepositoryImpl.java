@@ -8,11 +8,13 @@ import com.example.pillyohae.product.entity.QProduct;
 import com.example.pillyohae.user.entity.QUser;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+@RequiredArgsConstructor
 public class OrderQueryRepositoryImpl implements OrderQueryRepository {
     private final QOrder order = QOrder.order;
     private final QOrderProduct orderProduct = QOrderProduct.orderProduct;
@@ -20,18 +22,9 @@ public class OrderQueryRepositoryImpl implements OrderQueryRepository {
     private final QProduct product = QProduct.product;
     private final QUser user = QUser.user;
 
-    public OrderQueryRepositoryImpl(JPAQueryFactory queryFactory) {
-        this.queryFactory = queryFactory;
-    }
-
-
-
 
     @Override
     public List<OrderPageResponseDto.OrderInfoDto> findOrders(Long userId, LocalDateTime startAt, LocalDateTime endAt, Long pageNumber, Long pageSize) {
-        if (queryFactory == null) {
-            throw new IllegalStateException("QueryFactory is not initialized");
-        }
         return queryFactory.select(new QOrderPageResponseDto_OrderInfoDto(order.id, order.status, order.orderName, order.paidAt, order.imageUrl, order.totalPrice))
                 .from(order)
                 .leftJoin(order.user)
@@ -46,9 +39,6 @@ public class OrderQueryRepositoryImpl implements OrderQueryRepository {
 
     @Override
     public List<OrderPageSellerResponseDto.OrderInfoDto> findSellerOrders(Long userId, LocalDateTime startAt, LocalDateTime endAt, Long pageNumber, Long pageSize) {
-        if (queryFactory == null) {
-            throw new IllegalStateException("QueryFactory is not initialized");
-        }
         return queryFactory.select(new QOrderPageSellerResponseDto_OrderInfoDto(order.id, orderProduct.id ,orderProduct.status, order.orderName, order.paidAt, orderProduct.imageUrl, orderProduct.price, orderProduct.quantity))
                 .from(orderProduct)
                 .leftJoin(orderProduct.seller)
@@ -66,10 +56,6 @@ public class OrderQueryRepositoryImpl implements OrderQueryRepository {
     // orderitem에 저장된 내용을 가져옴
     @Override
     public List<OrderDetailResponseDto.OrderProductDto> findOrderProductsByOrderId(UUID orderId) {
-        if (queryFactory == null) {
-            throw new IllegalStateException("QueryFactory is not initialized");
-        }
-
         return queryFactory.select(new QOrderDetailResponseDto_OrderProductDto(orderProduct.id, orderProduct.productName, orderProduct.quantity, orderProduct.price, orderProduct.status))
                 .from(orderProduct)
                 .where(orderProduct.order.id.eq(orderId))
@@ -79,22 +65,17 @@ public class OrderQueryRepositoryImpl implements OrderQueryRepository {
 
     @Override
     public OrderDetailResponseDto.OrderInfoDto findOrderDetailOrderInfoDtoByOrderId(UUID orderId) {
-        if (queryFactory == null) {
-            throw new IllegalStateException("QueryFactory is not initialized");
-        }
-        return queryFactory.select(new QOrderDetailResponseDto_OrderInfoDto(order.id, order.status, order.orderName, order.paidAt, order.imageUrl, order.shippingAddress))
+        return queryFactory.select(new QOrderDetailResponseDto_OrderInfoDto(order.id, order.status, order.orderName, order.totalPrice, order.paidAt, order.imageUrl, order.shippingAddress))
                 .from(order)
                 .where(order.id.eq(orderId))
                 .fetchOne();
+
 
     }
 
     @Override
     public OrderDetailSellerResponseDto.OrderInfoDto findOrderDetailSellerInfoDtoByOrderId(UUID orderId) {
-        if (queryFactory == null) {
-            throw new IllegalStateException("QueryFactory is not initialized");
-        }
-        return queryFactory.select(new QOrderDetailSellerResponseDto_OrderInfoDto(order.id,order.status,order.paidAt,order.shippingAddress))
+        return queryFactory.select(new QOrderDetailSellerResponseDto_OrderInfoDto(order.id, order.status, order.paidAt, order.shippingAddress))
                 .from(orderProduct)
                 .leftJoin(orderProduct.order, order)
                 .where(order.id.eq(orderId))
@@ -104,9 +85,6 @@ public class OrderQueryRepositoryImpl implements OrderQueryRepository {
 
     @Override
     public OrderDetailSellerResponseDto.OrderProductDto findOrderDetailSellerProductDtoByOrderId(UUID orderId, Long userId) {
-        if (queryFactory == null) {
-            throw new IllegalStateException("QueryFactory is not initialized");
-        }
         return queryFactory.select(new QOrderDetailSellerResponseDto_OrderProductDto(orderProduct.id,orderProduct.productName,orderProduct.quantity,orderProduct.price,orderProduct.status))
                 .from(orderProduct)
                 .leftJoin(orderProduct.order, order)

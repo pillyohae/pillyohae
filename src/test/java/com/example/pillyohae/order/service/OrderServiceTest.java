@@ -58,6 +58,7 @@ class OrderServiceTest {
 
         // 주문이 성공적으로 생성되었는지 검증
         assertNotNull(responseDto.getOrderInfo());
+        assertNotNull(responseDto.getOrderInfo().getOrderName());
         // 주문 상세 정보 검증
         Order order = orderRepository.findById(responseDto.getOrderInfo().getOrderId()).orElseThrow();
         assertEquals(email, order.getUser().getEmail());
