@@ -1,5 +1,9 @@
 package com.example.pillyohae.global.config;
 
+import com.example.pillyohae.global.message_queue.RedisMessageSubscriber;
+import com.example.pillyohae.global.message_queue.publisher.MessagePublisher;
+import com.example.pillyohae.global.message_queue.publisher.RedisMessagePublisher;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
 import org.redisson.config.Config;
@@ -9,7 +13,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
+import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 import org.springframework.data.redis.serializer.GenericToStringSerializer;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
@@ -87,13 +93,28 @@ public class RedisConfig {
     }
 
     @Bean
-    public RedisMessageListenerContainer redisMessageListener(RedisConnectionFactory connectionFactory) {
+    MessageListenerAdapter messageListener() {
+        return new MessageListenerAdapter(new RedisMessageSubscriber(new ObjectMapper()));
+    }
 
-        RedisMessageListenerContainer container = new RedisMessageListenerContainer();
-
-        container.setConnectionFactory(connectionFactory);
-
+    @Bean
+    RedisMessageListenerContainer redisContainer() {
+        RedisMessageListenerContainer container
+                = new RedisMessageListenerContainer();
+        container.setConnectionFactory(redisConnectionFactory());
+        container.addMessageListener(messageListener(), topic());
         return container;
+    }
+
+    @Bean
+    ChannelTopic topic() {
+        return new ChannelTopic("messageQueue");
+    }
+
+
+    @Bean
+    MessagePublisher redisPublisher() {
+        return new RedisMessagePublisher(objectRedisTemplate(), topic());
     }
 
     @Bean

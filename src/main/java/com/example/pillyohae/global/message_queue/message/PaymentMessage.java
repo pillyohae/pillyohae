@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 public class PaymentMessage implements DomainMessage {
     private JSONObject jsonObject;
 
-    @Override
+
     public String getDomainType() {
         return "payment";
     }
