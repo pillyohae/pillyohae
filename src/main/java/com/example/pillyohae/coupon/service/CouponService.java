@@ -8,14 +8,15 @@ import com.example.pillyohae.coupon.entity.CouponTemplate;
 import com.example.pillyohae.coupon.entity.IssuedCoupon;
 import com.example.pillyohae.coupon.repository.CouponTemplateRepository;
 import com.example.pillyohae.coupon.repository.IssuedCouponRepository;
-import com.example.pillyohae.global.message_queue.MessagePublisher;
 import com.example.pillyohae.global.message_queue.message.CouponMessage;
+import com.example.pillyohae.global.message_queue.publisher.RedisMessagePublisher;
 import com.example.pillyohae.order.repository.OrderRepository;
 import com.example.pillyohae.user.entity.User;
 import com.example.pillyohae.user.service.UserService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.redisson.api.RAtomicLong;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -42,7 +43,7 @@ public class CouponService {
     private final OrderRepository orderRepository;
 
     // message queue
-    private final MessagePublisher messagePublisher;
+    private final RedisMessagePublisher messagePublisher;
     private final RedisTemplate<String,Object> objectRedisTemplate;
     private final RedisTemplate<String,Integer> intRedisTemplate;
 
@@ -51,6 +52,7 @@ public class CouponService {
 
     private static final int MAX_RETRY_ATTEMPTS = 3;
     private static final long RETRY_DELAY_MS = 1000;
+    private final ObjectMapper objectMapper;
 
     @Transactional
     public CreateCouponTemplateResponseDto createCouponTemplate(CouponTemplateCreateRequestDto requestDto) {
@@ -140,10 +142,13 @@ public class CouponService {
                 UUID issuedCouponId = UUID.randomUUID();
 
                 // 쿠폰 처리 메세지 issuedCoupon id 를 미리 생성한다 UUID 생성 버전은 default 4
-                CouponMessage couponMessage = new CouponMessage(couponTemplate.getId(), issuedCouponId, user.getId(), LocalDateTime.now());
-                messagePublisher.publishCouponEvent(couponMessage);
+                CouponMessage couponMessage = new CouponMessage(couponTemplate.getId(), issuedCouponId, user.getId(), LocalDateTime.now(), "coupon");
+                String message = objectMapper.writeValueAsString(couponMessage);
+                messagePublisher.publish(message);
                 return couponMessage;
             }
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
         } finally {
             lock.unlock();
         }

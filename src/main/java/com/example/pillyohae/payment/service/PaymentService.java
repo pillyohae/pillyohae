@@ -1,15 +1,7 @@
 package com.example.pillyohae.payment.service;
 
-import com.example.pillyohae.global.message_queue.MessagePublisher;
-import com.example.pillyohae.global.message_queue.message.CouponMessage;
 import com.example.pillyohae.global.message_queue.message.PaymentMessage;
-import com.example.pillyohae.order.repository.OrderRepository;
 import com.example.pillyohae.order.service.OrderService;
-import com.example.pillyohae.payment.dto.PaymentDataDto;
-import com.example.pillyohae.payment.dto.PaymentSuccessDto;
-import com.example.pillyohae.payment.entity.PayMethod;
-import com.example.pillyohae.payment.entity.Payment;
-import com.example.pillyohae.payment.entity.TossPaymentsVariables;
 import com.example.pillyohae.payment.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,18 +9,14 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
 import java.util.Base64;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
