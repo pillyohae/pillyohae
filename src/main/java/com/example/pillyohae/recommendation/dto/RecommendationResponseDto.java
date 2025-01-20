@@ -6,7 +6,7 @@ import lombok.Getter;
 /**
  * 추천 상품 응답 DTO
  *
- * @see com.example.pillyohae.recommendation.service.RecommendationService#generateRecommendation(String, Long)
+ * @see com.example.pillyohae.recommendation.service.RecommendationService#create(String, Long)
  */
 @Getter
 public class RecommendationResponseDto {

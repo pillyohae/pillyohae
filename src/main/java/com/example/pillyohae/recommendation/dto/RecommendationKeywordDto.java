@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 /**
  * 추천 키워드 DTO
  *
- * @see com.example.pillyohae.recommendation.service.RecommendationService#generateRecommendation(String, Long)
+ * @see com.example.pillyohae.recommendation.service.RecommendationService#create(String, Long)
  */
 @Getter
 @NoArgsConstructor

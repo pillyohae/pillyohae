@@ -11,11 +11,11 @@ import lombok.Getter;
 @Getter
 public class SurveySubmitResponseDto {
 
-    private Long surveyId;
+    private final Long surveyId;
 
-    private String categories;
+    private final String categories;
 
-    private LocalDateTime createAt;
+    private final LocalDateTime createAt;
 
     public SurveySubmitResponseDto(Long surveyId, String categories, LocalDateTime createAt) {
         this.surveyId = surveyId;
