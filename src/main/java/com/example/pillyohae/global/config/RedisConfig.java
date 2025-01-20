@@ -1,11 +1,17 @@
 package com.example.pillyohae.global.config;
 
+import org.redisson.Redisson;
+import org.redisson.api.RedissonClient;
+import org.redisson.config.Config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.listener.RedisMessageListenerContainer;
+import org.springframework.data.redis.serializer.GenericToStringSerializer;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
@@ -16,6 +22,8 @@ public class RedisConfig {
 
     @Value("${spring.data.redis.port}")
     private int port;
+
+    private static final String REDISSON_HOST_PREFIX = "redis://";
 
     /**
      * Redis 서버와 애플리케이션 간 연결을 설정하고 관리, LettuceConnectionFactory 사용
@@ -50,4 +58,52 @@ public class RedisConfig {
 
         return template;
     }
+
+    /**
+     * string-object 저장을 위한 redis template
+     *
+     * @return 설정된 template 리턴
+     */
+    @Bean
+    public RedisTemplate<String, Object> objectRedisTemplate() {
+
+        RedisTemplate<String, Object> template = new RedisTemplate<>();
+
+        template.setConnectionFactory(redisConnectionFactory());
+
+        template.setKeySerializer(new StringRedisSerializer());
+
+        template.setValueSerializer(new Jackson2JsonRedisSerializer<>(Object.class));
+        return template;
+    }
+
+    @Bean
+    public RedisTemplate<String, Integer> intRedisTemplate(RedisConnectionFactory connectionFactory) {
+        RedisTemplate<String, Integer> redisTemplate = new RedisTemplate<>();
+        redisTemplate.setConnectionFactory(connectionFactory);
+        redisTemplate.setKeySerializer(new StringRedisSerializer());
+        redisTemplate.setValueSerializer(new GenericToStringSerializer<>(Integer.class)); // Long 값 직렬화
+        return redisTemplate;
+    }
+
+    @Bean
+    public RedisMessageListenerContainer redisMessageListener(RedisConnectionFactory connectionFactory) {
+
+        RedisMessageListenerContainer container = new RedisMessageListenerContainer();
+
+        container.setConnectionFactory(connectionFactory);
+
+        return container;
+    }
+
+    @Bean
+    public RedissonClient redissonClient() {
+        RedissonClient redisson = null;
+        Config config = new Config();
+        config.useSingleServer().setAddress(REDISSON_HOST_PREFIX + host + ":" + port);
+        redisson = Redisson.create(config);
+        return redisson;
+    }
+
+
 }

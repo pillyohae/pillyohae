@@ -88,7 +88,7 @@ Content-Type: application/json
   "expiredType": "FIXED_DATE",
   "fixedAmount": 10000,
   "minimumPrice": 20000,
-  "startAt": "2025-01-17T14:37:30",
+  "startAt": "2025-01-20T16:07:30",
   "expiredAt": "2025-02-20T23:59:59",
   "maxIssueCount": 1000
 }
@@ -104,7 +104,7 @@ Content-Type: application/json
   "expiredType": "DURATION_BASED",
   "fixedAmount": 10000,
   "minimumPrice": 20000,
-  "startAt": "2025-01-17T14:37:30",
+  "startAt": "2025-01-20T14:58:30",
   "expiredAt": "2025-02-20T23:59:59",
   "maxIssueCount": 1000,
   "couponLifetime": 3
@@ -123,7 +123,7 @@ Content-Type: application/json
   "fixedRate": 10,
   "maxDiscountAmount": 5000,
   "minimumPrice": 15000,
-  "startAt": "2025-01-17T14:37:30",
+  "startAt": "2025-01-20T14:58:30",
   "expiredAt": "2025-02-20T23:59:59",
   "maxIssueCount": 1000
 }
@@ -142,7 +142,7 @@ Content-Type: application/json
   "fixedRate": 10,
   "maxDiscountAmount": 5000,
   "minimumPrice": 15000,
-  "startAt": "2025-01-17T14:37:30",
+  "startAt": "2025-01-20T14:58:30",
   "expiredAt": "2025-02-20T23:59:59",
   "maxIssueCount": 1000,
   "couponLifetime": 3
@@ -199,7 +199,7 @@ GET http://localhost:8080/coupons?couponStatus = INACTIVE
 Authorization: Bearer {{accessToken}}
 
 ###
-POST http://localhost:8080/coupons/1/issue
+POST http://localhost:8080/coupons/10b7363a-184b-41fa-a4a5-c19156faf183/issue
 Authorization: Bearer {{accessToken}}
 ###
 

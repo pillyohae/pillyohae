@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Getter
@@ -30,8 +31,8 @@ import java.util.List;
 public class CouponTemplate {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @Column(nullable = false)
     private String name;
@@ -83,8 +84,6 @@ public class CouponTemplate {
     @Column
     private Period couponLifetime;
 
-    @Version  // 낙관적 락을 위한 버전 필드
-    private Long version;
 
 
     /**
@@ -133,30 +132,11 @@ public class CouponTemplate {
         throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,"쿠폰 만료일자 타입이 FIXED_DATE 또는 DURATION_BASED 가 아닙니다");
     }
 
-    public synchronized void incrementIssuanceCount() {
-        validateTemplate();
-        validateIssuanceLimit();
+    public void incrementIssuanceCount() {
 
         this.currentIssuanceCount++;
+    }
 
-        if (this.currentIssuanceCount.equals(this.maxIssuanceCount)) {
-            this.status = CouponStatus.INACTIVE;
-        }
-
-    }
-    // 쿠폰 상태 검증
-    private void validateTemplate() {
-        if (status != CouponStatus.ACTIVE) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"사용 가능한 쿠폰이 아닙니다. 현재 상태: " + status);
-        }
-    }
-    // 쿠폰 한도 검증
-    private void validateIssuanceLimit() {
-        if (currentIssuanceCount >= maxIssuanceCount) {
-            this.status = CouponStatus.INACTIVE;
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"쿠폰 발급 한도(" + maxIssuanceCount + "개)를 초과했습니다.");
-        }
-    }
 
 
     // 고정 날짜 만료 또는 생성일 기준 만료로 나뉨

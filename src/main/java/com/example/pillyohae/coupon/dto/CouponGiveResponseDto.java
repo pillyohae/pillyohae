@@ -5,11 +5,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Getter
 @NoArgsConstructor
 public class CouponGiveResponseDto {
-    private Long couponId;
+    private UUID couponId;
     private String couponName;
     private String couponDescription;
     private CouponTemplate.DiscountType discountType;
@@ -19,7 +20,7 @@ public class CouponGiveResponseDto {
     private Long minimumPrice;
     private LocalDateTime expiredAt;
 
-    public CouponGiveResponseDto(Long couponId, String couponName, String couponDescription, CouponTemplate.DiscountType discountType, Long fixedAmount, Long fixedRate, Long maxDiscountAmount, Long minimumPrice, LocalDateTime expiredAt) {
+    public CouponGiveResponseDto(UUID couponId, String couponName, String couponDescription, CouponTemplate.DiscountType discountType, Long fixedAmount, Long fixedRate, Long maxDiscountAmount, Long minimumPrice, LocalDateTime expiredAt) {
         this.couponId = couponId;
         this.couponName = couponName;
         this.couponDescription = couponDescription;

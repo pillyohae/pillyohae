@@ -10,9 +10,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 
 
-public interface IssuedCouponRepository extends JpaRepository<IssuedCoupon, Long>, IssuedCouponQueryRepository {
+public interface IssuedCouponRepository extends JpaRepository<IssuedCoupon, UUID>, IssuedCouponQueryRepository {
     @Query("SELECT ic FROM IssuedCoupon ic " +
             "JOIN FETCH ic.couponTemplate " +
             "WHERE ic.user.id = :userId")

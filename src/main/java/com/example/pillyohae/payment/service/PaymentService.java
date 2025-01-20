@@ -1,5 +1,8 @@
 package com.example.pillyohae.payment.service;
 
+import com.example.pillyohae.global.message_queue.MessagePublisher;
+import com.example.pillyohae.global.message_queue.message.CouponMessage;
+import com.example.pillyohae.global.message_queue.message.PaymentMessage;
 import com.example.pillyohae.order.repository.OrderRepository;
 import com.example.pillyohae.order.service.OrderService;
 import com.example.pillyohae.payment.dto.PaymentDataDto;
@@ -23,6 +26,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.UUID;
 
@@ -32,29 +36,12 @@ import java.util.UUID;
 public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final OrderService orderService;
+    private final MessagePublisher messagePublisher;
     JSONParser parser = new JSONParser();
 
 
     @Value("${toss.secret-key}")
     private String TOSS_SECRET_KEY;
-
-    @Transactional
-    protected void savePayment(JSONObject tossResult) throws IOException, ParseException {
-        Payment payment = new Payment(
-                (String) tossResult.get(TossPaymentsVariables.MID.getValue()),
-                (String) tossResult.get(TossPaymentsVariables.VERSION.getValue()),
-                (String) tossResult.get(TossPaymentsVariables.PAYMENTKEY.getValue()),
-                (String) tossResult.get(TossPaymentsVariables.STATUS.getValue()),
-                (UUID.fromString((String) tossResult.get(TossPaymentsVariables.ORDERID.getValue()))) ,
-                (String) tossResult.get(TossPaymentsVariables.ORDERNAME.getValue()),
-                (String) tossResult.get(TossPaymentsVariables.REQUESTEDAT.getValue()),
-                (String) tossResult.get(TossPaymentsVariables.APPROVEDAT.getValue()),
-                (Long) tossResult.get(TossPaymentsVariables.TOTALAMOUNT.getValue()),
-                (Long) tossResult.get(TossPaymentsVariables.BALANCEAMOUNT.getValue()),
-                Enum.valueOf(PayMethod.class,((String) tossResult.get(TossPaymentsVariables.METHOD.getValue()))));
-        paymentRepository.save(payment);
-
-    }
 
     @Transactional
     public  ResponseEntity<JSONObject> pay(String jsonBody) throws IOException, ParseException {
@@ -66,6 +53,7 @@ public class PaymentService {
         int code = connection.getResponseCode();
         boolean isSuccess = code == 200;
         InputStream responseStream =  isSuccess ? connection.getInputStream() : connection.getErrorStream();
+        responseStream.close();
         Reader reader = new InputStreamReader(responseStream, StandardCharsets.UTF_8);
         JSONObject tossResult = (JSONObject) parser.parse(reader);
         // 결제 실패 에러 발생 처리
@@ -73,10 +61,11 @@ public class PaymentService {
             log.info(responseStream.toString());
             return ResponseEntity.status(code).body(tossResult);
         }
+
         // 결제 성공시 주문 결제완료로 변경 및 결제 로그 저장
-        savePayment(tossResult);
-        responseStream.close();
-        orderService.updateOrderPaid((UUID.fromString((String)tossRequest.get("orderId"))));
+        PaymentMessage paymentMessage = new PaymentMessage(tossResult);
+        messagePublisher.publishPaymentEvent(paymentMessage);
+
         return ResponseEntity.status(code).body(tossResult);
     }
 
