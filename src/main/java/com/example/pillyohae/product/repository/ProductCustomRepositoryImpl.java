@@ -49,7 +49,6 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 
         BooleanBuilder builder = new BooleanBuilder();
         builder.and(product.status.eq(ProductStatus.SELLING));
-        builder.and(product.isNotNull());
 
         // 각 키워드별 한 개씩 조회
         for (RecommendationKeywordDto keyword : keywords) {

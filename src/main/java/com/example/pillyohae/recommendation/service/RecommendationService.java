@@ -43,7 +43,7 @@ public class RecommendationService {
      * @param surveyId 설문 ID
      * @return 추천 상품 목록
      */
-    public List<RecommendationResponseDto> generateRecommendation(String email, Long surveyId) throws JsonProcessingException {
+    public List<RecommendationResponseDto> create(String email, Long surveyId) throws JsonProcessingException {
 
         Survey survey = surveyService.findSurvey(email, surveyId);
 
@@ -52,15 +52,13 @@ public class RecommendationService {
         log.info("prompt : {}", prompt);
 
         // 2. 추천 상품 키워드 생성
-        RecommendationKeywordDto[] keywords = generateRecommendation(prompt);
+        RecommendationKeywordDto[] keywords = generateRecommendationKeyword(prompt);
 
         // 3. 키워드로 상품 조회
         List<Product> recommendationProducts = productService.findByNameLike(keywords);
         log.info("recommendationProducts : {}", recommendationProducts.size());
-        for (Product product : recommendationProducts) {
-            log.info("product : {}", product);
-        }
 
+        // 
         if (recommendationProducts.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "추천 상품을 찾을 수 없습니다.");
         }
@@ -106,7 +104,7 @@ public class RecommendationService {
      * @param prompt 요청 프롬프트
      * @return 추천 상품 키워드
      */
-    private RecommendationKeywordDto[] generateRecommendation(String prompt) throws JsonProcessingException {
+    private RecommendationKeywordDto[] generateRecommendationKeyword(String prompt) throws JsonProcessingException {
 
         UserMessage userMessage = new UserMessage(prompt);
 
@@ -115,7 +113,6 @@ public class RecommendationService {
 
         String result = response.getResult().getOutput().getContent()
             .replace(" ", "");
-        log.info("result : {}", result);
 
         ObjectMapper objectMapper = new ObjectMapper();
 

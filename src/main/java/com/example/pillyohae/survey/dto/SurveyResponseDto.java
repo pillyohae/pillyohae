@@ -12,11 +12,11 @@ import lombok.Getter;
 @Getter
 public class SurveyResponseDto {
 
-    private Long surveyId;
+    private final Long surveyId;
 
-    private String categories;
+    private final String categories;
 
-    private LocalDateTime createAt;
+    private final LocalDateTime createAt;
 
     @QueryProjection
     public SurveyResponseDto(Long surveyId, String categories, LocalDateTime createAt) {

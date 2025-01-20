@@ -34,7 +34,7 @@ public class RecommendationController {
     ) throws JsonProcessingException {
 
         // 추천 상품 생성
-        return ResponseEntity.ok(recommendationService.generateRecommendation(userDetails.getUsername(), surveyId));
+        return ResponseEntity.ok(recommendationService.create(userDetails.getUsername(), surveyId));
     }
 
 }
