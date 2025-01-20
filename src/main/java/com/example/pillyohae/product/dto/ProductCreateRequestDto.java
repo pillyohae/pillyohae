@@ -28,9 +28,10 @@ public class ProductCreateRequestDto {
 
     private String imageUrl;
 
-    @NotNull
-    private ProductStatus status;
 
+    private ProductStatus status = ProductStatus.SELLING;
+
+    //테스트 코드용
     public ProductCreateRequestDto(String productName, String category, String description, String companyName, Long price, ProductStatus status) {
         this.productName = productName;
         this.category = category;
@@ -48,7 +49,7 @@ public class ProductCreateRequestDto {
             this.description,
             this.companyName,
             this.price,
-            this.status
+            this.status = ProductStatus.SELLING
         );
     }
 }

@@ -14,6 +14,7 @@ import com.example.pillyohae.product.dto.UpdateImageRequestDto;
 import com.example.pillyohae.product.dto.UpdateImageResponseDto;
 import com.example.pillyohae.product.entity.Product;
 import com.example.pillyohae.product.entity.ProductImage;
+import com.example.pillyohae.product.entity.type.ProductStatus;
 import com.example.pillyohae.product.repository.ImageStorageRepository;
 import com.example.pillyohae.product.repository.ProductRepository;
 import com.example.pillyohae.recommendation.dto.RecommendationKeywordDto;
@@ -104,7 +105,13 @@ public class ProductService {
      */
     @Transactional
     public ProductGetResponseDto getProduct(Long productId) {
+
         Product findProduct = findById(productId);
+
+        List<String> imageUrls = findProduct.getImages()
+            .stream()
+            .map(ProductImage::getFileUrl)
+            .toList();
 
         return new ProductGetResponseDto(
             findProduct.getProductId(),
@@ -113,7 +120,8 @@ public class ProductService {
             findProduct.getDescription(),
             findProduct.getCompanyName(),
             findProduct.getPrice(),
-            findProduct.getStatus()
+            findProduct.getStatus(),
+            imageUrls
         );
     }
 
@@ -197,7 +205,8 @@ public class ProductService {
                 product.getProductName(),
                 product.getCompanyName(),
                 product.getCategory(),
-                product.getPrice()
+                product.getPrice(),
+                product.getStatus()
             ));
 
     }
@@ -326,6 +335,7 @@ public class ProductService {
 
     public Product findById(Long productId) {
         return productRepository.findById(productId)
+            .filter(product -> product.getStatus() != ProductStatus.DELETED)
             .orElseThrow(() -> new CustomResponseStatusException(ErrorCode.NOT_FOUND_PRODUCT));
     }
 
