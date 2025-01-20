@@ -42,7 +42,8 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
             .where(
                 productNameContains(productName),
                 companyNameEq(companyName),
-                categoryEq(category)
+                categoryEq(category),
+                product.deletedAt.isNull()
             )
             .offset(pageable.getOffset()) // 몇 번째 페이지부터 시작할 것 인지.
             .limit(pageable.getPageSize())// 페이지당 몇개의 데이터를 보여줄껀지
