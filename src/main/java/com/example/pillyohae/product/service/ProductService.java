@@ -4,14 +4,23 @@ import com.example.pillyohae.global.S3.S3Service;
 import com.example.pillyohae.global.dto.UploadFileInfo;
 import com.example.pillyohae.global.exception.CustomResponseStatusException;
 import com.example.pillyohae.global.exception.code.ErrorCode;
-import com.example.pillyohae.product.dto.*;
+import com.example.pillyohae.product.dto.ProductCreateRequestDto;
+import com.example.pillyohae.product.dto.ProductCreateResponseDto;
+import com.example.pillyohae.product.dto.ProductGetResponseDto;
+import com.example.pillyohae.product.dto.ProductSearchResponseDto;
+import com.example.pillyohae.product.dto.ProductUpdateRequestDto;
+import com.example.pillyohae.product.dto.ProductUpdateResponseDto;
+import com.example.pillyohae.product.dto.UpdateImageRequestDto;
+import com.example.pillyohae.product.dto.UpdateImageResponseDto;
 import com.example.pillyohae.product.entity.Product;
 import com.example.pillyohae.product.entity.ProductImage;
 import com.example.pillyohae.product.entity.type.ProductStatus;
 import com.example.pillyohae.product.repository.ImageStorageRepository;
 import com.example.pillyohae.product.repository.ProductRepository;
+import com.example.pillyohae.recommendation.dto.RecommendationKeywordDto;
 import com.example.pillyohae.user.entity.User;
 import com.example.pillyohae.user.service.UserService;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -21,8 +30,6 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -330,6 +337,16 @@ public class ProductService {
         return productRepository.findById(productId)
             .filter(product -> product.getStatus() != ProductStatus.DELETED)
             .orElseThrow(() -> new CustomResponseStatusException(ErrorCode.NOT_FOUND_PRODUCT));
+    }
+
+    /**
+     * 추천 상품 조회
+     *
+     * @param recommendations 추천 키워드
+     * @return 추천 상품 목록
+     */
+    public List<Product> findByNameLike(RecommendationKeywordDto[] recommendations) {
+        return productRepository.findProductsByNameLike(recommendations);
     }
 }
 
