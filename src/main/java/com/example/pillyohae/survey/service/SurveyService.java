@@ -41,7 +41,7 @@ public class SurveyService {
     }
 
     /**
-     * 사용자의 설문 내역 조회
+     * 설문 내역 조회
      *
      * @param email 사용자 이메일
      * @return 정상 처리 시 응답 DTO
@@ -82,7 +82,7 @@ public class SurveyService {
     }
 
     /**
-     * 설문 내역 단건 삭제
+     * 설문 단건 삭제
      *
      * @param email 사용자 이메일
      */
@@ -99,5 +99,25 @@ public class SurveyService {
         }
 
         surveyRepository.delete(findSurvey);
+    }
+
+    /**
+     * 설문 단건 조회 (추천 상품 생성 시 사용)
+     *
+     * @param email    사용자 이메일
+     * @param surveyId 설문 ID
+     * @return Survey 객체
+     */
+    public Survey findSurvey(String email, Long surveyId) {
+
+        User user = userService.findByEmail(email);
+        Survey findSurvey = surveyRepository.findById(surveyId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "해당 설문 내역을 찾을 수 없습니다."));
+
+        if (!user.getId().equals(findSurvey.getUser().getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "권한이 없습니다.");
+        }
+
+        return findSurvey;
     }
 }
