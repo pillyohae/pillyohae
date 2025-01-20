@@ -1,5 +1,7 @@
 package com.example.pillyohae.product.entity;
 
+import com.example.pillyohae.global.exception.CustomResponseStatusException;
+import com.example.pillyohae.global.exception.code.ErrorCode;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -55,6 +57,9 @@ public class ProductImage {
     }
 
     public void updatePosition(Integer position) {
+        if (position < 0) {
+            throw new CustomResponseStatusException(ErrorCode.BAD_POSITION);
+        }
         this.position = position;
     }
 
