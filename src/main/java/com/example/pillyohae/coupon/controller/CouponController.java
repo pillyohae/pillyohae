@@ -13,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/coupons")
 @RequiredArgsConstructor
@@ -30,7 +32,7 @@ public class CouponController {
 
     @PostMapping("/{couponTemplateId}/issue")
     public ResponseEntity<CouponGiveResponseDto> giveCoupon(
-            @PathVariable(name = "couponTemplateId") Long couponTemplateId, Authentication authentication) {
+            @PathVariable(name = "couponTemplateId") UUID couponTemplateId, Authentication authentication) {
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(couponService.giveCoupon(authentication.getName(), couponTemplateId));

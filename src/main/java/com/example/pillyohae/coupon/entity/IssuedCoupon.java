@@ -16,6 +16,8 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
+import java.util.UUID;
+
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -30,8 +32,7 @@ import lombok.NoArgsConstructor;
 public class IssuedCoupon {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private UUID id;
 
     @Column(nullable = false)
     private LocalDateTime issuedAt;       // 발급일
@@ -55,8 +56,9 @@ public class IssuedCoupon {
     @JoinColumn(name = "user_id")
     private User user;              // 쿠폰 소유 사용자
 
-    public IssuedCoupon(LocalDateTime issuedAt, LocalDateTime expiredAt,
+    public IssuedCoupon(UUID id,LocalDateTime issuedAt, LocalDateTime expiredAt,
         CouponTemplate couponTemplate, User user) {
+        this.id = id;
         this.issuedAt = issuedAt;
         this.expiredAt = expiredAt;
         this.couponTemplate = couponTemplate;

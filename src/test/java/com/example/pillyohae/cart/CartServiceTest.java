@@ -7,6 +7,7 @@ import com.example.pillyohae.cart.dto.CartListResponseDto;
 import com.example.pillyohae.cart.dto.CartProductDetailResponseDto;
 import com.example.pillyohae.cart.repository.CartRepository;
 import com.example.pillyohae.cart.service.CartService;
+import com.example.pillyohae.global.entity.address.ShippingAddress;
 import com.example.pillyohae.user.entity.User;
 import com.example.pillyohae.user.entity.type.Role;
 import com.example.pillyohae.user.service.UserService;
@@ -36,7 +37,7 @@ class CartServiceTest {
         private static final String NAME = "joon";
         private static final String EMAIL = "test@test.com";
         private static final String PASSWORD = "1234";
-        private static final String ADDRESS = "seoul";
+        private static final ShippingAddress ADDRESS = new ShippingAddress("TestUser","010-0000-0000","test-zip","test-road","100-100");
         private static final Role ROLE = Role.BUYER;
         private static final Long ID = 1L;
     }
