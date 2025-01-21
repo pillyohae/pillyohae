@@ -12,14 +12,6 @@ public class ProductSearchResponseDto {
     private Long price;
     private ProductStatus status;
 
-    public ProductSearchResponseDto(Long productId, String productName, String companyName, String category, Long price) {
-        this.productId = productId;
-        this.productName = productName;
-        this.companyName = companyName;
-        this.category = category;
-        this.price = price;
-    }
-
     public ProductSearchResponseDto(Long productId, String productName, String companyName, String category, Long price, ProductStatus status) {
         this.productId = productId;
         this.productName = productName;
@@ -28,5 +20,4 @@ public class ProductSearchResponseDto {
         this.price = price;
         this.status = status;
     }
-
 }
