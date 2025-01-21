@@ -286,7 +286,7 @@ public class OrderService {
                 : String.format("%s %d개 외 %d건", firstProductName, quantity, totalProducts - 1);
     }
 
-    private void applyCouponIfPresent(Order order, List<Long> couponIds) {
+    private void applyCouponIfPresent(Order order, List<UUID> couponIds) {
         if (couponIds != null && !couponIds.isEmpty()) {
 
             issuedCouponRepository.findById(couponIds.get(0)).ifPresent(order::applyCoupon);

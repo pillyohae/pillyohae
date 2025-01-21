@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Creates an order by delegating to the external processing service.
@@ -20,9 +21,9 @@ import java.util.List;
 public class OrderCreateRequestDto {
     @NotNull
     private List<ProductOrderInfo> productInfos;
-    private List<Long> couponIds;
+    private List<UUID> couponIds;
 
-    public OrderCreateRequestDto(List<ProductOrderInfo> productInfos, List<Long> couponIds) {
+    public OrderCreateRequestDto(List<ProductOrderInfo> productInfos, List<UUID> couponIds) {
         this.productInfos = productInfos;
         this.couponIds = couponIds;
     }
