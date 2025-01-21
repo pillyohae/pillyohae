@@ -185,7 +185,7 @@ public class CouponService {
         ops.increment(countKey);
     }
 
-    private Long getCouponCount(CouponTemplate couponTemplate) {
+    private Integer getCouponCount(CouponTemplate couponTemplate) {
         String countKey = "coupon:count:" + couponTemplate.getId();
 
         // 1. 캐시 존재 여부 확인
@@ -202,8 +202,8 @@ public class CouponService {
         }
 
         // 3. 캐시에서 수량 반환
-        String count = Objects.requireNonNull(objectRedisTemplate.opsForValue().get(countKey)).toString();
-        return count != null ? Long.parseLong(count) : 0L;
+        String count = String.valueOf(intRedisTemplate.opsForValue().get(countKey));
+        return count != null ? Integer.parseInt(count) : 0;
     }
 
     private void initializeCouponCount(CouponTemplate couponTemplate) {

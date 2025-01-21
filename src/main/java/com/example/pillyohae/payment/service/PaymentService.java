@@ -1,8 +1,10 @@
 package com.example.pillyohae.payment.service;
 
 import com.example.pillyohae.global.message_queue.message.PaymentMessage;
+import com.example.pillyohae.global.message_queue.publisher.MessagePublisher;
 import com.example.pillyohae.order.service.OrderService;
 import com.example.pillyohae.payment.repository.PaymentRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONObject;
@@ -24,7 +26,8 @@ import java.util.Base64;
 public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final OrderService orderService;
-    private final MessagePublisher messagePublisher;
+    private final MessagePublisher redisMessagePublisher;
+    private final ObjectMapper objectMapper;
     JSONParser parser = new JSONParser();
 
 
@@ -52,7 +55,8 @@ public class PaymentService {
 
         // 결제 성공시 주문 결제완료로 변경 및 결제 로그 저장
         PaymentMessage paymentMessage = new PaymentMessage(tossResult);
-        messagePublisher.publishPaymentEvent(paymentMessage);
+        String message = objectMapper.writeValueAsString(paymentMessage);
+        redisMessagePublisher.publish(message);
 
         return ResponseEntity.status(code).body(tossResult);
     }
