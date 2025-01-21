@@ -14,12 +14,14 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.LocalDateTime;
 import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -35,7 +37,8 @@ class CouponServiceTest {
     private UserRepository userRepository;
     @Autowired
     private IssuedCouponRepository issuedCouponRepository;
-
+    @Autowired
+    private RedisTemplate<String,Integer> intRedisTemplate;
 
     private List<User> users = new ArrayList<>();
     private CouponTemplate couponTemplate;
@@ -67,11 +70,17 @@ class CouponServiceTest {
         }catch (Exception e){
         }
 
+        Thread.sleep(1000);
         CouponTemplate couponTemplate =  couponTemplateRepository.findByName("couponTemplate1");
-        // 실제 발행된 쿠폰수와 최대 발행량 일치  확인
-        assertThat((int) issuedCouponRepository.count()).isEqualTo(couponTemplate.getMaxIssuanceCount());
-        // 쿠폰에 기록된 발행량과 최대 발행량이 일치하는지 확인
-        assertThat(couponTemplate.getCurrentIssuanceCount()).isEqualTo(couponTemplate.getMaxIssuanceCount());
+
+        String countKey = "coupon:count:" + couponTemplate.getId();
+
+        // 1. 캐시로부터 쿠폰 갯수를 가져옴
+        Integer count = intRedisTemplate.opsForValue().get(countKey);
+        // redis에 기록된 쿠폰 수 와 최대 발행량 일치  확인
+        assertThat(count).isEqualTo(couponTemplate.getMaxIssuanceCount());
+        // 발행된 쿠폰수와 최대 발행량이 일치하는지 확인
+        assertThat(couponTemplate.getIssuedCoupons().size()).isEqualTo(couponTemplate.getMaxIssuanceCount());
 
     }
 }
