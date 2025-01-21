@@ -93,7 +93,6 @@ public class CouponService {
 
         int attempts = 0;
         boolean success = false;
-
         while (attempts < MAX_RETRY_ATTEMPTS && !success) {
             try {
                 CouponMessage couponMessage = tryIssueCoupon(couponTemplate, user);
@@ -129,8 +128,7 @@ public class CouponService {
         // 락 생성
         RLock lock = redissonClient.getLock("coupon:" + couponTemplate.getId());
         try {
-            if (lock.tryLock(5, TimeUnit.SECONDS)) {
-
+            if (lock.tryLock(60, TimeUnit.SECONDS)) {
                 checkDuplicateCoupon(userIssuedCoupons, couponTemplate);
 
                 checkCouponQuantity(couponTemplate);
