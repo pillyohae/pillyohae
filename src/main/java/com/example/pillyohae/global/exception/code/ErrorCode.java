@@ -39,6 +39,7 @@ public enum ErrorCode {
     BAD_FORMAT(HttpStatus.BAD_REQUEST, "허용된 파일 형식이 아닙니다."),
     INVALID_IMAGE_PRODUCT_MATCH(HttpStatus.BAD_REQUEST, "상품에 해당하는 이미지가 아닙니다."),
     CANNOT_OVERLOAD_FILE(HttpStatus.BAD_REQUEST, "이미지는 최대 5개까지 업로드할 수 있습니다"),
+    BAD_POSITION(HttpStatus.BAD_REQUEST, "위치 값은 0보다 작을 수 없습니다."),
 
     /**
      * unAuthorized
