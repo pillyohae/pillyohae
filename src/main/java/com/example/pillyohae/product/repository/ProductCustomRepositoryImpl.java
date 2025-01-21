@@ -56,7 +56,8 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
             .where(
                 productNameContains(productName),
                 companyNameEq(companyName),
-                categoryEq(category)
+                categoryEq(category),
+                product.deletedAt.isNull()
             );
 
         // PageableExecutionUtils를 사용하여 Page 객체 반환

@@ -73,8 +73,8 @@ public class ProductService {
             requestDto.getCategory(),
             requestDto.getDescription(),
             requestDto.getCompanyName(),
-            requestDto.getPrice(),
-            requestDto.getStatus()
+            requestDto.getPrice()
+
         );
 
         Product updatedProduct = productRepository.save(findProduct);
@@ -166,7 +166,8 @@ public class ProductService {
             product.getProductName(),
             product.getCompanyName(),
             product.getCategory(),
-            product.getPrice()
+            product.getPrice(),
+            product.getStatus()
         ));
     }
 

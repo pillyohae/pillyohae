@@ -48,7 +48,6 @@ public class Product extends BaseTimeEntity {
         this.description = description;
         this.companyName = companyName;
         this.price = price;
-        this.status = ProductStatus.SELLING; // 기본값 설정
     }
 
     public Product(User user, String productName, String category, String description, String companyName, Long price, ProductStatus status) {
@@ -61,13 +60,13 @@ public class Product extends BaseTimeEntity {
         this.status = status;
     }
 
-    public void updateProduct(String productName, String category, String description, String companyName, Long price, ProductStatus status) {
+    public void updateProduct(String productName, String category, String description, String companyName, Long price) {
         this.productName = productName;
         this.category = category;
         this.description = description;
         this.companyName = companyName;
         this.price = price;
-        this.status = status;
+
     }
 
     public void deleteProduct() {
