@@ -7,6 +7,8 @@ import com.example.pillyohae.global.exception.code.ErrorCode;
 import com.example.pillyohae.global.util.JwtProvider;
 import com.example.pillyohae.user.entity.User;
 import com.example.pillyohae.user.repository.UserRepository;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +29,10 @@ public class RefreshTokenService {
     private final UserRepository userRepository;
     private final JwtProvider jwtProvider;
     private final UserDetailsService userDetailsService;
+    private final Cache<String, Boolean> blacklistCache = Caffeine.newBuilder()
+        .expireAfterWrite(5, TimeUnit.MINUTES)
+        .maximumSize(10000)
+        .build();
 
 
     private static final String REFRESH_TOKEN_PREFIX = "RT:"; // Redis 리프레시 토큰 키 접두사
@@ -180,6 +186,8 @@ public class RefreshTokenService {
                     TimeUnit.MILLISECONDS
                 );
 
+                blacklistCache.put(accessToken, true);
+
                 log.info("블랙리스트 추가 작업 완료");
             } else {
                 // 토큰이 이미 만료된 경우 블랙리스트 추가 작업 건너뜀
@@ -199,7 +207,20 @@ public class RefreshTokenService {
      * @return 블랙리스트에 등록되어 있다면 true, 그렇지 않으면 false
      */
     public boolean isTokenBlacklisted(String accessToken) {
-        // Redis에서 BL:<액세스 토큰> 키가 존재하는지 확인
-        return Boolean.TRUE.equals(redisTemplate.hasKey(BLACKLIST_TOKEN_PREFIX + accessToken));
+        // 로컬 캐시 확인
+        Boolean cacheResult = blacklistCache.getIfPresent(accessToken);
+        if (cacheResult != null) {
+            return cacheResult;
+        }
+
+        //캐시에 없으면 Redis에서 BL:<액세스 토큰> 키가 존재하는지 확인
+        //존재한다면 true 가 리턴될 것이고 캐시에도 해당 토큰이 블랙리스트라는 정보가 들어감
+        boolean isBlacklisted = Boolean.TRUE.equals(
+            redisTemplate.hasKey(BLACKLIST_TOKEN_PREFIX + accessToken)
+        );
+
+        blacklistCache.put(accessToken, isBlacklisted);
+
+        return isBlacklisted;
     }
 }
