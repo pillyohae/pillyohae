@@ -5,6 +5,7 @@ import com.example.pillyohae.coupon.repository.CouponTemplateRepository;
 import com.example.pillyohae.coupon.repository.IssuedCouponRepository;
 import com.example.pillyohae.global.config.RedisConfig;
 import com.example.pillyohae.global.entity.address.ShippingAddress;
+import com.example.pillyohae.global.message_queue.publisher.MessagePublisher;
 import com.example.pillyohae.refresh.service.RefreshTokenService;
 import com.example.pillyohae.user.entity.User;
 import com.example.pillyohae.user.entity.type.Role;
@@ -42,20 +43,22 @@ class CouponServiceTest {
     private IssuedCouponRepository issuedCouponRepository;
     @Autowired
     private RedisTemplate<String,Integer> intRedisTemplate;
+    @Autowired
+    private MessagePublisher redisMessagePublisher;
 
     private List<User> users = new ArrayList<>();
     private CouponTemplate couponTemplate;
 
     @BeforeEach
     void setUp() {
-        couponTemplate = new CouponTemplate("couponTemplate1", "description", CouponTemplate.DiscountType.FIXED_AMOUNT, CouponTemplate.ExpiredType.FIXED_DATE,10000L,null,10000L,20000L, LocalDateTime.now().plusSeconds(1L),LocalDateTime.now().plusDays(1L),100,0);
+        couponTemplate = new CouponTemplate("couponTemplate1", "description", CouponTemplate.DiscountType.FIXED_AMOUNT, CouponTemplate.ExpiredType.FIXED_DATE,10000L,null,10000L,20000L, LocalDateTime.now().plusSeconds(1L),LocalDateTime.now().plusDays(1L),10000,0);
         couponTemplateRepository.save(couponTemplate);
         ShippingAddress address = new ShippingAddress("TestUser","010-0000-0000","test-zip","test-road","100-100");
         String userName = "user";
         String email = "user@example.com";
         String password = "Asdf1234@";
         Role role = Role.BUYER;
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 10000; i++) {
             User user = new User(userName+i,email+i,password,address,role);
             users.add(user);
         }
@@ -68,15 +71,19 @@ class CouponServiceTest {
 
         Thread.sleep(4000);
         LocalDateTime start = LocalDateTime.now();
+
         try {
-            IntStream.range(1, 1000).parallel().forEach(i -> couponService.giveCoupon("user@example.com" + i , couponTemplate.getId()));
-        }catch (Exception e){
+            IntStream.range(0, 10000).parallel().forEach(i -> couponService.giveCoupon("user@example.com" + i , couponTemplate.getId()));
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
         }
+
+
+
         LocalDateTime end = LocalDateTime.now();
 
         System.out.println("소요 시간: " + Duration.between(start, end).toMillis() + "ms");
 
-        Thread.sleep(2000);
         CouponTemplate couponTemplate =  couponTemplateRepository.findByName("couponTemplate1");
 
         String countKey = "coupon:count:" + couponTemplate.getId();
@@ -89,4 +96,6 @@ class CouponServiceTest {
         assertThat(couponTemplate.getIssuedCoupons().size()).isEqualTo(couponTemplate.getMaxIssuanceCount());
 
     }
+
+    
 }
