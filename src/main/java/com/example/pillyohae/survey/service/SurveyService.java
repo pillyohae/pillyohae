@@ -102,7 +102,7 @@ public class SurveyService {
     }
 
     /**
-     * 설문 단건 조회 (추천 상품 생성 시 사용)
+     * 설문 단건 조회 및 권한 확인
      *
      * @param email    사용자 이메일
      * @param surveyId 설문 ID

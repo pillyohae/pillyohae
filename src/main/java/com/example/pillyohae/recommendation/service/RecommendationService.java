@@ -2,12 +2,14 @@ package com.example.pillyohae.recommendation.service;
 
 import com.example.pillyohae.product.entity.Product;
 import com.example.pillyohae.product.service.ProductService;
+import com.example.pillyohae.recommendation.dto.RecommendationCreateResponseDto;
 import com.example.pillyohae.recommendation.dto.RecommendationKeywordDto;
-import com.example.pillyohae.recommendation.dto.RecommendationResponseDto;
+import com.example.pillyohae.recommendation.dto.RecommendationQueryResponseDto;
 import com.example.pillyohae.recommendation.entity.Recommendation;
 import com.example.pillyohae.recommendation.repository.RecommendationRepository;
 import com.example.pillyohae.survey.entity.Survey;
 import com.example.pillyohae.survey.service.SurveyService;
+import com.example.pillyohae.user.service.UserService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -35,6 +37,7 @@ public class RecommendationService {
     private final OpenAiChatModel chatModel;
     private final SurveyService surveyService;
     private final ProductService productService;
+    private final UserService userService;
 
     /**
      * 추천 상품 생성
@@ -43,7 +46,7 @@ public class RecommendationService {
      * @param surveyId 설문 ID
      * @return 추천 상품 목록
      */
-    public List<RecommendationResponseDto> create(String email, Long surveyId) throws JsonProcessingException {
+    public List<RecommendationCreateResponseDto> create(String email, Long surveyId) throws JsonProcessingException {
 
         Survey survey = surveyService.findSurvey(email, surveyId);
 
@@ -52,13 +55,12 @@ public class RecommendationService {
         log.info("prompt : {}", prompt);
 
         // 2. 추천 상품 키워드 생성
-        RecommendationKeywordDto[] keywords = generateRecommendationKeyword(prompt);
+        RecommendationKeywordDto[] keywords = createRecommendationKeyword(prompt);
 
         // 3. 키워드로 상품 조회
         List<Product> recommendationProducts = productService.findByNameLike(keywords);
         log.info("recommendationProducts : {}", recommendationProducts.size());
 
-        // 
         if (recommendationProducts.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "추천 상품을 찾을 수 없습니다.");
         }
@@ -71,14 +73,10 @@ public class RecommendationService {
 
         recommendationRepository.saveAll(savedRecommendations);
 
-        List<RecommendationResponseDto> responseDtoList = new ArrayList<>();
+        List<RecommendationCreateResponseDto> responseDtoList = new ArrayList<>();
         for (Recommendation recommendation : savedRecommendations) {
-            responseDtoList.add(RecommendationResponseDto.builder()
-                .productId(recommendation.getProduct().getProductId())
-                .productName(recommendation.getProduct().getProductName())
-                .imageUrl(recommendation.getProduct().getImageUrl())
-                .price(recommendation.getProduct().getPrice())
-                .build());
+            responseDtoList.add(RecommendationCreateResponseDto.builder().productId(recommendation.getProduct().getProductId()).productName(recommendation.getProduct().getProductName())
+                .imageUrl(recommendation.getProduct().getImageUrl()).price(recommendation.getProduct().getPrice()).build());
         }
 
         return responseDtoList;
@@ -92,10 +90,9 @@ public class RecommendationService {
      */
     private String createRecommendationPrompt(String surveyCategories) {
 
-        return String.format(
-            "사용자가 건강 관심사를 나열하면, 각각에 부합하는 보충제를 JSON 형식으로 반환하세요. 응답은 항상 \"recommendation\"키를 포함하는 JSON 객체의 배열 형식이어야 합니다. 관심사는 쉼표로 구분되며, 각 관심사에 대한 추천 보충제는 \"recommendation\" 키에 연결됩니다." +
-                "또한 응답에는 코드블럭, 개행, 공백을 제거해주세요." +
-                "메시지 형태: 관심사1, 관심사2, 관심사3" + " 응답 형태: " + "[{\"recommendation\":\"보충제1\"},{\"recommendation\":\"보충제2\"},{\"recommendation\":\"보충제3\"}]" + "메시지: " + surveyCategories);
+        return String.format("사용자가 건강 관심사를 나열하면, 각각에 부합하는 보충제를 JSON 형식으로 반환하세요. 응답은 항상 \"recommendation\"키를 포함하는 JSON 객체의 배열 형식이어야 합니다. 관심사는 쉼표로 구분되며, 각 관심사에 대한 추천 보충제는 \"recommendation\" 키에 연결됩니다."
+            + "또한 응답에는 코드블럭, 개행, 공백을 제거해주세요." + "메시지 형태: 관심사1, 관심사2, 관심사3" + " 응답 형태: " + "[{\"recommendation\":\"보충제1\"},{\"recommendation\":\"보충제2\"},{\"recommendation\":\"보충제3\"}]" + "메시지: "
+            + surveyCategories);
     }
 
     /**
@@ -104,19 +101,31 @@ public class RecommendationService {
      * @param prompt 요청 프롬프트
      * @return 추천 상품 키워드
      */
-    private RecommendationKeywordDto[] generateRecommendationKeyword(String prompt) throws JsonProcessingException {
+    private RecommendationKeywordDto[] createRecommendationKeyword(String prompt) throws JsonProcessingException {
 
         UserMessage userMessage = new UserMessage(prompt);
 
-        ChatResponse response = chatModel.call(new Prompt(userMessage,
-            OpenAiChatOptions.builder().model(ChatModel.GPT_4_O.getValue()).build()));
+        ChatResponse response = chatModel.call(new Prompt(userMessage, OpenAiChatOptions.builder().model(ChatModel.GPT_4_O.getValue()).build()));
 
-        String result = response.getResult().getOutput().getContent()
-            .replace(" ", "");
+        String result = response.getResult().getOutput().getContent().replace(" ", "");
 
         ObjectMapper objectMapper = new ObjectMapper();
 
         return objectMapper.readValue(result, new TypeReference<>() {
         });
+    }
+
+    /**
+     * 추천 상품 조회
+     *
+     * @param email    사용자 이메일
+     * @param surveyId 설문 ID
+     * @return 추천 상품 조회 응답 DTO 리스트
+     */
+    public List<RecommendationQueryResponseDto> getRecommendations(String email, Long surveyId) {
+
+        Survey findSurvey = surveyService.findSurvey(email, surveyId);
+
+        return recommendationRepository.findBySurveyId(findSurvey.getId());
     }
 }
