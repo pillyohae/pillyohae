@@ -75,8 +75,11 @@ public class RecommendationService {
 
         List<RecommendationCreateResponseDto> responseDtoList = new ArrayList<>();
         for (Recommendation recommendation : savedRecommendations) {
-            responseDtoList.add(RecommendationCreateResponseDto.builder().productId(recommendation.getProduct().getProductId()).productName(recommendation.getProduct().getProductName())
-                .imageUrl(recommendation.getProduct().getImageUrl()).price(recommendation.getProduct().getPrice()).build());
+            responseDtoList.add(RecommendationCreateResponseDto.builder()
+                .productId(recommendation.getProduct().getProductId())
+                .productName(recommendation.getProduct().getProductName())
+                .imageUrl(recommendation.getProduct().getImageUrl())
+                .price(recommendation.getProduct().getPrice()).build());
         }
 
         return responseDtoList;
@@ -105,7 +108,8 @@ public class RecommendationService {
 
         UserMessage userMessage = new UserMessage(prompt);
 
-        ChatResponse response = chatModel.call(new Prompt(userMessage, OpenAiChatOptions.builder().model(ChatModel.GPT_4_O.getValue()).build()));
+        ChatResponse response = chatModel.call(new Prompt(userMessage,
+            OpenAiChatOptions.builder().model(ChatModel.GPT_4_O.getValue()).build()));
 
         String result = response.getResult().getOutput().getContent().replace(" ", "");
 
