@@ -34,7 +34,6 @@ public class PaymentMessageHandler implements DomainMessageHandler<PaymentMessag
         } catch (Exception e) {
             log.error(e.getMessage());
         }
-        log.info("결제 처리 완료: {}", UUID.fromString(paymentMessage.getJsonObject().get(TossPaymentsVariables.ORDERID.getValue()).toString()));
     }
 
     @Override
