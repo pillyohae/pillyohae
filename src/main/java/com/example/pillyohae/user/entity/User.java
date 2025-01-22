@@ -3,8 +3,11 @@ package com.example.pillyohae.user.entity;
 import com.example.pillyohae.coupon.entity.IssuedCoupon;
 import com.example.pillyohae.global.entity.BaseTimeEntity;
 import com.example.pillyohae.global.entity.address.ShippingAddress;
+import com.example.pillyohae.global.exception.CustomResponseStatusException;
+import com.example.pillyohae.global.exception.code.ErrorCode;
 import com.example.pillyohae.order.entity.Order;
 import com.example.pillyohae.order.entity.OrderProduct;
+import com.example.pillyohae.user.dto.UserProfileUpdateRequestDto;
 import com.example.pillyohae.user.entity.type.Role;
 import com.example.pillyohae.user.entity.type.Status;
 import jakarta.persistence.Embedded;
@@ -16,10 +19,9 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 import lombok.Getter;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -73,21 +75,26 @@ public class User extends BaseTimeEntity {
         this.status = Status.WITHDRAW;
     }
 
-    public void updateFields(Map<String, Object> fields, PasswordEncoder passwordEncoder) {
-        fields.forEach((fieldName, value) -> {
-            try {
-                Field field = User.class.getDeclaredField(fieldName);
-                field.setAccessible(true);
+    public void updateProfile(UserProfileUpdateRequestDto dto, PasswordEncoder passwordEncoder) {
+        // 비밀번호 검증
+        if (!passwordEncoder.matches(dto.getPassword(), this.password)) {
+            throw new CustomResponseStatusException(ErrorCode.INVALID_PASSWORD);
+        }
 
-                if ("password".equals(fieldName)) {
-                    field.set(this, passwordEncoder.encode(value.toString()));
-                } else {
-                    field.set(this, value);
-                }
-            } catch (NoSuchFieldException | IllegalAccessException e) {
-                throw new RuntimeException("필드 업데이트 실패: " + fieldName, e);
-            }
-        });
+        // 선택적 필드 업데이트
+        Optional.ofNullable(dto.getNewName())
+            .ifPresent(name -> this.name = name);
+
+        Optional.ofNullable(dto.getNewPassword())
+            .ifPresent(newPassword -> this.password = passwordEncoder.encode(newPassword));
+
+        Optional.ofNullable(dto.getNewAddress())
+            .ifPresent(this::updateAddress);
+    }
+
+    private void updateAddress(UserProfileUpdateRequestDto.AddressUpdateDto addressDto) {
+
+        this.address.update(addressDto);
     }
 
 }
