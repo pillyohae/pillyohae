@@ -12,7 +12,7 @@ public enum OrderStatus {
     PAYMENT_CONFIRMED("결제 완료") {
         @Override
         public Set<OrderStatus> getAllowedNextStatuses() {
-            return Set.of(); // 최종 상태로 전이 불가
+            return Set.of(CANCELLED);
         }
     },
     CANCELLED("취소됨") {

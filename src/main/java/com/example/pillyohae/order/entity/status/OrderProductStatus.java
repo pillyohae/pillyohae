@@ -3,7 +3,7 @@ package com.example.pillyohae.order.entity.status;
 import java.util.Set;
 
 public enum OrderProductStatus {
-    PENDING("주문 접수 중") {
+    CHECK_ORDER("주문 접수 중") {
         @Override
         public Set<OrderProductStatus> getAllowedNextStatuses() {
             return Set.of(CANCELLED, READY_FOR_SHIPMENT);

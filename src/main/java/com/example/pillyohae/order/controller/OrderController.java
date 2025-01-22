@@ -9,6 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/orders")
 @RequiredArgsConstructor
@@ -30,6 +32,13 @@ public class OrderController {
 
     }
 
+    /**
+     * 판매자의 주문 품목 상태 변경
+     * @param authentication
+     * @param orderItemId
+     * @param orderProductStatus
+     * @return
+     */
     @PutMapping("/orderItems/{orderItemId}/status")
     public ResponseEntity<OrderItemStatusChangeResponseDto> changeOrderItemStatus(
         Authentication authentication,
@@ -38,6 +47,36 @@ public class OrderController {
         return ResponseEntity.ok(
             orderService.changeOrderItemStatus(authentication.getName(), orderItemId,
                     orderProductStatus));
+    }
+
+    /**
+     * 구매자의 주문 취소
+     * @param authentication
+     * @param orderId
+     * @return
+     */
+    @DeleteMapping("/{orderId}/cancel")
+    public ResponseEntity<OrderDetailResponseDto> cancelOrder(
+            Authentication authentication,
+            @PathVariable(name = "orderId") UUID orderId
+    ){
+        return ResponseEntity.ok(orderService.cancelOrder(authentication.getName(),orderId));
+    }
+
+    /**
+     * 구매자의 환불 요청
+     * @param authentication
+     * @param orderId
+     * @param orderProductId
+     * @return
+     */
+    @DeleteMapping("/{orderId}/orderProducts/{orderProductId}")
+    public ResponseEntity<OrderDetailResponseDto> refundOrderProduct(
+            Authentication authentication,
+            @PathVariable(name = "orderId") UUID orderId,
+            @PathVariable(name = "orderProductId") Long orderProductId
+    ){
+        return ResponseEntity.ok(orderService.refundOrderProduct(authentication.getName(),orderId,orderProductId));
     }
 
 }

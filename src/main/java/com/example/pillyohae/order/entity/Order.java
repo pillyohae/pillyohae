@@ -120,6 +120,7 @@ public class Order extends BaseTimeEntity {
     }
 
     // order에 대한 status 업데이트
+    // order가 취소될 경우 모든 orderProduct도 같이 cancel
     public void updateStatus(OrderStatus newStatus) {
         if (this.status == null) {
             throw new IllegalStateException("현재 주문 상태가 없습니다.");
@@ -129,6 +130,9 @@ public class Order extends BaseTimeEntity {
                     String.format("현재 상태(%s)에서 %s 상태로 변경할 수 없습니다.",
                             status.getValue(), newStatus.getValue())
             );
+        }
+        if(newStatus.equals(OrderStatus.CANCELLED)){
+            this.orderProducts.stream().forEach(orderProduct -> orderProduct.updateStatus(OrderProductStatus.CANCELLED));
         }
         this.status = newStatus;
     }

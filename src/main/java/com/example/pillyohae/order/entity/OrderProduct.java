@@ -61,7 +61,7 @@ public class OrderProduct {
         this.imageUrl = imageUrl;
         // 초기 상태
         this.seller = seller;
-        this.status = OrderProductStatus.PENDING;
+        this.status = OrderProductStatus.CHECK_ORDER;
         order.getOrderProducts().add(this);
     }
 
