@@ -39,8 +39,6 @@ public class CouponMessageHandler implements DomainMessageHandler<CouponMessage>
 
         issuedCouponRepository.save(issuedCoupon);
 
-        log.info("쿠폰 메세지 처리 완료: {}", couponMessage.getIssuedCouponId());
-
     }
 
     @Override

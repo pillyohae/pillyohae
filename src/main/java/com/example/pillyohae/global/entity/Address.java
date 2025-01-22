@@ -13,20 +13,20 @@ import lombok.NoArgsConstructor;
 public class Address {
 
     @Column(nullable = false)
-    private String receiverName;
+    protected String receiverName;
 
     @ValidPhoneNumber
     @Column(nullable = false)
-    private String phoneNumber;
+    protected String phoneNumber;
 
     @Column(nullable = false)
-    private String postCode;
+    protected String postCode;
 
     @Column(nullable = false)
-    private String roadAddress;
+    protected String roadAddress;
 
     @Column(nullable = false)
-    private String detailAddress;
+    protected String detailAddress;
 
     protected Address(String receiverName, String phoneNumber, String postCode,
         String roadAddress, String detailAddress) {

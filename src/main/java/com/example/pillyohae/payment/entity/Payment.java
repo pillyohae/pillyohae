@@ -33,9 +33,9 @@ public class Payment {
     @Column
     private String approvedAt;
     @Column
-    private Long totalAmount;
+    private Integer totalAmount;
     @Column
-    private Long balanceAmount;
+    private Integer balanceAmount;
     @Enumerated(EnumType.STRING)
     @Column
     private PayMethod method;
@@ -43,7 +43,7 @@ public class Payment {
     // 연관관계 설정은 하지 않습니다
 
     @Builder
-    public Payment(String mid, String version, String paymentKey, String status, UUID orderId, String orderName, String requestedAt, String approvedAt, Long totalAmount, Long balanceAmount, PayMethod method) {
+    public Payment(String mid, String version, String paymentKey, String status, UUID orderId, String orderName, String requestedAt, String approvedAt, Integer totalAmount, Integer balanceAmount, PayMethod method) {
 
         this.mid = mid;
         this.version = version;
