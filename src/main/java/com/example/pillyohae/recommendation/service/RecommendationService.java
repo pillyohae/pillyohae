@@ -106,17 +106,22 @@ public class RecommendationService {
      */
     private RecommendationKeywordDto[] createRecommendationKeyword(String prompt) throws JsonProcessingException {
 
-        UserMessage userMessage = new UserMessage(prompt);
+        try {
+            UserMessage userMessage = new UserMessage(prompt);
 
-        ChatResponse response = chatModel.call(new Prompt(userMessage,
-            OpenAiChatOptions.builder().model(ChatModel.GPT_4_O.getValue()).build()));
+            ChatResponse response = chatModel.call(new Prompt(userMessage,
+                OpenAiChatOptions.builder().model(ChatModel.GPT_4_O.getValue()).build()));
 
-        String result = response.getResult().getOutput().getContent().replace(" ", "");
+            String result = response.getResult().getOutput().getContent().replace(" ", "");
 
-        ObjectMapper objectMapper = new ObjectMapper();
+            ObjectMapper objectMapper = new ObjectMapper();
 
-        return objectMapper.readValue(result, new TypeReference<>() {
-        });
+            return objectMapper.readValue(result, new TypeReference<>() {
+            });
+
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "추천 상품 키워드 생성에 실패했습니다.");
+        }
     }
 
     /**
