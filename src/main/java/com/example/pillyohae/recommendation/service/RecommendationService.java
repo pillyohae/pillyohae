@@ -9,8 +9,6 @@ import com.example.pillyohae.recommendation.entity.Recommendation;
 import com.example.pillyohae.recommendation.repository.RecommendationRepository;
 import com.example.pillyohae.survey.entity.Survey;
 import com.example.pillyohae.survey.service.SurveyService;
-import com.example.pillyohae.user.service.UserService;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
@@ -37,7 +35,6 @@ public class RecommendationService {
     private final OpenAiChatModel chatModel;
     private final SurveyService surveyService;
     private final ProductService productService;
-    private final UserService userService;
 
     /**
      * 추천 상품 생성
@@ -46,7 +43,7 @@ public class RecommendationService {
      * @param surveyId 설문 ID
      * @return 추천 상품 목록
      */
-    public List<RecommendationCreateResponseDto> create(String email, Long surveyId) throws JsonProcessingException {
+    public List<RecommendationCreateResponseDto> create(String email, Long surveyId) {
 
         Survey survey = surveyService.findSurvey(email, surveyId);
 
@@ -100,26 +97,26 @@ public class RecommendationService {
 
     /**
      * 추천 상품 키워드 생성
+     * <p>Json 매핑 오류 혹은 API 호출 실패 시 500 에러 반환</p>
      *
      * @param prompt 요청 프롬프트
      * @return 추천 상품 키워드
      */
-    private RecommendationKeywordDto[] createRecommendationKeyword(String prompt) throws JsonProcessingException {
+    private RecommendationKeywordDto[] createRecommendationKeyword(String prompt) {
 
+        UserMessage userMessage = new UserMessage(prompt);
         try {
-            UserMessage userMessage = new UserMessage(prompt);
-
             ChatResponse response = chatModel.call(new Prompt(userMessage,
                 OpenAiChatOptions.builder().model(ChatModel.GPT_4_O.getValue()).build()));
 
             String result = response.getResult().getOutput().getContent().replace(" ", "");
 
             ObjectMapper objectMapper = new ObjectMapper();
-
             return objectMapper.readValue(result, new TypeReference<>() {
             });
 
         } catch (Exception e) {
+            log.error("추천 상품 키워드 생성에 실패했습니다.", e);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "추천 상품 키워드 생성에 실패했습니다.");
         }
     }

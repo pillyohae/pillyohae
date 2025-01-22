@@ -3,7 +3,6 @@ package com.example.pillyohae.recommendation.controller;
 import com.example.pillyohae.recommendation.dto.RecommendationCreateResponseDto;
 import com.example.pillyohae.recommendation.dto.RecommendationQueryResponseDto;
 import com.example.pillyohae.recommendation.service.RecommendationService;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -34,9 +33,8 @@ public class RecommendationController {
     public ResponseEntity<List<RecommendationCreateResponseDto>> generate(
         @AuthenticationPrincipal UserDetails userDetails,
         @PathVariable Long surveyId
-    ) throws JsonProcessingException {
+    ) {
 
-        // 추천 상품 생성
         return new ResponseEntity<>(recommendationService.create(userDetails.getUsername(), surveyId), HttpStatus.CREATED);
     }
 
