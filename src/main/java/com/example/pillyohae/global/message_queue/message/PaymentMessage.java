@@ -2,18 +2,13 @@ package com.example.pillyohae.global.message_queue.message;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.json.simple.JSONObject;
-
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
-public class PaymentMessage implements DomainMessage {
+@NoArgsConstructor
+public class PaymentMessage {
     private JSONObject jsonObject;
-
-
-    public String getDomainType() {
-        return "payment";
-    }
+    private String domainType;
 }

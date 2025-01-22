@@ -44,8 +44,8 @@ public class PaymentService {
         int code = connection.getResponseCode();
         boolean isSuccess = code == 200;
         InputStream responseStream =  isSuccess ? connection.getInputStream() : connection.getErrorStream();
-        responseStream.close();
         Reader reader = new InputStreamReader(responseStream, StandardCharsets.UTF_8);
+
         JSONObject tossResult = (JSONObject) parser.parse(reader);
         // 결제 실패 에러 발생 처리
         if(!isSuccess) {
@@ -53,8 +53,10 @@ public class PaymentService {
             return ResponseEntity.status(code).body(tossResult);
         }
 
+        responseStream.close();
+
         // 결제 성공시 주문 결제완료로 변경 및 결제 로그 저장
-        PaymentMessage paymentMessage = new PaymentMessage(tossResult);
+        PaymentMessage paymentMessage = new PaymentMessage(tossResult,"payment");
         String message = objectMapper.writeValueAsString(paymentMessage);
         redisMessagePublisher.publish(message);
 

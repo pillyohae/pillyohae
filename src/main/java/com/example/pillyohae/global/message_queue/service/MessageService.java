@@ -36,12 +36,12 @@ public class MessageService {
                 (String) tossResult.get(TossPaymentsVariables.ORDERNAME.getValue()),
                 (String) tossResult.get(TossPaymentsVariables.REQUESTEDAT.getValue()),
                 (String) tossResult.get(TossPaymentsVariables.APPROVEDAT.getValue()),
-                (Long) tossResult.get(TossPaymentsVariables.TOTALAMOUNT.getValue()),
-                (Long) tossResult.get(TossPaymentsVariables.BALANCEAMOUNT.getValue()),
+                (Integer) tossResult.get(TossPaymentsVariables.TOTALAMOUNT.getValue()),
+                (Integer) tossResult.get(TossPaymentsVariables.BALANCEAMOUNT.getValue()),
                 Enum.valueOf(PayMethod.class,((String) tossResult.get(TossPaymentsVariables.METHOD.getValue()))));
         paymentRepository.save(payment);
 
-        Order paidOrder = orderRepository.findById(UUID.fromString(TossPaymentsVariables.ORDERID.getValue()))
+        Order paidOrder = orderRepository.findById(payment.getOrderId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
         paidOrder.paid();
     }
