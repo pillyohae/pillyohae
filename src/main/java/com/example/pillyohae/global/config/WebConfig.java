@@ -71,6 +71,8 @@ public class WebConfig {
                 //스프링 시큐리티의 hasRole 메서드는 내부적으로 ROLE_ 접두사를 해당 값에 자동으로 추가하도록 설계됨.
                 //"SELLER" 를 넣어도 ROLE_SELLER 와 비교하게 된다는 뜻.
                 .hasRole(Role.SELLER.getName().toUpperCase())
+                .requestMatchers(securityProperties.getAdminAuthList().toArray(new String[0]))
+                .hasRole(Role.ADMIN.getName().toUpperCase())
                 .anyRequest().authenticated()
             )
             // Spring Security 예외에 대한 처리를 핸들러에 위임.

@@ -55,22 +55,6 @@ public class SurveyController {
     }
 
     /**
-     * 사용자의 설문 단건 조회
-     *
-     * @param userDetails 사용자 정보
-     * @param surveyId    설문 ID
-     * @return 정상 처리 시 DTO
-     */
-    @GetMapping("/{surveyId}")
-    public ResponseEntity<SurveyResponseDto> findSurvey(
-        @AuthenticationPrincipal UserDetails userDetails,
-        @PathVariable Long surveyId
-    ) {
-
-        return ResponseEntity.ok(surveyService.findById(userDetails.getUsername(), surveyId));
-    }
-
-    /**
      * 사용자의 설문 내역 삭제
      *
      * @param userDetails 사용자 정보

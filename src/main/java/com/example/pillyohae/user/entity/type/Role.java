@@ -9,7 +9,8 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 @RequiredArgsConstructor
 public enum Role {
     BUYER("buyer"),
-    SELLER("seller");
+    SELLER("seller"),
+    ADMIN("admin");
 
     private final String name;
 
