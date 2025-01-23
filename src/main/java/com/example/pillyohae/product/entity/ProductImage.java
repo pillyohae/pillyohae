@@ -37,6 +37,7 @@ public class ProductImage {
     @Column
     private Integer position;
 
+
     @CreatedDate
     @Column
     private LocalDateTime uploadedAt;
@@ -56,6 +57,13 @@ public class ProductImage {
         this.product = product;
     }
 
+    public ProductImage(String fileUrl, String fileKey, int position, Product findProduct) {
+        this.fileUrl = fileUrl;
+        this.fileKey = fileKey;
+        this.position = 0;
+        this.product = findProduct;
+    }
+
     public void updatePosition(Integer position) {
         if (position < 0) {
             throw new CustomResponseStatusException(ErrorCode.BAD_POSITION);
@@ -73,4 +81,5 @@ public class ProductImage {
 
         this.position++;
     }
+
 }

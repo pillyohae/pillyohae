@@ -11,8 +11,6 @@ import com.example.pillyohae.survey.service.SurveyService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.messages.UserMessage;
@@ -24,6 +22,9 @@ import org.springframework.ai.openai.api.OpenAiApi.ChatModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -76,7 +77,7 @@ public class RecommendationService {
             responseDtoList.add(RecommendationResponseDto.builder()
                 .productId(recommendation.getProduct().getProductId())
                 .productName(recommendation.getProduct().getProductName())
-                .imageUrl(recommendation.getProduct().getImageUrl())
+                .imageUrl(recommendation.getProduct().getThumbnailUrl())
                 .price(recommendation.getProduct().getPrice())
                 .build());
         }

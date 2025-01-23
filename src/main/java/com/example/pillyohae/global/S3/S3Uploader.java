@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
+import java.net.URL;
 import java.util.UUID;
 
 @Component
@@ -78,6 +79,30 @@ public class S3Uploader {
             throw new BaseException(ErrorCode.S3_UPLOADER_ERROR);
         }
     }
+
+    public UploadFileInfo uploadFileFromUrl(String imageUrl) {
+        try {
+            // URL에서 이미지 다운로드
+            URL url = new URL(imageUrl);
+            InputStream inputStream = url.openStream();
+
+            // 파일 키 생성
+            String fileKey = "ai-images/" + UUID.randomUUID().toString();
+
+            // S3에 업로드
+            ObjectMetadata metadata = new ObjectMetadata();
+            s3.putObject(bucket, fileKey, inputStream, metadata);
+
+            // 업로드된 파일의 URL 반환
+            String fileUrl = s3.getUrl(bucket, fileKey).toString();
+
+            // UploadFileInfo 반환
+            return new UploadFileInfo(fileUrl, fileKey);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to upload file from URL to S3", e);
+        }
+    }
 }
+
 
 

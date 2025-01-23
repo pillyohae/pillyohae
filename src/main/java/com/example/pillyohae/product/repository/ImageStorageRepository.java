@@ -14,7 +14,7 @@ public interface ImageStorageRepository extends JpaRepository<ProductImage, Long
 
     int countByProduct_ProductId(Long productProductId);
 
-    List<ProductImage> findByProduct_ProductId(Long productId);
+    List<ProductImage> findByProduct_ProductId(Long productId); //TODO leftjoin 추가 ?? fetchjoin
 
     @Query("SELECT MAX(pi.position) FROM ProductImage pi WHERE pi.product.productId = :productId")
     Optional<Integer> findMaxPositionByProductId(@Param("productId") Long productId);
@@ -24,4 +24,10 @@ public interface ImageStorageRepository extends JpaRepository<ProductImage, Long
     @Query("UPDATE ProductImage pi SET pi.position = pi.position - 1 WHERE pi.product.productId = :productId AND pi.position > :deletedPosition")
     void updatePositionsAfterDelete(@Param("productId") Long productId, @Param("deletedPosition") Integer deletedPosition);
 
+    @Modifying
+    @Transactional
+    @Query("UPDATE ProductImage p SET p.position = p.position + 1 WHERE p.product.productId = :productId")
+    void incrementAllPositions(@Param("productId") Long productId);
+
+    ProductImage findByProduct_ProductIdAndPosition(Long productId, int position);
 }

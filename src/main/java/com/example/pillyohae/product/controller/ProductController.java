@@ -184,5 +184,14 @@ public class ProductController {
         return new ResponseEntity<>(updateImage, HttpStatus.OK);
     }
 
+    @PostMapping("/products/{productId}/ai-image")
+    public ResponseEntity<String> RepresentativeAiImage(
+        @AuthenticationPrincipal UserDetails userDetails,
+        @PathVariable Long productId
+    ) {
+        productService.setRepresentativeAiImage(productId, userDetails.getUsername());
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
 
 }
