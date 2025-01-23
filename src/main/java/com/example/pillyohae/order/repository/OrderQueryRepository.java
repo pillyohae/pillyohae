@@ -23,5 +23,5 @@ public interface OrderQueryRepository {
 
     OrderDetailSellerResponseDto.OrderInfoDto findOrderDetailSellerInfoDtoByOrderId(UUID orderId);
 
-    OrderDetailSellerResponseDto.OrderProductDto findOrderDetailSellerProductDtoByOrderId(UUID orderId, Long userId);
+    List<OrderDetailSellerResponseDto.OrderProductDto> findOrderDetailSellerProductDtoByOrderId(UUID orderId, Long userId);
 }

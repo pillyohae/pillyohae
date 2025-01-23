@@ -91,4 +91,4 @@ security: # SecurityProperties의 prefix와 일치
     GET:
       - "/products/*"
       - "/products"
-      - "/coupons"
+      - "/coupons/available"
