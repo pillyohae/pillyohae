@@ -19,6 +19,7 @@ public class SecurityProperties {
 
     private List<String> whiteList = new ArrayList<>();  // security.white-list와 매핑
     private List<String> sellerAuthList = new ArrayList<>(); // security.seller-auth-list와 매핑
+    private List<String> adminAuthList = new ArrayList<>();
 
     // security.method-specific-patterns와 매핑
     private Map<HttpMethod, List<String>> methodSpecificPatterns = new HashMap<>();
