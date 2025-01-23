@@ -41,7 +41,7 @@ public class CartService {
 
         Product findProduct = productService.findById(requestDto.getProductId());
 
-        Cart inCart = cartRepository.findByProduct_ProductId(requestDto.getProductId());
+        Cart inCart = cartRepository.findByProduct_ProductIdAndUserId(requestDto.getProductId(), findUser.getId());
 
         if (inCart != null) {
             inCart.updateQuantity(inCart.getQuantity() + requestDto.getQuantity());
