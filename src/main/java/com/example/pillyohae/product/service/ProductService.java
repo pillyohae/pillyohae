@@ -352,9 +352,6 @@ public class ProductService {
         ProductImage firstImage = imageStorageRepository.findByProduct_ProductIdAndPosition(productId, 1);
 
         if (firstImage != null) {
-//            // 기존 포지션 한칸씩 밀기
-//            imageStorageRepository.incrementAllPositions(productId);
-//        }
 
             // PersonaService를 통해 AI 이미지 생성
             String aiImageUrl = personaService.generatePersonaFromProduct(firstImage.getFileUrl()).getUrl();
