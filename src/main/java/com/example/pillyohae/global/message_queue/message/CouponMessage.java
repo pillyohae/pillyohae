@@ -15,7 +15,7 @@ import java.util.UUID;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CouponMessage implements DomainMessage {
+public class CouponMessage {
     private UUID couponTemplateId;
     private UUID issuedCouponId;
     private Long userId;

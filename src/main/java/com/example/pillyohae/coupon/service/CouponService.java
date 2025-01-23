@@ -1,9 +1,6 @@
 package com.example.pillyohae.coupon.service;
 
-import com.example.pillyohae.coupon.dto.CouponGiveResponseDto;
-import com.example.pillyohae.coupon.dto.CouponListResponseDto;
-import com.example.pillyohae.coupon.dto.CouponTemplateCreateRequestDto;
-import com.example.pillyohae.coupon.dto.CreateCouponTemplateResponseDto;
+import com.example.pillyohae.coupon.dto.*;
 import com.example.pillyohae.coupon.entity.CouponTemplate;
 import com.example.pillyohae.coupon.entity.IssuedCoupon;
 import com.example.pillyohae.coupon.repository.CouponTemplateRepository;
@@ -28,7 +25,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -44,8 +40,8 @@ public class CouponService {
 
     // message queue
     private final RedisMessagePublisher messagePublisher;
-    private final RedisTemplate<String,Object> objectRedisTemplate;
-    private final RedisTemplate<String,Integer> intRedisTemplate;
+    private final RedisTemplate<String, Object> objectRedisTemplate;
+    private final RedisTemplate<String, Integer> intRedisTemplate;
 
     // Redission
     private final RedissonClient redissonClient;
@@ -53,6 +49,7 @@ public class CouponService {
     private static final int MAX_RETRY_ATTEMPTS = 3;
     private static final long RETRY_DELAY_MS = 1000;
     private final ObjectMapper objectMapper;
+
 
     @Transactional
     public CreateCouponTemplateResponseDto createCouponTemplate(CouponTemplateCreateRequestDto requestDto) {
@@ -86,23 +83,57 @@ public class CouponService {
     public CouponGiveResponseDto giveCoupon(String email, UUID couponTemplateId) {
 
         User user = userService.findByEmail(email);
-        // issued coupon과 coupon template을 한번에 가져옴
 
         CouponTemplate couponTemplate = couponTemplateRepository.findById(couponTemplateId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
+        CouponMessage couponMessage = tryIssueCoupon(couponTemplate, user);
+
+        return new CouponGiveResponseDto(couponMessage.getIssuedCouponId(), couponTemplate.getName(), couponTemplate.getDescription()
+                , couponTemplate.getDiscountType(), couponTemplate.getFixedAmount(), couponTemplate.getFixedRate()
+                , couponTemplate.getMaxDiscountAmount(), couponTemplate.getMinimumPrice(), couponTemplate.getIssuedCouponExpiredAt());
+
+
+
+    }
+
+    private CouponMessage tryIssueCoupon(CouponTemplate couponTemplate, User user) {
+
+        if (couponTemplate.getStartAt().isAfter(LocalDateTime.now())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "아직 발급 시작이 안되었습니다");
+        }
+
+        List<IssuedCoupon> userIssuedCoupons = issuedCouponRepository.findIssuedCouponsWithTemplateByUserId(
+                user.getId());
+        // 락 생성
+        RLock lock = redissonClient.getLock("coupon:" + couponTemplate.getId());
+        boolean isLocked = false;
         int attempts = 0;
-        boolean success = false;
-
-        while (attempts < MAX_RETRY_ATTEMPTS && !success) {
+        while (attempts < MAX_RETRY_ATTEMPTS) {
             try {
-                CouponMessage couponMessage = tryIssueCoupon(couponTemplate, user);
+                isLocked = lock.tryLock(60, TimeUnit.SECONDS);
+                if (isLocked) {
 
-                return new CouponGiveResponseDto(couponMessage.getIssuedCouponId(), couponTemplate.getName(), couponTemplate.getDescription()
-                        , couponTemplate.getDiscountType(), couponTemplate.getFixedAmount(), couponTemplate.getFixedRate()
-                        , couponTemplate.getMaxDiscountAmount(), couponTemplate.getMinimumPrice(), couponTemplate.getIssuedCouponExpiredAt());
-                // 인터럽트 발생시 최대 3회 재시도
-            } catch (InterruptedException e) {
+                    checkDuplicateCoupon(userIssuedCoupons, couponTemplate);
+
+                    checkCouponQuantity(couponTemplate);
+
+                    checkCouponTemplateStatus(couponTemplate);
+
+                    incrementCouponCount(couponTemplate.getId());
+
+                    UUID issuedCouponId = UUID.randomUUID();
+//             쿠폰 처리 메세지 issuedCoupon id 를 미리 생성한다 UUID 생성 버전은 default 4
+                    CouponMessage couponMessage = new CouponMessage(couponTemplate.getId(), issuedCouponId, user.getId(), LocalDateTime.now(), "coupon");
+
+                    String message = objectMapper.writeValueAsString(couponMessage);
+
+                    messagePublisher.publish(message);
+
+                    return couponMessage;
+                }
+                // 에러 캐치 후 3회 재시도
+            } catch (InterruptedException | JsonProcessingException e) {
                 attempts++;
                 if (attempts < MAX_RETRY_ATTEMPTS) {
                     try {
@@ -112,48 +143,14 @@ public class CouponService {
                         break;
                     }
                 }
+            } finally {
+                if (isLocked) {
+                    lock.unlock();
+                }
             }
         }
+        throw new ResponseStatusException(HttpStatus.CONFLICT, "쿠폰 발급 timeout");
 
-        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,"쿠폰 발급 실패");
-
-    }
-
-    private CouponMessage tryIssueCoupon(CouponTemplate couponTemplate, User user) throws InterruptedException {
-        if (couponTemplate.getStartAt().isAfter(LocalDateTime.now())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "아직 발급 시작이 안되었습니다");
-        }
-        IssuedCoupon issuedCoupon;
-        List<IssuedCoupon> userIssuedCoupons = issuedCouponRepository.findIssuedCouponsWithTemplateByUserId(
-                user.getId());
-        // 락 생성
-        RLock lock = redissonClient.getLock("coupon:" + couponTemplate.getId());
-        try {
-            if (lock.tryLock(5, TimeUnit.SECONDS)) {
-
-                checkDuplicateCoupon(userIssuedCoupons, couponTemplate);
-
-                checkCouponQuantity(couponTemplate);
-
-                checkCouponTemplateStatus(couponTemplate);
-
-                incrementCouponCount(couponTemplate.getId());
-
-                UUID issuedCouponId = UUID.randomUUID();
-
-                // 쿠폰 처리 메세지 issuedCoupon id 를 미리 생성한다 UUID 생성 버전은 default 4
-                CouponMessage couponMessage = new CouponMessage(couponTemplate.getId(), issuedCouponId, user.getId(), LocalDateTime.now(), "coupon");
-                String message = objectMapper.writeValueAsString(couponMessage);
-                messagePublisher.publish(message);
-                return couponMessage;
-            }
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        } finally {
-            lock.unlock();
-        }
-
-        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "쿠폰 발급 실패");
     }
 
     // 쿠폰 중복 검사
@@ -175,7 +172,7 @@ public class CouponService {
     // 쿠폰 상태 검증
     private void checkCouponTemplateStatus(CouponTemplate couponTemplate) {
         if (couponTemplate.getStatus() != CouponTemplate.CouponStatus.ACTIVE) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"사용 가능한 쿠폰이 아닙니다. 현재 상태: " + couponTemplate.getStatus());
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "사용 가능한 쿠폰이 아닙니다. 현재 상태: " + couponTemplate.getStatus());
         }
     }
 
@@ -188,22 +185,16 @@ public class CouponService {
     private Integer getCouponCount(CouponTemplate couponTemplate) {
         String countKey = "coupon:count:" + couponTemplate.getId();
 
-        // 1. 캐시 존재 여부 확인
+        // 캐시 존재 여부 확인
         Boolean hasKey = objectRedisTemplate.hasKey(countKey);
 
+        // 캐시에 존재하지 않글경우 db에서 현재 발급된 갯수를 가져와서 캐시에 넣음
         if (Boolean.FALSE.equals(hasKey)) {
-            // 2. 캐시가 없으면 DB에서 조회하여 초기화
-            synchronized (this) {  // double-checking을 위한 동기화
-                hasKey = objectRedisTemplate.hasKey(countKey);
-                if (Boolean.FALSE.equals(hasKey)) {
-                    initializeCouponCount(couponTemplate);
-                }
-            }
+            initializeCouponCount(couponTemplate);
         }
 
         // 3. 캐시에서 수량 반환
-        String count = String.valueOf(intRedisTemplate.opsForValue().get(countKey));
-        return count != null ? Integer.parseInt(count) : 0;
+        return intRedisTemplate.opsForValue().get(countKey);
     }
 
     private void initializeCouponCount(CouponTemplate couponTemplate) {
@@ -212,7 +203,6 @@ public class CouponService {
         // Redis에 저장하고 만료시간 설정
         ValueOperations<String, Integer> ops = intRedisTemplate.opsForValue();
         ops.set(countKey, couponTemplate.getCurrentIssuanceCount());
-        log.info("Coupon count initialized - couponId: {}, count: {}", couponTemplate.getId(), ops.get(countKey));
     }
 
 
@@ -237,9 +227,9 @@ public class CouponService {
         return minimumPrice;
     }
 
-    public CouponListResponseDto findCouponList(CouponTemplate.CouponStatus status) {
-        List<CouponListResponseDto.CouponInfo> couponTemplates = couponTemplateRepository.findCouponList(status);
-        return new CouponListResponseDto(couponTemplates);
+    public CouponTemplateListResponseDto findCouponList(CouponTemplate.CouponStatus status) {
+        List<CouponTemplateListResponseDto.CouponInfo> couponTemplates = couponTemplateRepository.findCouponList(status);
+        return new CouponTemplateListResponseDto(couponTemplates);
     }
 
 }

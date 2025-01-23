@@ -2,10 +2,7 @@ package com.example.pillyohae.user.controller;
 
 import com.example.pillyohae.coupon.dto.CouponListResponseDto;
 import com.example.pillyohae.coupon.service.CouponService;
-import com.example.pillyohae.order.dto.OrderDetailResponseDto;
-import com.example.pillyohae.order.dto.OrderDetailSellerResponseDto;
-import com.example.pillyohae.order.dto.OrderInfoDto;
-import com.example.pillyohae.order.dto.OrderSellerInfoDto;
+import com.example.pillyohae.order.dto.*;
 import com.example.pillyohae.order.service.OrderService;
 import com.example.pillyohae.refresh.service.RefreshTokenService;
 import com.example.pillyohae.user.dto.TokenResponse;
@@ -246,7 +243,7 @@ public class UserController {
     }
 
     /**
-     *
+     * 유저의 쿠폰 조회
      * @param authentication 토큰을 통해 얻어온 사용자 정보를 담고있는 인증 객체
      * @param totalPrice 주문에 사용할 쿠폰 조회시 현재 주문 총 금액
      * @return 정상적으로 완료시 OK 상태코드와 사용 가능한 쿠폰 목록 정보를 반환
@@ -256,7 +253,15 @@ public class UserController {
         return ResponseEntity.ok(couponService.findCouponListToUse(authentication.getName(), totalPrice));
     }
 
-
+    /**
+     * 판매자의 주문 조회
+     * @param authentication
+     * @param startAt
+     * @param endAt
+     * @param pageNumber
+     * @param pageSize
+     * @return
+     */
     @GetMapping("/sellers/orders")
     public ResponseEntity<Page<OrderSellerInfoDto>> findAllSellerOrders(
             Authentication authentication,
@@ -274,12 +279,4 @@ public class UserController {
         ));
     }
 
-    @GetMapping("/sellers/orders/{orderId}")
-    public ResponseEntity<OrderDetailSellerResponseDto> findOrderDetailSeller(
-            Authentication authentication, @PathVariable(name = "orderId") UUID orderId
-    ) {
-
-        return ResponseEntity.ok(
-                orderService.findOrderDetailSeller(authentication.getName(), orderId));
-    }
 }

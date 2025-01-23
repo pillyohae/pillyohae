@@ -17,7 +17,6 @@ import com.example.pillyohae.user.entity.type.Role;
 import com.example.pillyohae.user.entity.type.Status;
 import com.example.pillyohae.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -161,17 +160,9 @@ public class UserService {
     public UserProfileResponseDto updateProfile(UserProfileUpdateRequestDto requestDto,
         Authentication authentication) throws CustomResponseStatusException {
 
-        String email = authentication.getName();
+        User user = findByEmail(authentication.getName());
 
-        User user = findByEmail(email);
-
-        if (!passwordEncoder.matches(requestDto.getPassword(), user.getPassword())) {
-            throw new CustomResponseStatusException(ErrorCode.INVALID_PASSWORD);
-        }
-
-        Map<String, Object> nonNullFields = requestDto.toNonNullFields();
-
-        user.updateFields(nonNullFields, passwordEncoder);
+        user.updateProfile(requestDto, passwordEncoder);
 
         return new UserProfileResponseDto(user.getId(), user.getName(), user.getEmail(),
             user.getAddress(), user.getCreatedAt(), user.getUpdatedAt());

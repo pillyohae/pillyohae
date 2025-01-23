@@ -88,7 +88,7 @@ Content-Type: application/json
   "expiredType": "FIXED_DATE",
   "fixedAmount": 10000,
   "minimumPrice": 20000,
-  "startAt": "2025-01-20T16:07:30",
+  "startAt": "2025-01-22T15:17:50",
   "expiredAt": "2025-02-20T23:59:59",
   "maxIssueCount": 1000
 }
@@ -104,7 +104,7 @@ Content-Type: application/json
   "expiredType": "DURATION_BASED",
   "fixedAmount": 10000,
   "minimumPrice": 20000,
-  "startAt": "2025-01-20T14:58:30",
+  "startAt": "2025-01-22T15:17:50",
   "expiredAt": "2025-02-20T23:59:59",
   "maxIssueCount": 1000,
   "couponLifetime": 3
@@ -199,14 +199,16 @@ GET http://localhost:8080/coupons?couponStatus = INACTIVE
 Authorization: Bearer {{accessToken}}
 
 ###
-POST http://localhost:8080/coupons/10b7363a-184b-41fa-a4a5-c19156faf183/issue
+POST http://localhost:8080/coupons/e8aa751e-f2ae-4123-9760-6f95c660a9eb/issue
 Authorization: Bearer {{accessToken}}
 ###
 
 ###
-GET http://localhost:8080/users/coupons?totalPrice = 15000
+GET http://localhost:8080/users/coupons
 Authorization: Bearer {{accessToken}}
 
+###
+GET http://localhost:8080/coupons/available
 
 
 ### 카트 생성
@@ -219,15 +221,23 @@ Content-Type: application/json
   "quantity": 1
 }
 
+###
+GET http://localhost:8080/coupons
+Authorization: Bearer {{accessToken}}
+
 ### 주문생성
 POST http://localhost:8080/orders
 Authorization: Bearer {{accessToken}}
-Content-Type: application/json
+content-Type: application/json
 
 {
   "productInfos": [
     {
       "productId": 1,
+      "quantity": 3
+    },
+    {
+      "productId": 2,
       "quantity": 3
     }
   ]
@@ -251,11 +261,11 @@ Content-Type: application/json
 
 
 ### 판매자 주문 조회
-GET http://localhost:8080/users/sellers/orders
+GET http://localhost:8080/users/sellers/orders?pageNumber=0
 Authorization: Bearer {{accessToken}}
 
 ### 판매자 주문 상세 조회
-GET http://localhost:8080/users/sellers/orders/bd8462cc-828e-438b-8ee2-7eca284ad12e
+GET http://localhost:8080/users/sellers/orders/014f5655-3cc7-4ebd-9aa0-ca77aa386426
 Authorization: Bearer {{accessToken}}
 
 ### 구매자 주문 조회

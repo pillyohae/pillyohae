@@ -18,7 +18,6 @@ import com.example.pillyohae.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -28,6 +27,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -139,6 +139,12 @@ public class OrderService {
 
     }
 
+    /**
+     * seller의 order 상세 내역
+     * @param email
+     * @param orderId
+     * @return
+     */
     @Transactional
     public OrderDetailSellerResponseDto findOrderDetailSeller(String email, UUID orderId) {
 
@@ -151,7 +157,7 @@ public class OrderService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Order is in pending");
         }
 
-        OrderDetailSellerResponseDto.OrderProductDto productInfo = orderRepository.findOrderDetailSellerProductDtoByOrderId(orderId,user.getId());
+        List<OrderDetailSellerResponseDto.OrderProductDto> productInfo = orderRepository.findOrderDetailSellerProductDtoByOrderId(orderId,user.getId());
 
         OrderDetailSellerResponseDto.OrderInfoDto orderInfoDto = orderRepository.findOrderDetailSellerInfoDtoByOrderId(orderId);
 
@@ -181,11 +187,74 @@ public class OrderService {
         return new OrderItemStatusChangeResponseDto(orderProduct.getId(), orderProduct.getStatus().getValue());
     }
 
+    /**
+     * 배송 시작전 전체 주문 취소
+     */
     @Transactional
-    public void updateOrderPaid (UUID orderId){
-        Order paidOrder = orderRepository.findById(orderId)
+    public OrderDetailResponseDto cancelOrder(String email, UUID orderId) {
+
+        User user = userService.findByEmail(email);
+
+        Order cancelOrder = orderRepository.findByOrderIdWithOrderProducts(orderId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
-        paidOrder.paid();
+
+        if(!cancelOrder.getUser().equals(user)) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Order is not owned by user");
+        }
+
+        // 이미 배송된 물품이 있을경우 주문취소 불가
+        Optional<OrderProduct> shippingOrderProduct = cancelOrder.getOrderProducts().stream().filter(orderProduct -> !OrderProductStatus.CHECK_ORDER.equals(orderProduct.getStatus())).findAny();
+
+        if(shippingOrderProduct.isPresent()){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "이미 배송된 물품이 있어 주문취소가 불가능 합니다.");
+        }
+
+        cancelOrder.updateStatus(OrderStatus.CANCELLED);
+
+        OrderDetailResponseDto.OrderInfoDto orderInfoDto = new OrderDetailResponseDto.OrderInfoDto(cancelOrder.getId()
+                ,cancelOrder.getStatus(),cancelOrder.getOrderName(),cancelOrder.getTotalPrice()
+                ,cancelOrder.getPaidAt(),cancelOrder.getImageUrl(),cancelOrder.getShippingAddress());
+
+
+
+        List<OrderDetailResponseDto.OrderProductDto> orderProductDtos = cancelOrder.getOrderProducts().stream()
+                .map(orderProduct -> new OrderDetailResponseDto.OrderProductDto(orderProduct.getId(), orderProduct.getProductName(),orderProduct.getQuantity(), orderProduct.getPrice(),orderProduct.getStatus())).toList();
+
+        return new OrderDetailResponseDto(orderInfoDto,orderProductDtos);
+    }
+
+    /**
+     * 개별 물품 환불 신청
+     **/
+    @Transactional
+    public OrderDetailResponseDto refundOrderProduct(String email, UUID orderId, Long orderProductId) {
+        User user = userService.findByEmail(email);
+
+        Order cancelOrder = orderRepository.findByOrderIdWithOrderProducts(orderId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
+        // 이미 배송된 물품이 있을경우 주문취소 불가
+
+        if(!cancelOrder.getUser().equals(user)) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Order is not owned by user");
+        }
+
+        OrderProduct refundOrderProduct = cancelOrder.getOrderProducts().stream().filter(orderProduct -> orderProductId.equals(orderProduct.getId())).findAny()
+                .orElseThrow(
+                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "OrderProduct not found")
+                );
+
+        refundOrderProduct.updateStatus(OrderProductStatus.RETURN_REQUESTED);
+
+        OrderDetailResponseDto.OrderInfoDto orderInfoDto = new OrderDetailResponseDto.OrderInfoDto(cancelOrder.getId()
+                ,cancelOrder.getStatus(),cancelOrder.getOrderName(),cancelOrder.getTotalPrice()
+                ,cancelOrder.getPaidAt(),cancelOrder.getImageUrl(),cancelOrder.getShippingAddress());
+
+
+
+        List<OrderDetailResponseDto.OrderProductDto> orderProductDtos = cancelOrder.getOrderProducts().stream()
+                .map(orderProduct -> new OrderDetailResponseDto.OrderProductDto(orderProduct.getId(), orderProduct.getProductName(),orderProduct.getQuantity(), orderProduct.getPrice(),orderProduct.getStatus())).toList();
+
+        return new OrderDetailResponseDto(orderInfoDto,orderProductDtos);
     }
 
     private List<Product> fetchProducts(List<OrderCreateRequestDto.ProductOrderInfo> productInfos) {
@@ -205,14 +274,19 @@ public class OrderService {
     }
 
     private Order createOrder(User user, List<Product> products, List<OrderCreateRequestDto.ProductOrderInfo> productOrderInfos) {
-        // TODO: Replace dummy address with actual user address in the future
-        ShippingAddress shippingAddress = createShippingAddress();
+        // 유저 정보에서 주소를 가져옴
+        ShippingAddress shippingAddress = user.getAddress();
+
         String orderName = makeOrderName(products, productOrderInfos);
+
         String imageUrl = "no image";
+
         if (products.get(0).getImages() != null && !products.get(0).getImages().isEmpty()) {
             imageUrl = products.get(0).getImages().get(0).getFileUrl();
         }
+
         Long totalPrice = calculateTotalPrice(productOrderInfos, products);
+
         return new Order(user, shippingAddress, imageUrl, totalPrice, orderName);
     }
 
@@ -226,12 +300,8 @@ public class OrderService {
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product not found"));
             totalPrice += matchingProduct.getPrice() * productOrderInfo.getQuantity();
         }
-        return totalPrice;
-    }
 
-    private ShippingAddress createShippingAddress() {
-        // TODO: This should be replaced with actual user address data
-        return new ShippingAddress("TEST", "010-0000-0000", "TEST", "TEST", "TEST");
+        return totalPrice;
     }
 
     private List<OrderProduct> createOrderProducts(
