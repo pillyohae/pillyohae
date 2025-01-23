@@ -1,9 +1,6 @@
 package com.example.pillyohae.coupon.service;
 
-import com.example.pillyohae.coupon.dto.CouponGiveResponseDto;
-import com.example.pillyohae.coupon.dto.CouponListResponseDto;
-import com.example.pillyohae.coupon.dto.CouponTemplateCreateRequestDto;
-import com.example.pillyohae.coupon.dto.CreateCouponTemplateResponseDto;
+import com.example.pillyohae.coupon.dto.*;
 import com.example.pillyohae.coupon.entity.CouponTemplate;
 import com.example.pillyohae.coupon.entity.IssuedCoupon;
 import com.example.pillyohae.coupon.repository.CouponTemplateRepository;
@@ -230,9 +227,9 @@ public class CouponService {
         return minimumPrice;
     }
 
-    public CouponListResponseDto findCouponList(CouponTemplate.CouponStatus status) {
-        List<CouponListResponseDto.CouponInfo> couponTemplates = couponTemplateRepository.findCouponList(status);
-        return new CouponListResponseDto(couponTemplates);
+    public CouponTemplateListResponseDto findCouponList(CouponTemplate.CouponStatus status) {
+        List<CouponTemplateListResponseDto.CouponInfo> couponTemplates = couponTemplateRepository.findCouponList(status);
+        return new CouponTemplateListResponseDto(couponTemplates);
     }
 
 }

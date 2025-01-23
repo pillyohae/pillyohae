@@ -22,6 +22,7 @@ import com.example.pillyohae.user.entity.User;
 import com.example.pillyohae.user.service.UserService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -103,6 +104,7 @@ public class ProductService {
      * @param productId 상품 id
      * @return 정상 처리 시 ProductGetResponseDto
      */
+
     @Transactional
     public ProductGetResponseDto getProduct(Long productId) {
 
