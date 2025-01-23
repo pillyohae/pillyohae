@@ -1,9 +1,6 @@
 package com.example.pillyohae.order.repository;
 
-import com.example.pillyohae.order.dto.OrderDetailResponseDto;
-import com.example.pillyohae.order.dto.OrderDetailSellerResponseDto;
-import com.example.pillyohae.order.dto.OrderInfoDto;
-import com.example.pillyohae.order.dto.OrderSellerInfoDto;
+import com.example.pillyohae.order.dto.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
