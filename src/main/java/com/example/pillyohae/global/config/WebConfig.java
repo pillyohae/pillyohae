@@ -63,7 +63,7 @@ public class WebConfig {
                 .requestMatchers(HttpMethod.GET, "/products/*").permitAll()
                 .requestMatchers(HttpMethod.GET, "/products").permitAll()
                 .requestMatchers(HttpMethod.POST, "/persona/*").permitAll()
-                    .requestMatchers(HttpMethod.GET, "/coupons").permitAll()
+                .requestMatchers(HttpMethod.GET, "/coupons/available").permitAll()
                 .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
                 .dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.INCLUDE,
                     DispatcherType.ERROR).permitAll()

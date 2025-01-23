@@ -208,8 +208,8 @@ GET http://localhost:8080/users/coupons
 Authorization: Bearer {{accessToken}}
 
 ###
-GET http://localhost:8080/coupons
-Authorization: Bearer {{accessToken}}
+GET http://localhost:8080/coupons/available
+
 
 ### 카트 생성
 POST http://localhost:8080/carts
@@ -220,6 +220,10 @@ Content-Type: application/json
   "productId": 1,
   "quantity": 1
 }
+
+###
+GET http://localhost:8080/coupons
+Authorization: Bearer {{accessToken}}
 
 ### 주문생성
 POST http://localhost:8080/orders

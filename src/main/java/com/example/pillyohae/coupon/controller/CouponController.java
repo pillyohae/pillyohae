@@ -36,12 +36,12 @@ public class CouponController {
     }
 
     // 공개된 쿠폰 조회
-    @GetMapping
+    @GetMapping("/available")
     public ResponseEntity<CouponTemplateListResponseDto> getAvailableCoupons(Authentication authentication) {
         return ResponseEntity.ok(couponService.findCouponList(CouponTemplate.CouponStatus.ACTIVE));
     }
     // 상태에 따른 쿠폰 조회 (관리자만 조회 가능)
-    @GetMapping
+    @GetMapping()
     public ResponseEntity<CouponTemplateListResponseDto> getAvailableCoupons(Authentication authentication,
                                                                              @RequestParam(required = false)CouponTemplate.CouponStatus couponStatus) {
         return ResponseEntity.ok(couponService.findCouponList(couponStatus));
