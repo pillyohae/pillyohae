@@ -380,18 +380,6 @@ public class ProductService {
             .orElseThrow(() -> new CustomResponseStatusException(ErrorCode.NOT_FOUND_PRODUCT));
     }
 
-//    // 썸네일 메서드
-//    public String getThumbnail(Product product) {
-//        if (product.getImages() != null && !product.getImages().isEmpty()) {
-//            return product.getImages().stream()
-//                .filter(image -> image.getPosition() == 1) // position 1인 이미지 찾기
-//                .map(ProductImage::getFileUrl)
-//                .findFirst()
-//                .orElse(null);
-//        }
-//        return null;
-//    }
-
 
     /**
      * 추천 상품 조회
