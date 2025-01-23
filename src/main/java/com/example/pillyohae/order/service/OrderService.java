@@ -140,6 +140,12 @@ public class OrderService {
 
     }
 
+    /**
+     * seller의 order 상세 내역
+     * @param email
+     * @param orderId
+     * @return
+     */
     @Transactional
     public OrderDetailSellerResponseDto findOrderDetailSeller(String email, UUID orderId) {
 
@@ -152,7 +158,7 @@ public class OrderService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Order is in pending");
         }
 
-        OrderDetailSellerResponseDto.OrderProductDto productInfo = orderRepository.findOrderDetailSellerProductDtoByOrderId(orderId,user.getId());
+        List<OrderDetailSellerResponseDto.OrderProductDto> productInfo = orderRepository.findOrderDetailSellerProductDtoByOrderId(orderId,user.getId());
 
         OrderDetailSellerResponseDto.OrderInfoDto orderInfoDto = orderRepository.findOrderDetailSellerInfoDtoByOrderId(orderId);
 
