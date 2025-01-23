@@ -16,7 +16,6 @@ public interface ProductRepository extends JpaRepository<Product, Long>, Product
     @Query("select p from Product p left join fetch p.images where p.productId in :productIds")
     List<Product> findByProductIdInJoinImage(Collection<Long> productIds);
 
-
     List<Long> findPriceByProductIdIn(Collection<Long> productIds);
 }
 

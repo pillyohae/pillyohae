@@ -11,13 +11,15 @@ public class ProductSearchResponseDto {
     private String category;
     private Long price;
     private ProductStatus status;
+    private String thumbnailImage;
 
-    public ProductSearchResponseDto(Long productId, String productName, String companyName, String category, Long price, ProductStatus status) {
+    public ProductSearchResponseDto(Long productId, String productName, String companyName, String category, Long price, ProductStatus status, String thumbnailImage) {
         this.productId = productId;
         this.productName = productName;
         this.companyName = companyName;
         this.category = category;
         this.price = price;
         this.status = status;
+        this.thumbnailImage = thumbnailImage;
     }
 }
