@@ -1,9 +1,6 @@
 package com.example.pillyohae.coupon.controller;
 
-import com.example.pillyohae.coupon.dto.CouponGiveResponseDto;
-import com.example.pillyohae.coupon.dto.CouponTemplateCreateRequestDto;
-import com.example.pillyohae.coupon.dto.CreateCouponTemplateResponseDto;
-import com.example.pillyohae.coupon.dto.CouponListResponseDto;
+import com.example.pillyohae.coupon.dto.*;
 import com.example.pillyohae.coupon.entity.CouponTemplate;
 import com.example.pillyohae.coupon.service.CouponService;
 import jakarta.validation.Valid;
@@ -40,10 +37,16 @@ public class CouponController {
 
     // 공개된 쿠폰 조회
     @GetMapping
-    public ResponseEntity<CouponListResponseDto> getAvailableCoupons(Authentication authentication,
-                                                                     @RequestParam(required = false)CouponTemplate.CouponStatus couponStatus) {
+    public ResponseEntity<CouponTemplateListResponseDto> getAvailableCoupons(Authentication authentication) {
+        return ResponseEntity.ok(couponService.findCouponList(CouponTemplate.CouponStatus.ACTIVE));
+    }
+    // 상태에 따른 쿠폰 조회 (관리자만 조회 가능)
+    @GetMapping
+    public ResponseEntity<CouponTemplateListResponseDto> getAvailableCoupons(Authentication authentication,
+                                                                             @RequestParam(required = false)CouponTemplate.CouponStatus couponStatus) {
         return ResponseEntity.ok(couponService.findCouponList(couponStatus));
     }
+
 
 
 }

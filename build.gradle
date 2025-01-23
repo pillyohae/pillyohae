@@ -95,6 +95,9 @@ dependencies {
     // 시간을 처리하기 위함
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
 
+    // redis cahce
+    implementation 'org.springframework.boot:spring-boot-starter-cache'
+
 }
 
 

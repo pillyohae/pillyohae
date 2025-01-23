@@ -139,6 +139,7 @@ public class CouponTemplate {
 
 
 
+
     // 고정 날짜 만료 또는 생성일 기준 만료로 나뉨
     // 추후 기능 추가할 예정
     public enum ExpiredType {
