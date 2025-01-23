@@ -16,6 +16,10 @@ import com.example.pillyohae.user.entity.User;
 import com.example.pillyohae.user.repository.UserRepository;
 import com.example.pillyohae.user.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +28,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -50,7 +55,7 @@ public class OrderService {
      * @return 생성된 order entity의 id
      */
     @Transactional
-    public OrderCreateResponseDto createOrderByProducts(String email, OrderCreateRequestDto requestDto) {
+    public OrderDetailResponseDto createOrderByProducts(String email, OrderCreateRequestDto requestDto) {
 
         User user = userService.findByEmail(email);
 
@@ -68,42 +73,46 @@ public class OrderService {
 
         applyCouponIfPresent(savedOrder, requestDto.getCouponIds());
 
-        return new OrderCreateResponseDto(savedOrder.getId());
+        OrderDetailResponseDto.OrderInfoDto orderInfoDto = new OrderDetailResponseDto.OrderInfoDto(order.getId(),
+                order.getStatus(),order.getOrderName(), order.getTotalPrice(),order.getPaidAt(),
+                order.getImageUrl(),order.getShippingAddress());
+
+        List<OrderDetailResponseDto.OrderProductDto> orderProductDto = orderProducts.stream().map(orderProduct ->
+                new OrderDetailResponseDto.OrderProductDto(
+                        orderProduct.getId(),
+                        orderProduct.getProductName(),
+                        orderProduct.getQuantity(),
+                        orderProduct.getPrice(),
+                        orderProduct.getStatus()
+                )).toList();
+
+        return new OrderDetailResponseDto(orderInfoDto, orderProductDto);
     }
 
     // buyer의 order 내역 조회
     @Transactional
-    public OrderPageResponseDto findOrders(String email, LocalDateTime startAt, LocalDateTime endAt, Long pageNumber, Long pageSize) {
+    public Page<OrderInfoDto> findOrders(String email, LocalDateTime startAt, LocalDateTime endAt, Integer pageNumber, Integer pageSize) {
 
         User user = userService.findByEmail(email);
 
         if (pageNumber < 0 || pageSize <= 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid pagination parameters");
         }
-
-        List<OrderPageResponseDto.OrderInfoDto> orderInfoDtoList = orderRepository.findOrders(user.getId(), startAt, endAt, pageNumber, pageSize);
-
-        OrderPageResponseDto.PageInfo pageInfo = new OrderPageResponseDto.PageInfo(pageNumber, pageSize);
-
-        return new OrderPageResponseDto(orderInfoDtoList, pageInfo);
-
+        Sort sort = Sort.by("paidAt").descending();
+        return orderRepository.findOrders(user.getId(), startAt, endAt, PageRequest.of(pageNumber, pageSize, sort) );
     }
 
     @Transactional
-    public OrderPageSellerResponseDto findSellerOrders(String email, LocalDateTime startAt, LocalDateTime endAt, Long pageNumber, Long pageSize) {
+    public Page<OrderSellerInfoDto> findSellerOrders(String email, LocalDateTime startAt, LocalDateTime endAt, Integer pageNumber, Integer pageSize) {
 
         User user = userService.findByEmail(email);
 
         if (pageNumber < 0 || pageSize <= 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid pagination parameters");
         }
+        Sort sort = Sort.by("paidAt").descending();
 
-        List<OrderPageSellerResponseDto.OrderInfoDto> orderInfoDtoList = orderRepository.findSellerOrders(user.getId(), startAt, endAt, pageNumber, pageSize);
-
-        OrderPageSellerResponseDto.PageInfo pageInfo = new OrderPageSellerResponseDto.PageInfo(pageNumber, pageSize);
-
-        return new OrderPageSellerResponseDto(orderInfoDtoList, pageInfo);
-
+        return orderRepository.findSellerOrders(user.getId(), startAt, endAt,PageRequest.of(pageNumber,pageSize,sort));
     }
 
     // 주문 정보와 주문 상품 정보를 따로 조회
@@ -157,7 +166,7 @@ public class OrderService {
 
     // seller orderItem 상태 수정
     @Transactional
-    public SellerOrderItemStatusChangeResponseDto changeOrderItemStatus(String email, Long orderItemId, OrderProductStatus newStatus) {
+    public OrderItemStatusChangeResponseDto changeOrderItemStatus(String email, Long orderItemId, OrderProductStatus newStatus) {
 
         User seller = userService.findByEmail(email);
 
@@ -170,14 +179,77 @@ public class OrderService {
 
         orderProduct.updateStatus(newStatus);
 
-        return new SellerOrderItemStatusChangeResponseDto(orderProduct.getId(), orderProduct.getStatus().getValue());
+        return new OrderItemStatusChangeResponseDto(orderProduct.getId(), orderProduct.getStatus().getValue());
     }
 
+    /**
+     * 배송 시작전 전체 주문 취소
+     */
     @Transactional
-    public void updateOrderPaid (UUID orderId){
-        Order paidOrder = orderRepository.findById(orderId)
+    public OrderDetailResponseDto cancelOrder(String email, UUID orderId) {
+
+        User user = userService.findByEmail(email);
+
+        Order cancelOrder = orderRepository.findByOrderIdWithOrderProducts(orderId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
-        paidOrder.paid();
+
+        if(!cancelOrder.getUser().equals(user)) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Order is not owned by user");
+        }
+
+        // 이미 배송된 물품이 있을경우 주문취소 불가
+        Optional<OrderProduct> shippingOrderProduct = cancelOrder.getOrderProducts().stream().filter(orderProduct -> !OrderProductStatus.CHECK_ORDER.equals(orderProduct.getStatus())).findAny();
+
+        if(shippingOrderProduct.isPresent()){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "이미 배송된 물품이 있어 주문취소가 불가능 합니다.");
+        }
+
+        cancelOrder.updateStatus(OrderStatus.CANCELLED);
+
+        OrderDetailResponseDto.OrderInfoDto orderInfoDto = new OrderDetailResponseDto.OrderInfoDto(cancelOrder.getId()
+                ,cancelOrder.getStatus(),cancelOrder.getOrderName(),cancelOrder.getTotalPrice()
+                ,cancelOrder.getPaidAt(),cancelOrder.getImageUrl(),cancelOrder.getShippingAddress());
+
+
+
+        List<OrderDetailResponseDto.OrderProductDto> orderProductDtos = cancelOrder.getOrderProducts().stream()
+                .map(orderProduct -> new OrderDetailResponseDto.OrderProductDto(orderProduct.getId(), orderProduct.getProductName(),orderProduct.getQuantity(), orderProduct.getPrice(),orderProduct.getStatus())).toList();
+
+        return new OrderDetailResponseDto(orderInfoDto,orderProductDtos);
+    }
+
+    /**
+     * 개별 물품 환불 신청
+     **/
+    @Transactional
+    public OrderDetailResponseDto refundOrderProduct(String email, UUID orderId, Long orderProductId) {
+        User user = userService.findByEmail(email);
+
+        Order cancelOrder = orderRepository.findByOrderIdWithOrderProducts(orderId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
+        // 이미 배송된 물품이 있을경우 주문취소 불가
+
+        if(!cancelOrder.getUser().equals(user)) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Order is not owned by user");
+        }
+
+        OrderProduct refundOrderProduct = cancelOrder.getOrderProducts().stream().filter(orderProduct -> orderProductId.equals(orderProduct.getId())).findAny()
+                .orElseThrow(
+                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "OrderProduct not found")
+                );
+
+        refundOrderProduct.updateStatus(OrderProductStatus.RETURN_REQUESTED);
+
+        OrderDetailResponseDto.OrderInfoDto orderInfoDto = new OrderDetailResponseDto.OrderInfoDto(cancelOrder.getId()
+                ,cancelOrder.getStatus(),cancelOrder.getOrderName(),cancelOrder.getTotalPrice()
+                ,cancelOrder.getPaidAt(),cancelOrder.getImageUrl(),cancelOrder.getShippingAddress());
+
+
+
+        List<OrderDetailResponseDto.OrderProductDto> orderProductDtos = cancelOrder.getOrderProducts().stream()
+                .map(orderProduct -> new OrderDetailResponseDto.OrderProductDto(orderProduct.getId(), orderProduct.getProductName(),orderProduct.getQuantity(), orderProduct.getPrice(),orderProduct.getStatus())).toList();
+
+        return new OrderDetailResponseDto(orderInfoDto,orderProductDtos);
     }
 
     private List<Product> fetchProducts(List<OrderCreateRequestDto.ProductOrderInfo> productInfos) {
@@ -197,14 +269,19 @@ public class OrderService {
     }
 
     private Order createOrder(User user, List<Product> products, List<OrderCreateRequestDto.ProductOrderInfo> productOrderInfos) {
-        // TODO: Replace dummy address with actual user address in the future
-        ShippingAddress shippingAddress = createShippingAddress();
+        // 유저 정보에서 주소를 가져옴
+        ShippingAddress shippingAddress = user.getAddress();
+
         String orderName = makeOrderName(products, productOrderInfos);
+
         String imageUrl = "no image";
+
         if (products.get(0).getImages() != null && !products.get(0).getImages().isEmpty()) {
             imageUrl = products.get(0).getImages().get(0).getFileUrl();
         }
+
         Long totalPrice = calculateTotalPrice(productOrderInfos, products);
+
         return new Order(user, shippingAddress, imageUrl, totalPrice, orderName);
     }
 
@@ -218,12 +295,8 @@ public class OrderService {
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product not found"));
             totalPrice += matchingProduct.getPrice() * productOrderInfo.getQuantity();
         }
-        return totalPrice;
-    }
 
-    private ShippingAddress createShippingAddress() {
-        // TODO: This should be replaced with actual user address data
-        return new ShippingAddress("TEST", "010-0000-0000", "TEST", "TEST", "TEST");
+        return totalPrice;
     }
 
     private List<OrderProduct> createOrderProducts(
@@ -278,7 +351,7 @@ public class OrderService {
                 : String.format("%s %d개 외 %d건", firstProductName, quantity, totalProducts - 1);
     }
 
-    private void applyCouponIfPresent(Order order, List<Long> couponIds) {
+    private void applyCouponIfPresent(Order order, List<UUID> couponIds) {
         if (couponIds != null && !couponIds.isEmpty()) {
 
             issuedCouponRepository.findById(couponIds.get(0)).ifPresent(order::applyCoupon);

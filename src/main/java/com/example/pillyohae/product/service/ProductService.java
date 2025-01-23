@@ -4,13 +4,23 @@ import com.example.pillyohae.global.S3.S3Service;
 import com.example.pillyohae.global.dto.UploadFileInfo;
 import com.example.pillyohae.global.exception.CustomResponseStatusException;
 import com.example.pillyohae.global.exception.code.ErrorCode;
-import com.example.pillyohae.product.dto.*;
+import com.example.pillyohae.product.dto.ProductCreateRequestDto;
+import com.example.pillyohae.product.dto.ProductCreateResponseDto;
+import com.example.pillyohae.product.dto.ProductGetResponseDto;
+import com.example.pillyohae.product.dto.ProductSearchResponseDto;
+import com.example.pillyohae.product.dto.ProductUpdateRequestDto;
+import com.example.pillyohae.product.dto.ProductUpdateResponseDto;
+import com.example.pillyohae.product.dto.UpdateImageRequestDto;
+import com.example.pillyohae.product.dto.UpdateImageResponseDto;
 import com.example.pillyohae.product.entity.Product;
 import com.example.pillyohae.product.entity.ProductImage;
+import com.example.pillyohae.product.entity.type.ProductStatus;
 import com.example.pillyohae.product.repository.ImageStorageRepository;
 import com.example.pillyohae.product.repository.ProductRepository;
+import com.example.pillyohae.recommendation.dto.RecommendationKeywordDto;
 import com.example.pillyohae.user.entity.User;
 import com.example.pillyohae.user.service.UserService;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -70,8 +80,8 @@ public class ProductService {
             requestDto.getCategory(),
             requestDto.getDescription(),
             requestDto.getCompanyName(),
-            requestDto.getPrice(),
-            requestDto.getStatus()
+            requestDto.getPrice()
+
         );
 
         Product updatedProduct = productRepository.save(findProduct);
@@ -95,7 +105,13 @@ public class ProductService {
      */
     @Transactional
     public ProductGetResponseDto getProduct(Long productId) {
+
         Product findProduct = findById(productId);
+
+        List<String> imageUrls = findProduct.getImages()
+            .stream()
+            .map(ProductImage::getFileUrl)
+            .toList();
 
         return new ProductGetResponseDto(
             findProduct.getProductId(),
@@ -104,7 +120,8 @@ public class ProductService {
             findProduct.getDescription(),
             findProduct.getCompanyName(),
             findProduct.getPrice(),
-            findProduct.getStatus()
+            findProduct.getStatus(),
+            imageUrls
         );
     }
 
@@ -156,7 +173,8 @@ public class ProductService {
             product.getProductName(),
             product.getCompanyName(),
             product.getCategory(),
-            product.getPrice()
+            product.getPrice(),
+            product.getStatus()
         ));
     }
 
@@ -188,7 +206,8 @@ public class ProductService {
                 product.getProductName(),
                 product.getCompanyName(),
                 product.getCategory(),
-                product.getPrice()
+                product.getPrice(),
+                product.getStatus()
             ));
 
     }
@@ -205,6 +224,11 @@ public class ProductService {
 
         // Product 조회
         Product findProduct = findById(productId);
+
+        int currentImageCount = imageStorageRepository.countByProduct_ProductId(findProduct.getProductId());
+        if (currentImageCount >= 5) {
+            throw new CustomResponseStatusException(ErrorCode.CANNOT_OVERLOAD_FILE);
+        }
 
         // 파일 업로드 로직 호출
         UploadFileInfo imageInfo = s3Service.uploadFile(image);
@@ -254,11 +278,76 @@ public class ProductService {
         imageStorageRepository.deleteById(imageId);
         s3Service.deleteFile(findImage.getFileKey()); // TODO s3삭제 시 주문페이지에서 이미지는 어떻게 할 것인지 정하기
 
+        imageStorageRepository.updatePositionsAfterDelete(productId, findImage.getPosition());
+
+    }
+
+    /**
+     * 이미지 수정
+     *
+     * @param productId  상품 id
+     * @param requestDto 이미지 수정 시 필요한 요청사항
+     * @param email      사용자 이메일
+     * @return UpdateImageResponseDto
+     */
+    @Transactional
+    public UpdateImageResponseDto updateImages(Long productId, UpdateImageRequestDto requestDto, String email) {
+
+        Product findProduct = findById(productId);
+
+        User user = userService.findByEmail(email);
+
+        if (!findProduct.getUser().getId().equals(user.getId())) {
+            throw new AccessDeniedException("권한이 없습니다.");
+        }
+
+        // 순서를 바꿀 이미지
+        ProductImage findProductImage = imageStorageRepository.findById(requestDto.getImageId())
+            .orElseThrow(() -> new CustomResponseStatusException(ErrorCode.NOT_FOUND_File));
+
+        // productId에 해당하는 이미지들의 리스트
+        List<ProductImage> images = imageStorageRepository.findByProduct_ProductId(productId);
+
+        Integer originalPosition = findProductImage.getPosition();
+        Integer updatedPosition = requestDto.getPosition();
+
+        // 기존 포지션 < 바뀔 포지션
+        if (originalPosition < updatedPosition) { // 효율이 떨어지는 코드, 이후 래팩토링필요
+
+            for (ProductImage targetPosition : images) {
+                if (originalPosition < targetPosition.getPosition() && targetPosition.getPosition() <= updatedPosition) {
+                    targetPosition.downPosition();
+                }
+            }
+        } else {
+            for (ProductImage targetPosition : images) {
+                if (updatedPosition <= targetPosition.getPosition() && targetPosition.getPosition() < originalPosition) {
+                    targetPosition.upPosition();
+                }
+            }
+        }
+
+        findProductImage.updatePosition(requestDto.getPosition());
+
+        imageStorageRepository.save(findProductImage);
+
+        return UpdateImageResponseDto.toDto(findProductImage);
     }
 
     public Product findById(Long productId) {
         return productRepository.findById(productId)
+            .filter(product -> product.getStatus() != ProductStatus.DELETED)
             .orElseThrow(() -> new CustomResponseStatusException(ErrorCode.NOT_FOUND_PRODUCT));
+    }
+
+    /**
+     * 추천 상품 조회
+     *
+     * @param recommendations 추천 키워드
+     * @return 추천 상품 목록
+     */
+    public List<Product> findByNameLike(RecommendationKeywordDto[] recommendations) {
+        return productRepository.findProductsByNameLike(recommendations);
     }
 }
 

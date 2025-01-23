@@ -10,13 +10,12 @@ import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Length;
 
 import java.time.LocalDateTime;
-import java.time.Period;
 import java.util.Objects;
 
 @Getter
 @ValidCouponPeriod
 @NoArgsConstructor
-public class CreateCouponTemplateRequestDto {
+public class CouponTemplateCreateRequestDto {
 
     @NotNull
     @Length(min = 1, max = 50)
@@ -62,7 +61,7 @@ public class CreateCouponTemplateRequestDto {
 
 
     @JsonCreator
-    public CreateCouponTemplateRequestDto(
+    public CouponTemplateCreateRequestDto(
             @JsonProperty("couponName") String couponName,
             @JsonProperty("couponDescription") String couponDescription,
             @JsonProperty("discountType") CouponTemplate.DiscountType discountType,

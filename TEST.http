@@ -7,7 +7,10 @@ Content-Type: application/json
   "name": "송정학",
   "email": "asdf@naver.com",
   "password": "Asdf1234@",
-  "address": "asdf123",
+  "phoneNumber": "010-0000-0000",
+  "postcode": "22222",
+  "roadAddress": "인천시연수구컨벤시아대로",
+  "detailAddress": "100-100",
   "role": "seller"
 }
 ###
@@ -16,11 +19,14 @@ Authorization:
 Content-Type: application/json
 
 {
-"name": "송정학",
-"email": "asdf2@naver.com",
-"password": "Asdf1234@",
-"address": "asdf123",
-"role": "buyer"
+  "name": "송정학",
+  "email": "asdf2@naver.com",
+  "password": "Asdf1234@",
+  "phoneNumber": "010-0000-0000",
+  "postcode": "22222",
+  "roadAddress": "인천시연수구컨벤시아대로",
+  "detailAddress": "100-100",
+  "role": "buyer"
 }
 
 
@@ -82,7 +88,7 @@ Content-Type: application/json
   "expiredType": "FIXED_DATE",
   "fixedAmount": 10000,
   "minimumPrice": 20000,
-  "startAt": "2025-01-16T14:13:30",
+  "startAt": "2025-01-20T16:07:30",
   "expiredAt": "2025-02-20T23:59:59",
   "maxIssueCount": 1000
 }
@@ -98,7 +104,7 @@ Content-Type: application/json
   "expiredType": "DURATION_BASED",
   "fixedAmount": 10000,
   "minimumPrice": 20000,
-  "startAt": "2025-01-16T14:13:30",
+  "startAt": "2025-01-20T14:58:30",
   "expiredAt": "2025-02-20T23:59:59",
   "maxIssueCount": 1000,
   "couponLifetime": 3
@@ -117,7 +123,7 @@ Content-Type: application/json
   "fixedRate": 10,
   "maxDiscountAmount": 5000,
   "minimumPrice": 15000,
-  "startAt": "2025-01-16T14:13:30",
+  "startAt": "2025-01-20T14:58:30",
   "expiredAt": "2025-02-20T23:59:59",
   "maxIssueCount": 1000
 }
@@ -136,7 +142,7 @@ Content-Type: application/json
   "fixedRate": 10,
   "maxDiscountAmount": 5000,
   "minimumPrice": 15000,
-  "startAt": "2025-01-16T14:13:30",
+  "startAt": "2025-01-20T14:58:30",
   "expiredAt": "2025-02-20T23:59:59",
   "maxIssueCount": 1000,
   "couponLifetime": 3
@@ -189,7 +195,11 @@ Content-Type: application/json
 
 %}
 ###
-POST http://localhost:8080/coupons/1/issue
+GET http://localhost:8080/coupons?couponStatus = INACTIVE
+Authorization: Bearer {{accessToken}}
+
+###
+POST http://localhost:8080/coupons/10b7363a-184b-41fa-a4a5-c19156faf183/issue
 Authorization: Bearer {{accessToken}}
 ###
 
@@ -245,7 +255,7 @@ GET http://localhost:8080/users/sellers/orders
 Authorization: Bearer {{accessToken}}
 
 ### 판매자 주문 상세 조회
-GET http://localhost:8080/users/sellers/orders/7d8e81e0-2279-4d93-b1b0-1dbc9c57e63b
+GET http://localhost:8080/users/sellers/orders/bd8462cc-828e-438b-8ee2-7eca284ad12e
 Authorization: Bearer {{accessToken}}
 
 ### 구매자 주문 조회

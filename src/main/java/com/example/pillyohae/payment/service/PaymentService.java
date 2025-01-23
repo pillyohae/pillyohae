@@ -1,30 +1,24 @@
 package com.example.pillyohae.payment.service;
 
-import com.example.pillyohae.order.repository.OrderRepository;
+import com.example.pillyohae.global.message_queue.message.PaymentMessage;
+import com.example.pillyohae.global.message_queue.publisher.MessagePublisher;
 import com.example.pillyohae.order.service.OrderService;
-import com.example.pillyohae.payment.dto.PaymentDataDto;
-import com.example.pillyohae.payment.dto.PaymentSuccessDto;
-import com.example.pillyohae.payment.entity.PayMethod;
-import com.example.pillyohae.payment.entity.Payment;
-import com.example.pillyohae.payment.entity.TossPaymentsVariables;
 import com.example.pillyohae.payment.repository.PaymentRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -32,29 +26,13 @@ import java.util.UUID;
 public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final OrderService orderService;
+    private final MessagePublisher redisMessagePublisher;
+    private final ObjectMapper objectMapper;
     JSONParser parser = new JSONParser();
 
 
     @Value("${toss.secret-key}")
     private String TOSS_SECRET_KEY;
-
-    @Transactional
-    protected void savePayment(JSONObject tossResult) throws IOException, ParseException {
-        Payment payment = new Payment(
-                (String) tossResult.get(TossPaymentsVariables.MID.getValue()),
-                (String) tossResult.get(TossPaymentsVariables.VERSION.getValue()),
-                (String) tossResult.get(TossPaymentsVariables.PAYMENTKEY.getValue()),
-                (String) tossResult.get(TossPaymentsVariables.STATUS.getValue()),
-                (UUID.fromString((String) tossResult.get(TossPaymentsVariables.ORDERID.getValue()))) ,
-                (String) tossResult.get(TossPaymentsVariables.ORDERNAME.getValue()),
-                (String) tossResult.get(TossPaymentsVariables.REQUESTEDAT.getValue()),
-                (String) tossResult.get(TossPaymentsVariables.APPROVEDAT.getValue()),
-                (Long) tossResult.get(TossPaymentsVariables.TOTALAMOUNT.getValue()),
-                (Long) tossResult.get(TossPaymentsVariables.BALANCEAMOUNT.getValue()),
-                Enum.valueOf(PayMethod.class,((String) tossResult.get(TossPaymentsVariables.METHOD.getValue()))));
-        paymentRepository.save(payment);
-
-    }
 
     @Transactional
     public  ResponseEntity<JSONObject> pay(String jsonBody) throws IOException, ParseException {
@@ -67,16 +45,21 @@ public class PaymentService {
         boolean isSuccess = code == 200;
         InputStream responseStream =  isSuccess ? connection.getInputStream() : connection.getErrorStream();
         Reader reader = new InputStreamReader(responseStream, StandardCharsets.UTF_8);
+
         JSONObject tossResult = (JSONObject) parser.parse(reader);
         // 결제 실패 에러 발생 처리
         if(!isSuccess) {
             log.info(responseStream.toString());
             return ResponseEntity.status(code).body(tossResult);
         }
-        // 결제 성공시 주문 결제완료로 변경 및 결제 로그 저장
-        savePayment(tossResult);
+
         responseStream.close();
-        orderService.updateOrderPaid((UUID.fromString((String)tossRequest.get("orderId"))));
+
+        // 결제 성공시 주문 결제완료로 변경 및 결제 로그 저장
+        PaymentMessage paymentMessage = new PaymentMessage(tossResult,"payment");
+        String message = objectMapper.writeValueAsString(paymentMessage);
+        redisMessagePublisher.publish(message);
+
         return ResponseEntity.status(code).body(tossResult);
     }
 

@@ -1,5 +1,6 @@
 package com.example.pillyohae.product.service;
 
+import com.example.pillyohae.global.entity.address.ShippingAddress;
 import com.example.pillyohae.product.dto.ProductCreateRequestDto;
 import com.example.pillyohae.product.dto.ProductCreateResponseDto;
 import com.example.pillyohae.product.entity.Product;
@@ -35,7 +36,8 @@ class ProductServiceIntegrationTest {
     void testCreateProduct() {
         // Given
         String email = "Test@tester.com";
-        User testUser = new User("TestUser", email, "password123", "Test Address", Role.SELLER);
+        ShippingAddress address = new ShippingAddress("TestUser","010-0000-0000","test-zip","test-road","100-100");
+        User testUser = new User("TestUser", email, "password123", address, Role.SELLER);
         entityManager.persist(testUser); // 사용자 데이터 저장
 
         ProductCreateRequestDto requestDto = new ProductCreateRequestDto(

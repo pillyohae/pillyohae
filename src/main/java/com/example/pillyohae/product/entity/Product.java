@@ -6,6 +6,7 @@ import com.example.pillyohae.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,13 +31,24 @@ public class Product extends BaseTimeEntity {
     private String imageUrl;
 
     @Enumerated(value = EnumType.STRING)
-    private ProductStatus status;
+    private ProductStatus status = ProductStatus.SELLING;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductImage> images = new ArrayList<>();
+
+    private LocalDateTime deletedAt;
+
+    public Product(User user, String productName, String category, String description, String companyName, Long price) {
+        this.user = user;
+        this.productName = productName;
+        this.category = category;
+        this.description = description;
+        this.companyName = companyName;
+        this.price = price;
+    }
 
     public Product(User user, String productName, String category, String description, String companyName, Long price, ProductStatus status) {
         this.user = user;
@@ -48,17 +60,19 @@ public class Product extends BaseTimeEntity {
         this.status = status;
     }
 
-    public void updateProduct(String productName, String category, String description, String companyName, Long price, ProductStatus status) {
+    public void updateProduct(String productName, String category, String description, String companyName, Long price) {
         this.productName = productName;
         this.category = category;
         this.description = description;
         this.companyName = companyName;
         this.price = price;
-        this.status = status;
+
     }
 
     public void deleteProduct() {
+
         this.status = ProductStatus.DELETED;
+        this.deletedAt = LocalDateTime.now();
     }
 
     public Product() {

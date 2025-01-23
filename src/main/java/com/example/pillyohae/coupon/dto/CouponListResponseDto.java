@@ -7,20 +7,21 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Getter
 @NoArgsConstructor
-public class FindCouponListResponseDto {
+public class CouponListResponseDto {
     private List<CouponInfo> couponList;
 
-    public FindCouponListResponseDto(List<CouponInfo> couponList) {
+    public CouponListResponseDto(List<CouponInfo> couponList) {
         this.couponList = couponList;
     }
 
     @Getter
     @NoArgsConstructor
     public static class CouponInfo{
-        private Long couponId;
+        private UUID couponId;
         private String couponName;
         private String couponDescription;
         private CouponTemplate.DiscountType discountType;
@@ -31,7 +32,7 @@ public class FindCouponListResponseDto {
         private LocalDateTime expiredAt;
 
         @QueryProjection
-        public CouponInfo(Long couponId, String couponName, String couponDescription, CouponTemplate.DiscountType discountType, Long fixedAmount, Long fixedRate, Long maxDiscountAmount, Long minimumPrice, LocalDateTime expiredAt) {
+        public CouponInfo(UUID couponId, String couponName, String couponDescription, CouponTemplate.DiscountType discountType, Long fixedAmount, Long fixedRate, Long maxDiscountAmount, Long minimumPrice, LocalDateTime expiredAt) {
             this.couponId = couponId;
             this.couponName = couponName;
             this.couponDescription = couponDescription;

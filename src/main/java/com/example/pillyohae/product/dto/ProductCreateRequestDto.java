@@ -28,9 +28,9 @@ public class ProductCreateRequestDto {
 
     private String imageUrl;
 
-    @NotNull
-    private ProductStatus status;
+    private ProductStatus status = ProductStatus.SELLING; // 테스트 코드 때문에 삭제x -> 테스트 코드에서 status 상수 처리하고 삭제할 예정
 
+    //테스트 코드용
     public ProductCreateRequestDto(String productName, String category, String description, String companyName, Long price, ProductStatus status) {
         this.productName = productName;
         this.category = category;
@@ -47,8 +47,7 @@ public class ProductCreateRequestDto {
             this.category,
             this.description,
             this.companyName,
-            this.price,
-            this.status
+            this.price
         );
     }
 }

@@ -1,6 +1,6 @@
 spring:
   application:
-    name: trello
+    name: pillyohae
 
   servlet:
     multipart:
@@ -13,7 +13,7 @@ spring:
     password: ${TEST_DATABASE_PASSWORD}
 
   jpa:
-    show-sql: true
+    show-sql: false
     database-platform: org.hibernate.dialect.H2Dialect
     database: h2
     hibernate:
@@ -23,7 +23,7 @@ spring:
     generate-ddl: false
     properties:
       hibernate:
-        format_sql: true
+        format_sql: false
         enable_lazy_load_no_trans: true
         globally_quoted_identifiers: true
 
@@ -43,6 +43,17 @@ spring:
       image:
         options:
           model: dall-e-3  # 기본 이미지 모델 설정
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      lettuce:
+        pool:
+          max-active: 8  # 최대 연결 수
+          max-idle: 8    # 유휴 연결 수
+          min-idle: 0    # 최소 유휴 연결 수
+
 
 toss:
   secret-key: ${TOSS_SECRET_KEY}
