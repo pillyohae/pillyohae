@@ -26,8 +26,6 @@ public class ProductCreateRequestDto {
     @Positive
     private Long price;
 
-    private String imageUrl;
-
     private ProductStatus status = ProductStatus.SELLING; // 테스트 코드 때문에 삭제x -> 테스트 코드에서 status 상수 처리하고 삭제할 예정
 
     //테스트 코드용
