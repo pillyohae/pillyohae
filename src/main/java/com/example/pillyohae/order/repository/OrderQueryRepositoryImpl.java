@@ -86,9 +86,6 @@ public class OrderQueryRepositoryImpl implements OrderQueryRepository {
                 .leftJoin(orderProduct.seller)
                 .leftJoin(orderProduct.order, order)
                 .where(dateEq(startAt, endAt), orderProduct.seller.id.eq(userId), order.paidAt.isNotNull())
-                .orderBy(order.paidAt.desc())
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
                 .fetchOne();
 
         return new PageImpl<>(content, pageable, total);
