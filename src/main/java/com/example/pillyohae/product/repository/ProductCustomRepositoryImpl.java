@@ -1,5 +1,7 @@
 package com.example.pillyohae.product.repository;
 
+import static com.example.pillyohae.product.entity.QProduct.product;
+
 import com.example.pillyohae.global.exception.CustomResponseStatusException;
 import com.example.pillyohae.global.exception.code.ErrorCode;
 import com.example.pillyohae.product.entity.Product;
@@ -14,16 +16,13 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.ComparableExpressionBase;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.util.ArrayList;
+import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static com.example.pillyohae.product.entity.QProduct.product;
 
 @Repository
 public class ProductCustomRepositoryImpl implements ProductCustomRepository {
