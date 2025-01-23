@@ -261,7 +261,7 @@ Content-Type: application/json
 
 
 ### 판매자 주문 조회
-GET http://localhost:8080/users/sellers/orders
+GET http://localhost:8080/users/sellers/orders?pageNumber=0
 Authorization: Bearer {{accessToken}}
 
 ### 판매자 주문 상세 조회

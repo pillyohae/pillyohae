@@ -59,7 +59,17 @@ public class OrderQueryRepositoryImpl implements OrderQueryRepository {
 
     @Override
     public Page<OrderSellerInfoDto> findSellerOrders(Long userId, LocalDateTime startAt, LocalDateTime endAt, Pageable pageable) {
-        List<OrderSellerInfoDto> content = queryFactory.select(new QOrderSellerInfoDto(order.id, orderProduct.id ,orderProduct.status, order.orderName, order.paidAt, orderProduct.imageUrl, orderProduct.price, orderProduct.quantity))
+        List<OrderSellerInfoDto> content = queryFactory.select(
+                        new QOrderSellerInfoDto(
+                                orderProduct.id,
+                                orderProduct.status,
+                                order.orderName,
+                                order.paidAt,
+                                order.shippingAddress,
+                                orderProduct.imageUrl,
+                                orderProduct.price,
+                                orderProduct.quantity
+                        ))
                 .from(orderProduct)
                 .leftJoin(orderProduct.seller)
                 .leftJoin(orderProduct.order, order)
@@ -73,8 +83,9 @@ public class OrderQueryRepositoryImpl implements OrderQueryRepository {
         long total = queryFactory
                 .select(orderProduct.count())
                 .from(orderProduct)
-                .where(dateEq(startAt, endAt),
-                        orderProduct.seller.id.eq(userId))
+                .leftJoin(orderProduct.seller)
+                .leftJoin(orderProduct.order, order)
+                .where(dateEq(startAt, endAt), orderProduct.seller.id.eq(userId), order.paidAt.isNotNull())
                 .fetchOne();
 
         return new PageImpl<>(content, pageable, total);
