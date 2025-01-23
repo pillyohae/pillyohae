@@ -45,6 +45,7 @@ public enum ErrorCode {
      * unAuthorized
      */
     NOT_ALLOW_USER(HttpStatus.UNAUTHORIZED, "USER 권한은 사용할 수 없는 기능입니다"),
+    FORBIDDEN_ADMIN_ROLE_REQUIRED(HttpStatus.UNAUTHORIZED, "ADMIN 권한만 사용할 수 있는 기능입니다"),
 
     /**
      * Jwt error
