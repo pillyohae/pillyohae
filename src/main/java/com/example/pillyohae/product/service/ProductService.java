@@ -313,7 +313,7 @@ public class ProductService {
         Integer updatedPosition = requestDto.getPosition();
 
         // 기존 포지션 < 바뀔 포지션
-        if (originalPosition < updatedPosition) { // 효율이 떨어지는 코드, 이후 래팩토링필요
+        if (originalPosition < updatedPosition) {
 
             for (ProductImage targetPosition : images) {
                 if (originalPosition < targetPosition.getPosition() && targetPosition.getPosition() <= updatedPosition) {
