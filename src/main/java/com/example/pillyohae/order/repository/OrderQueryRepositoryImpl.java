@@ -106,18 +106,18 @@ public class OrderQueryRepositoryImpl implements OrderQueryRepository {
                 .from(orderProduct)
                 .leftJoin(orderProduct.order, order)
                 .where(order.id.eq(orderId))
-                .fetchOne();
+                .fetchFirst();
 
     }
 
     @Override
-    public OrderDetailSellerResponseDto.OrderProductDto findOrderDetailSellerProductDtoByOrderId(UUID orderId, Long userId) {
+    public List<OrderDetailSellerResponseDto.OrderProductDto> findOrderDetailSellerProductDtoByOrderId(UUID orderId, Long userId) {
         return queryFactory.select(new QOrderDetailSellerResponseDto_OrderProductDto(orderProduct.id,orderProduct.productName,orderProduct.quantity,orderProduct.price,orderProduct.status))
                 .from(orderProduct)
                 .leftJoin(orderProduct.order, order)
                 .leftJoin(orderProduct.seller, user)
                 .where(order.id.eq(orderId), user.id.eq(userId))
-                .fetchOne();
+                .fetch();
     }
 
     private BooleanExpression dateEq(LocalDateTime startAt, LocalDateTime endAt) {

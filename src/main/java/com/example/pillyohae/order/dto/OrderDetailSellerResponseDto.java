@@ -15,9 +15,9 @@ import java.util.UUID;
 @NoArgsConstructor(force = true)
 public class OrderDetailSellerResponseDto {
     private final OrderDetailSellerResponseDto.OrderInfoDto orderInfo;
-    private final OrderDetailSellerResponseDto.OrderProductDto orderProduct;
+    private final List<OrderDetailSellerResponseDto.OrderProductDto> orderProduct;
 
-    public OrderDetailSellerResponseDto(OrderDetailSellerResponseDto.OrderInfoDto orderInfo, OrderProductDto orderProduct) {
+    public OrderDetailSellerResponseDto(OrderDetailSellerResponseDto.OrderInfoDto orderInfo, List<OrderDetailSellerResponseDto.OrderProductDto> orderProduct) {
         this.orderInfo = orderInfo;
         this.orderProduct = orderProduct;
 
