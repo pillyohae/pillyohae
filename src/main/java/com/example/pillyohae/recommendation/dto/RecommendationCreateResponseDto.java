@@ -9,7 +9,7 @@ import lombok.Getter;
  * @see com.example.pillyohae.recommendation.service.RecommendationService#create(String, Long)
  */
 @Getter
-public class RecommendationResponseDto {
+public class RecommendationCreateResponseDto {
 
     private final Long productId;
     private final String productName;
@@ -17,11 +17,12 @@ public class RecommendationResponseDto {
     private final Long price;
 
     @Builder
-    public RecommendationResponseDto(Long productId, String productName, String imageUrl, Long price) {
+    public RecommendationCreateResponseDto(Long productId, String productName, String imageUrl, Long price) {
         this.productId = productId;
         this.productName = productName;
         this.imageUrl = imageUrl;
         this.price = price;
     }
+
 
 }

@@ -9,7 +9,6 @@ import com.example.pillyohae.product.entity.QProduct;
 import com.example.pillyohae.product.entity.type.ProductStatus;
 import com.example.pillyohae.recommendation.dto.RecommendationKeywordDto;
 import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.QueryFactory;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -28,12 +27,9 @@ import org.springframework.stereotype.Repository;
 public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 
     private final JPAQueryFactory jpaQueryFactory;
-    private final QueryFactory queryFactory;
 
-    public ProductCustomRepositoryImpl(JPAQueryFactory jpaQueryFactory, QueryFactory queryFactory) {
-
+    public ProductCustomRepositoryImpl(JPAQueryFactory jpaQueryFactory) {
         this.jpaQueryFactory = jpaQueryFactory;
-        this.queryFactory = queryFactory;
     }
 
     /**
