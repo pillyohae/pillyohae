@@ -21,11 +21,17 @@ public interface ImageStorageRepository extends JpaRepository<ProductImage, Long
 
     @Transactional
     @Modifying
+    @Query("DELETE FROM ProductImage pi " + "WHERE pi.product.productId = :productId " +
+        "AND pi.position = :deletedPosition " + "AND pi.id = :imageId")
+    void deleteImageByIdAndPosition(@Param("productId") Long productId, @Param("deletedPosition") Integer deletedPosition, @Param("imageId") Long imageId);
+
+    @Transactional
+    @Modifying
     @Query("UPDATE ProductImage pi SET pi.position = pi.position - 1 WHERE pi.product.productId = :productId AND pi.position > :deletedPosition")
     void updatePositionsAfterDelete(@Param("productId") Long productId, @Param("deletedPosition") Integer deletedPosition);
 
-    @Modifying
     @Transactional
+    @Modifying
     @Query("UPDATE ProductImage p SET p.position = p.position + 1 WHERE p.product.productId = :productId")
     void incrementAllPositions(@Param("productId") Long productId);
 

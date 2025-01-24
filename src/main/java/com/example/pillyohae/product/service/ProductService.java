@@ -6,15 +6,8 @@ import com.example.pillyohae.global.dto.UploadFileInfo;
 import com.example.pillyohae.global.exception.CustomResponseStatusException;
 import com.example.pillyohae.global.exception.code.ErrorCode;
 import com.example.pillyohae.persona.PersonaService;
-import com.example.pillyohae.product.dto.ProductCreateRequestDto;
-import com.example.pillyohae.product.dto.ProductCreateResponseDto;
-import com.example.pillyohae.product.dto.ProductGetResponseDto;
+import com.example.pillyohae.product.dto.*;
 import com.example.pillyohae.product.dto.ProductGetResponseDto.ImageResponseDto;
-import com.example.pillyohae.product.dto.ProductSearchResponseDto;
-import com.example.pillyohae.product.dto.ProductUpdateRequestDto;
-import com.example.pillyohae.product.dto.ProductUpdateResponseDto;
-import com.example.pillyohae.product.dto.UpdateImageRequestDto;
-import com.example.pillyohae.product.dto.UpdateImageResponseDto;
 import com.example.pillyohae.product.entity.Product;
 import com.example.pillyohae.product.entity.ProductImage;
 import com.example.pillyohae.product.entity.type.ProductStatus;
@@ -23,8 +16,6 @@ import com.example.pillyohae.product.repository.ProductRepository;
 import com.example.pillyohae.recommendation.dto.RecommendationKeywordDto;
 import com.example.pillyohae.user.entity.User;
 import com.example.pillyohae.user.service.UserService;
-import jakarta.persistence.EntityManager;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -36,6 +27,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -46,7 +39,6 @@ public class ProductService {
     private final UserService userService;
     private final S3Service s3Service;
     private final PersonaService personaService;
-    private final EntityManager entityManager;
 
     /**
      * 상품 생성
@@ -57,7 +49,7 @@ public class ProductService {
      */
     @Transactional
     public ProductCreateResponseDto createProduct(ProductCreateRequestDto requestDto,
-        String email) {
+                                                  String email) {
 
         User findUser = userService.findByEmail(email);
 
@@ -83,7 +75,7 @@ public class ProductService {
      */
     @Transactional
     public ProductUpdateResponseDto updateProduct(Long productId,
-        ProductUpdateRequestDto requestDto) {
+                                                  ProductUpdateRequestDto requestDto) {
 
         Product findProduct = findById(productId);
         findProduct.updateProduct(
@@ -180,7 +172,7 @@ public class ProductService {
      */
     @Transactional
     public Page<ProductSearchResponseDto> searchAndConvertProducts(String productName,
-        String companyName, String category, int page, int size, String sortBy, Boolean isAsc) {
+                                                                   String companyName, String category, int page, int size, String sortBy, Boolean isAsc) {
 
         //정렬 방향과 속성 지정
         Sort.Direction direction = isAsc ? Sort.Direction.ASC : Sort.Direction.DESC;
@@ -214,7 +206,7 @@ public class ProductService {
      */
     @Transactional
     public Page<ProductSearchResponseDto> findSellersProducts(String email, int page, int size,
-        String sortBy, Boolean isAsc) {
+                                                              String sortBy, Boolean isAsc) {
 
         User user = userService.findByEmail(email);
 
@@ -301,10 +293,10 @@ public class ProductService {
             throw new CustomResponseStatusException(ErrorCode.INVALID_IMAGE_PRODUCT_MATCH);
         }
 
-        imageStorageRepository.deleteById(imageId);
-        s3Service.deleteFile(findImage.getFileKey()); // TODO s3삭제 시 주문페이지에서 이미지는 어떻게 할 것인지 정하기
-
-        imageStorageRepository.updatePositionsAfterDelete(productId, findImage.getPosition());
+        // position > 1인 경우 자리 재배치 / position <= 1인 경우 자리 재배치 X
+        if (findImage.getPosition() > 1) {
+            imageStorageRepository.updatePositionsAfterDelete(productId, findImage.getPosition());
+        }
 
     }
 
@@ -318,7 +310,7 @@ public class ProductService {
      */
     @Transactional
     public UpdateImageResponseDto updateImages(Long productId, UpdateImageRequestDto requestDto,
-        String email) {
+                                               String email) {
 
         Product findProduct = findById(productId);
         User user = userService.findByEmail(email);
@@ -360,7 +352,7 @@ public class ProductService {
     }
 
     /**
-     * 대표이미지(position = 1) -> AI이미지로 변환 후 position = 0으로 배치
+     * 대표이미지(position = 1) -> AI이미지로 변환 후 해당 AI 이미지 position = 0으로 배치
      *
      * @param productId 상품 id
      * @param email     사용자 이메일
@@ -388,9 +380,11 @@ public class ProductService {
             // S3에 업로드
             UploadFileInfo uploadImageInfo = s3Service.uploadFileFromUrl(aiImageUrl);
 
+            // 0번 이미지 찾기
             ProductImage positionZeroAiImage = imageStorageRepository.findByProduct_ProductIdAndPosition(
                 productId, 0);
 
+            //0번 이미지가 이미 있으면 삭제
             if (positionZeroAiImage != null) {
                 deleteImage(productId, positionZeroAiImage.getId(), email);
             }
@@ -399,6 +393,7 @@ public class ProductService {
             ProductImage aiImage = new ProductImage(
                 uploadImageInfo.fileUrl(),
                 uploadImageInfo.fileKey(),
+                "image/png",
                 0,
                 findProduct);
 
