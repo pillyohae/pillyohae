@@ -18,6 +18,7 @@ public class S3Service {
     private String bucket;
 
     public UploadFileInfo uploadFile(MultipartFile file) {
+
         return s3Uploader.uploadFile(file);
     }
 
@@ -31,5 +32,9 @@ public class S3Service {
         } catch (Exception e) {
             throw new RuntimeException("Failed to delete file: " + fileKey, e);
         }
+    }
+
+    public UploadFileInfo uploadFileFromUrl(String aiImageUrl) {
+        return s3Uploader.uploadFileFromUrl(aiImageUrl);
     }
 }

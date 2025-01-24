@@ -55,7 +55,7 @@ public class OrderController {
      * @param orderId
      * @return
      */
-    @DeleteMapping("/{orderId}/cancel")
+    @PutMapping("/{orderId}/cancel")
     public ResponseEntity<OrderDetailResponseDto> cancelOrder(
             Authentication authentication,
             @PathVariable(name = "orderId") UUID orderId
@@ -70,7 +70,7 @@ public class OrderController {
      * @param orderProductId
      * @return
      */
-    @DeleteMapping("/{orderId}/orderProducts/{orderProductId}")
+    @PutMapping("/{orderId}/orderProducts/{orderProductId}")
     public ResponseEntity<OrderDetailResponseDto> refundOrderProduct(
             Authentication authentication,
             @PathVariable(name = "orderId") UUID orderId,

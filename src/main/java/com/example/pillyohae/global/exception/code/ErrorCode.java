@@ -42,6 +42,13 @@ public enum ErrorCode {
     BAD_POSITION(HttpStatus.BAD_REQUEST, "위치 값은 0보다 작을 수 없습니다."),
 
     /**
+     * BadRequest
+     */
+    STOCK_CANNOTBE_NEGATIVE(HttpStatus.BAD_REQUEST, "재고는 0보다 작을 수 없습니다."),
+    QUANTITY_CANNOTBE_NEGATIVE(HttpStatus.BAD_REQUEST, "주문량을 올바르게 입력해주세요."),
+    LACK_OF_STOCK(HttpStatus.BAD_REQUEST, "제품의 재고가 부족합니다"),
+
+    /**
      * unAuthorized
      */
     NOT_ALLOW_USER(HttpStatus.UNAUTHORIZED, "USER 권한은 사용할 수 없는 기능입니다"),

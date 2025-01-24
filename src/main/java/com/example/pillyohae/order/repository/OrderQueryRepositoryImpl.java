@@ -94,16 +94,17 @@ public class OrderQueryRepositoryImpl implements OrderQueryRepository {
     // orderitem에 저장된 내용을 가져옴
     @Override
     public List<OrderDetailResponseDto.OrderProductDto> findOrderProductsByOrderId(UUID orderId) {
-        return queryFactory.select(new QOrderDetailResponseDto_OrderProductDto(orderProduct.id, orderProduct.productName, orderProduct.quantity, orderProduct.price, orderProduct.status))
+        return queryFactory.select(new QOrderDetailResponseDto_OrderProductDto(orderProduct.id, orderProduct.productName, orderProduct.quantity, orderProduct.price, orderProduct.status, orderProduct.imageUrl))
                 .from(orderProduct)
                 .where(orderProduct.order.id.eq(orderId))
                 .fetch();
+
 
     }
 
     @Override
     public OrderDetailResponseDto.OrderInfoDto findOrderDetailOrderInfoDtoByOrderId(UUID orderId) {
-        return queryFactory.select(new QOrderDetailResponseDto_OrderInfoDto(order.id, order.status, order.orderName, order.totalPrice, order.paidAt, order.imageUrl, order.shippingAddress))
+        return queryFactory.select(new QOrderDetailResponseDto_OrderInfoDto(order.id, order.status, order.orderName, order.totalPrice, order.paidAt, order.shippingAddress))
                 .from(order)
                 .where(order.id.eq(orderId))
                 .fetchOne();
