@@ -1,10 +1,11 @@
 package com.example.pillyohae.product.dto;
 
 import com.example.pillyohae.product.entity.type.ProductStatus;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 @Getter
 public class ProductGetResponseDto {
@@ -19,8 +20,8 @@ public class ProductGetResponseDto {
     private List<ImageResponseDto> images;
 
     public ProductGetResponseDto(Long productId, String productName, String category,
-        String description, String companyName, Long price, ProductStatus status,
-        List<ImageResponseDto> images) {
+                                 String description, String companyName, Long price, ProductStatus status,
+                                 List<ImageResponseDto> images) {
         this.productId = productId;
         this.productName = productName;
         this.category = category;
@@ -36,6 +37,7 @@ public class ProductGetResponseDto {
     @AllArgsConstructor
     public static class ImageResponseDto {
 
+        private Long imageId;
         private String imageUrl;
         private Integer position;
     }

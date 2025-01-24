@@ -118,6 +118,7 @@ public class ProductService {
         List<ImageResponseDto> images = findProduct.getImages()
             .stream()
             .map(image -> new ImageResponseDto(
+                image.getId(),
                 image.getFileUrl(),
                 image.getPosition()
             ))
@@ -239,8 +240,7 @@ public class ProductService {
         // Product 조회
         Product findProduct = findById(productId);
 
-        int currentImageCount = imageStorageRepository.countByProduct_ProductId(
-            findProduct.getProductId());
+        int currentImageCount = imageStorageRepository.countByProduct_ProductId(findProduct.getProductId());
         if (currentImageCount >= 5) {
             throw new CustomResponseStatusException(ErrorCode.CANNOT_OVERLOAD_FILE);
         }
@@ -419,5 +419,31 @@ public class ProductService {
     }
 
 
+    public UploadFileInfo uploadImageToPositionOne(Long productId, MultipartFile mainImage) {
+
+        // Product 조회
+        Product findProduct = findById(productId);
+
+        // 파일 업로드 로직 호출
+        UploadFileInfo firstImageInfo = s3Service.uploadFile(mainImage);
+
+        ProductImage originalMainImage = imageStorageRepository.findByProduct_ProductIdAndPosition(productId, 1);
+
+        if (originalMainImage != null) {
+            throw new CustomResponseStatusException(ErrorCode.IMAGE_ALREADY_EXIST);
+        }
+
+        ProductImage newPositionOneImage = new ProductImage(
+            firstImageInfo.fileUrl(),
+            firstImageInfo.fileKey(),
+            mainImage.getContentType(),
+            mainImage.getSize(),
+            1,
+            findProduct
+        );
+        imageStorageRepository.save(newPositionOneImage);
+
+        return new UploadFileInfo(newPositionOneImage.getFileUrl(), newPositionOneImage.getFileKey());
+    }
 }
 
