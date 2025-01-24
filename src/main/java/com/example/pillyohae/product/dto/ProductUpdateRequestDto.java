@@ -11,4 +11,5 @@ public class ProductUpdateRequestDto {
     private String companyName;
     private Long price;
     private ProductStatus status;
+    private Integer stock;
 }

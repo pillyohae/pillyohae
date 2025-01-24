@@ -273,10 +273,11 @@ GET http://localhost:8080/users/orders
 Authorization: Bearer {{accessToken}}
 
 ### 구매자 상세 조회
-GET http://localhost:8080/users/orders/c246ac35-2994-4c02-a62c-991320681bdd/orderItems
+GET http://localhost:8080/users/orders/316832c2-ac6b-426d-ab29-f1de85f525e1/orderItems
 Authorization: Bearer {{accessToken}}
-
-
+### 구매자 주문 취소
+PUT http://localhost:8080/orders/014f5655-3cc7-4ebd-9aa0-ca77aa386426/cancel
+Authorization: Bearer {{accessToken}}
 ###
 GET http://localhost:8080/orders/1ddee748-61ba-4c15-9bee-a57a98696aa6/toss/checkout
 Authorization: Bearer {{accessToken}}
