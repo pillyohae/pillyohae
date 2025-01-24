@@ -273,7 +273,7 @@ GET http://localhost:8080/users/orders
 Authorization: Bearer {{accessToken}}
 
 ### 구매자 상세 조회
-GET http://localhost:8080/users/orders/c246ac35-2994-4c02-a62c-991320681bdd/orderItems
+GET http://localhost:8080/users/orders/316832c2-ac6b-426d-ab29-f1de85f525e1/orderItems
 Authorization: Bearer {{accessToken}}
 
 

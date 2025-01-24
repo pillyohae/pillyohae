@@ -30,17 +30,15 @@ public class OrderDetailResponseDto {
         private final String orderName;
         private final Long totalPrice;
         private final LocalDateTime paidAt;
-        private final String imageUrl;
         private final ShippingAddress shippingAddress;
 
         @QueryProjection
-        public OrderInfoDto(UUID orderId, OrderStatus orderStatus, String orderName, Long totalPrice, LocalDateTime paidAt, String imageUrl, ShippingAddress shippingAddress) {
+        public OrderInfoDto(UUID orderId, OrderStatus orderStatus, String orderName, Long totalPrice, LocalDateTime paidAt, ShippingAddress shippingAddress) {
             this.orderId = orderId;
             this.orderStatus = orderStatus;
             this.orderName = orderName;
             this.totalPrice = totalPrice;
             this.paidAt = paidAt;
-            this.imageUrl = imageUrl;
             this.shippingAddress = shippingAddress;
         }
     }
@@ -53,13 +51,15 @@ public class OrderDetailResponseDto {
         private final Integer orderItemQuantity;
         private final Long orderItemPrice;
         private final OrderProductStatus orderProductStatus;
+        private final String imageUrl;
         @QueryProjection
-        public OrderProductDto(Long orderItemId, String orderItemName, Integer orderItemQuantity, Long orderItemPrice, OrderProductStatus orderProductStatus) {
+        public OrderProductDto(Long orderItemId, String orderItemName, Integer orderItemQuantity, Long orderItemPrice, OrderProductStatus orderProductStatus, String imageUrl) {
             this.orderItemId = orderItemId;
             this.orderItemName = orderItemName;
             this.orderItemQuantity = orderItemQuantity;
             this.orderItemPrice = orderItemPrice;
             this.orderProductStatus = orderProductStatus;
+            this.imageUrl = imageUrl;
         }
     }
 }
