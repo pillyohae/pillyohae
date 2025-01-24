@@ -4,6 +4,7 @@ import com.example.pillyohae.global.message_queue.message.PaymentMessage;
 import com.example.pillyohae.global.message_queue.publisher.MessagePublisher;
 import com.example.pillyohae.order.service.OrderService;
 import com.example.pillyohae.payment.repository.PaymentRepository;
+import com.example.pillyohae.product.service.ProductService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Base64;
 
 @Service
@@ -41,6 +44,9 @@ public class PaymentService {
 
         HttpURLConnection connection = getTossResult(tossRequest);
 
+
+
+        // 결제 승인 요청 후 결과를 받는데 0.668초 정도 소요
         int code = connection.getResponseCode();
         boolean isSuccess = code == 200;
         InputStream responseStream =  isSuccess ? connection.getInputStream() : connection.getErrorStream();
