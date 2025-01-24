@@ -1,6 +1,8 @@
 package com.example.pillyohae.user.controller;
 
 import com.example.pillyohae.coupon.dto.CouponListResponseDto;
+import com.example.pillyohae.coupon.dto.CouponTemplateListResponseDto;
+import com.example.pillyohae.coupon.entity.CouponTemplate;
 import com.example.pillyohae.coupon.service.CouponService;
 import com.example.pillyohae.order.dto.*;
 import com.example.pillyohae.order.service.OrderService;
@@ -278,5 +280,15 @@ public class UserController {
                 pageSize
         ));
     }
+
+
+    // 상태에 따른 쿠폰 조회 (관리자만 조회 가능)
+    @GetMapping("/admin/coupons")
+    public ResponseEntity<CouponTemplateListResponseDto> getAvailableCoupons(Authentication authentication,
+                                                                             @RequestParam(required = false) CouponTemplate.CouponStatus couponStatus) {
+        return ResponseEntity.ok(couponService.findCouponList(couponStatus));
+    }
+
+=======
 
 }
