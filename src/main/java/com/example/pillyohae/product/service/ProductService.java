@@ -15,7 +15,6 @@ import com.example.pillyohae.product.repository.ProductRepository;
 import com.example.pillyohae.recommendation.dto.RecommendationKeywordDto;
 import com.example.pillyohae.user.entity.User;
 import com.example.pillyohae.user.service.UserService;
-import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -39,7 +38,6 @@ public class ProductService {
     private final UserService userService;
     private final S3Service s3Service;
     private final PersonaService personaService;
-    private final EntityManager entityManager;
 
     /**
      * 상품 생성
@@ -250,7 +248,6 @@ public class ProductService {
         // FileStorage 객체 생성
         ProductImage saveImage = new ProductImage(imageInfo.fileUrl(), imageInfo.fileKey(), image.getContentType(), image.getSize(), nextPosition, findProduct);
 
-
         // DB에 저장
         imageStorageRepository.save(saveImage);
 
@@ -284,10 +281,12 @@ public class ProductService {
             throw new CustomResponseStatusException(ErrorCode.INVALID_IMAGE_PRODUCT_MATCH);
         }
 
-        imageStorageRepository.deleteById(imageId);
-        s3Service.deleteFile(findImage.getFileKey()); // TODO s3삭제 시 주문페이지에서 이미지는 어떻게 할 것인지 정하기
+        imageStorageRepository.deleteImageByIdAndPosition(productId, findImage.getPosition(), imageId);
 
-        imageStorageRepository.updatePositionsAfterDelete(productId, findImage.getPosition());
+        // position > 1인 경우 자리 재배치 / position <= 1인 경우 자리 재배치 X
+        if (findImage.getPosition() > 1) {
+            imageStorageRepository.updatePositionsAfterDelete(productId, findImage.getPosition());
+        }
 
     }
 
@@ -340,7 +339,7 @@ public class ProductService {
     }
 
     /**
-     * 대표이미지(position = 1) -> AI이미지로 변환 후 position = 0으로 배치
+     * 대표이미지(position = 1) -> AI이미지로 변환 후 해당 AI 이미지 position = 0으로 배치
      *
      * @param productId 상품 id
      * @param email     사용자 이메일
@@ -366,8 +365,10 @@ public class ProductService {
             // S3에 업로드
             UploadFileInfo uploadImageInfo = s3Service.uploadFileFromUrl(aiImageUrl);
 
+            // 0번 이미지 찾기
             ProductImage positionZeroAiImage = imageStorageRepository.findByProduct_ProductIdAndPosition(productId, 0);
 
+            //0번 이미지가 이미 있으면 삭제
             if (positionZeroAiImage != null) {
                 deleteImage(productId, positionZeroAiImage.getId(), email);
             }
@@ -376,6 +377,7 @@ public class ProductService {
             ProductImage aiImage = new ProductImage(
                 uploadImageInfo.fileUrl(),
                 uploadImageInfo.fileKey(),
+                "image/png",
                 0,
                 findProduct);
 

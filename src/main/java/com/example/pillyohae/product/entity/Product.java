@@ -113,6 +113,7 @@ public class Product extends BaseTimeEntity {
             throw new CustomResponseStatusException(ErrorCode.LACK_OF_STOCK);
         }
         this.stock -= quantity; // 재고 차감
+        
         return this.stock; // 차감 후 남은 재고 반환
     }
 
