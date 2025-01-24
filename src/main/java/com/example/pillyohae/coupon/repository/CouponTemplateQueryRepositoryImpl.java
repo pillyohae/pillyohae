@@ -1,8 +1,6 @@
 package com.example.pillyohae.coupon.repository;
 
-import com.example.pillyohae.coupon.dto.CouponListResponseDto;
-import com.example.pillyohae.coupon.dto.CouponTemplateListResponseDto;
-import com.example.pillyohae.coupon.dto.QCouponTemplateListResponseDto_CouponInfo;
+import com.example.pillyohae.coupon.dto.*;
 import com.example.pillyohae.coupon.entity.CouponTemplate;
 import com.example.pillyohae.coupon.entity.QCouponTemplate;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -24,7 +22,7 @@ public class CouponTemplateQueryRepositoryImpl implements CouponTemplateQueryRep
         }
         return queryFactory.select(new QCouponTemplateListResponseDto_CouponInfo(couponTemplate.id,couponTemplate.name,
                         couponTemplate.description, couponTemplate.discountType,couponTemplate.fixedAmount
-                        ,couponTemplate.fixedRate, couponTemplate.maxDiscountAmount,couponTemplate.minimumPrice, couponTemplate.expiredType, couponTemplate.expiredAt,couponTemplate.couponLifetime))
+                        ,couponTemplate.fixedRate, couponTemplate.maxDiscountAmount,couponTemplate.minimumPrice, couponTemplate.expiredType, couponTemplate.expiredAt,couponTemplate.couponLifetime,couponTemplate.status))
                 .from(couponTemplate)
                 .where(statusEq(status), couponTemplate.expiredAt.after(LocalDateTime.now()))
                 .fetch();

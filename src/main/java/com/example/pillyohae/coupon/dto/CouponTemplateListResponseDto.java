@@ -13,7 +13,7 @@ import java.util.UUID;
 @Getter
 @NoArgsConstructor
 public class CouponTemplateListResponseDto {
-    private List<CouponTemplateListResponseDto.CouponInfo> couponList;
+    private List<CouponInfo> couponList;
 
     public CouponTemplateListResponseDto(List<CouponTemplateListResponseDto.CouponInfo> couponList) {
         this.couponList = couponList;
@@ -33,9 +33,10 @@ public class CouponTemplateListResponseDto {
         private CouponTemplate.ExpiredType expiredType;
         private LocalDateTime expiredAt;
         private Integer couponLifetime;
+        private CouponTemplate.CouponStatus couponStatus;
 
         @QueryProjection
-        public CouponInfo(UUID couponId, String couponName, String couponDescription, CouponTemplate.DiscountType discountType, Long fixedAmount, Long fixedRate, Long maxDiscountAmount, Long minimumPrice, CouponTemplate.ExpiredType expiredType, LocalDateTime expiredAt, Period couponLifetime) {
+        public CouponInfo(UUID couponId, String couponName, String couponDescription, CouponTemplate.DiscountType discountType, Long fixedAmount, Long fixedRate, Long maxDiscountAmount, Long minimumPrice, CouponTemplate.ExpiredType expiredType, LocalDateTime expiredAt, Period couponLifetime, CouponTemplate.CouponStatus couponStatus) {
             this.couponId = couponId;
             this.couponName = couponName;
             this.couponDescription = couponDescription;
@@ -47,6 +48,7 @@ public class CouponTemplateListResponseDto {
             this.expiredType = expiredType;
             this.expiredAt = expiredAt;
             this.couponLifetime = couponLifetime.getDays();
+            this.couponStatus = couponStatus;
         }
     }
 }

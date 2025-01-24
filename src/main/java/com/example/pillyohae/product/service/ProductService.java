@@ -1,6 +1,7 @@
 package com.example.pillyohae.product.service;
 
 
+import com.example.pillyohae.coupon.entity.CouponTemplate;
 import com.example.pillyohae.global.S3.S3Service;
 import com.example.pillyohae.global.dto.UploadFileInfo;
 import com.example.pillyohae.global.exception.CustomResponseStatusException;
@@ -22,6 +23,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,6 +43,7 @@ public class ProductService {
     private final S3Service s3Service;
     private final PersonaService personaService;
     private final EntityManager entityManager;
+    private final RedisTemplate<String,Integer> integerRedisTemplate;
 
     /**
      * 상품 생성

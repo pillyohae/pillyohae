@@ -7,6 +7,7 @@ import com.example.pillyohae.product.entity.type.ProductStatus;
 import com.example.pillyohae.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
+import org.springframework.data.jpa.repository.Lock;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;

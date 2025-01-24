@@ -60,6 +60,13 @@ public class OrderService {
 
         List<Product> purchaseProducts = fetchProducts(requestDto.getProductInfos());
 
+        // 주문 생성할때 재고를 1차적으로 체크한다 결제할때도 체크
+//        purchaseProducts.stream().forEach(product -> {
+//            if (product.getStock() <= 0) {
+//                throw new IllegalArgumentException("Product " + product.getProductName() + " is out of stock.");
+//            }
+//        });
+
         validateProducts(purchaseProducts);
 
         Order order = createOrder(user, purchaseProducts, requestDto.getProductInfos());
