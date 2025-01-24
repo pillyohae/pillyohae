@@ -366,6 +366,12 @@ public class ProductService {
             // S3에 업로드
             UploadFileInfo uploadImageInfo = s3Service.uploadFileFromUrl(aiImageUrl);
 
+            ProductImage positionZeroAiImage = imageStorageRepository.findByProduct_ProductIdAndPosition(productId, 0);
+
+            if (positionZeroAiImage != null) {
+                deleteImage(productId, positionZeroAiImage.getId(), email);
+            }
+
             // 새로 업로드된 이미지를 0번 이미지로 추가
             ProductImage aiImage = new ProductImage(
                 uploadImageInfo.fileUrl(),
@@ -375,6 +381,8 @@ public class ProductService {
 
             imageStorageRepository.save(aiImage);
             log.info("Representative AI image successfully saved for productId: {}", productId);
+        } else {
+            throw new CustomResponseStatusException(ErrorCode.NOT_FOUND_IMAGE_POSITION1);
         }
     }
 
