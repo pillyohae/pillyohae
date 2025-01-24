@@ -148,6 +148,15 @@ public class ProductController {
         return new ResponseEntity<>(uploadFileInfo, HttpStatus.OK);
     }
 
+    @PostMapping("/products/{productId}/images/upload-main-image")
+    public ResponseEntity<UploadFileInfo> uploadMainImage(
+        @PathVariable Long productId,
+        @RequestParam(name = "image") MultipartFile MainImage
+    ) {
+        UploadFileInfo uploadImageToPositionOne = productService.uploadImageToPositionOne(productId, MainImage);
+        return new ResponseEntity<>(uploadImageToPositionOne, HttpStatus.OK);
+    }
+
     /**
      * 이미지 삭제
      *
