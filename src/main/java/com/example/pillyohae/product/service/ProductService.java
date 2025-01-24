@@ -5,7 +5,7 @@ import com.example.pillyohae.global.S3.S3Service;
 import com.example.pillyohae.global.dto.UploadFileInfo;
 import com.example.pillyohae.global.exception.CustomResponseStatusException;
 import com.example.pillyohae.global.exception.code.ErrorCode;
-import com.example.pillyohae.persona.PersonaService;
+import com.example.pillyohae.persona.service.PersonaService;
 import com.example.pillyohae.product.dto.ProductCreateRequestDto;
 import com.example.pillyohae.product.dto.ProductCreateResponseDto;
 import com.example.pillyohae.product.dto.ProductGetResponseDto;
