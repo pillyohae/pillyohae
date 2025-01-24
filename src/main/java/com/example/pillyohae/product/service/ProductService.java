@@ -289,6 +289,8 @@ public class ProductService {
             throw new CustomResponseStatusException(ErrorCode.INVALID_IMAGE_PRODUCT_MATCH);
         }
 
+        imageStorageRepository.deleteImageByIdAndPosition(productId, findImage.getPosition(), imageId);
+
         // position > 1인 경우 자리 재배치 / position <= 1인 경우 자리 재배치 X
         if (findImage.getPosition() > 1) {
             imageStorageRepository.updatePositionsAfterDelete(productId, findImage.getPosition());
