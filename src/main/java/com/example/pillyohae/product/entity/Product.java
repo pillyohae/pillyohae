@@ -1,6 +1,8 @@
 package com.example.pillyohae.product.entity;
 
 import com.example.pillyohae.global.entity.BaseTimeEntity;
+import com.example.pillyohae.global.exception.CustomResponseStatusException;
+import com.example.pillyohae.global.exception.code.ErrorCode;
 import com.example.pillyohae.product.entity.type.ProductStatus;
 import com.example.pillyohae.user.entity.User;
 import jakarta.persistence.*;
@@ -30,6 +32,7 @@ public class Product extends BaseTimeEntity {
 
     private String imageUrl;
 
+    private Integer stock;
 
     @Enumerated(value = EnumType.STRING)
     private ProductStatus status = ProductStatus.SELLING;
@@ -42,13 +45,14 @@ public class Product extends BaseTimeEntity {
 
     private LocalDateTime deletedAt;
 
-    public Product(User user, String productName, String category, String description, String companyName, Long price) {
+    public Product(User user, String productName, String category, String description, String companyName, Long price, Integer stock) {
         this.user = user;
         this.productName = productName;
         this.category = category;
         this.description = description;
         this.companyName = companyName;
         this.price = price;
+        this.stock = stock;
     }
 
     public Product(User user, String productName, String category, String description, String companyName, Long price, ProductStatus status) {
@@ -61,12 +65,13 @@ public class Product extends BaseTimeEntity {
         this.status = status;
     }
 
-    public void updateProduct(String productName, String category, String description, String companyName, Long price) {
+    public void updateProduct(String productName, String category, String description, String companyName, Long price, Integer stock) {
         this.productName = productName;
         this.category = category;
         this.description = description;
         this.companyName = companyName;
         this.price = price;
+        this.stock = stock;
 
     }
 
@@ -98,6 +103,17 @@ public class Product extends BaseTimeEntity {
             return thumbnailUrl;
         }
         return null;
+    }
+
+    public Integer deductStock(Integer quantity) {
+        if (quantity == null || quantity <= 0) {
+            throw new CustomResponseStatusException(ErrorCode.QUANTITY_CANNOTBE_NEGATIVE);
+        }
+        if (this.stock < quantity) {
+            throw new CustomResponseStatusException(ErrorCode.LACK_OF_STOCK);
+        }
+        this.stock -= quantity; // 재고 차감
+        return this.stock; // 차감 후 남은 재고 반환
     }
 
     public Product() {

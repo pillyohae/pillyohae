@@ -62,7 +62,8 @@ public class ProductService {
             savedProduct.getCompanyName(),
             savedProduct.getDescription(),
             savedProduct.getPrice(),
-            savedProduct.getStatus());
+            savedProduct.getStatus(),
+            savedProduct.getStock());
     }
 
     /**
@@ -81,9 +82,14 @@ public class ProductService {
             requestDto.getCategory(),
             requestDto.getDescription(),
             requestDto.getCompanyName(),
-            requestDto.getPrice()
+            requestDto.getPrice(),
+            requestDto.getStock()
 
         );
+
+        if (requestDto.getStock() < 0) {
+            throw new CustomResponseStatusException(ErrorCode.STOCK_CANNOTBE_NEGATIVE);
+        }
 
         Product updatedProduct = productRepository.save(findProduct);
 
@@ -94,7 +100,8 @@ public class ProductService {
             updatedProduct.getDescription(),
             updatedProduct.getCompanyName(),
             updatedProduct.getPrice(),
-            updatedProduct.getStatus()
+            updatedProduct.getStatus(),
+            updatedProduct.getStock()
         );
     }
 
@@ -333,7 +340,7 @@ public class ProductService {
     }
 
     /**
-     * 대표이미지(position = 1) -> AI이미지로 변환 후 position = 1으로 위치 재배치
+     * 대표이미지(position = 1) -> AI이미지로 변환 후 position = 0으로 배치
      *
      * @param productId 상품 id
      * @param email     사용자 이메일
@@ -348,7 +355,7 @@ public class ProductService {
             throw new AccessDeniedException("권한이 없습니다.");
         }
 
-        // 기존 포지션 1 이미지가 있으면 AI 이미지로 교체하고 기존 이미지를 뒤로 밀기
+        // 기존 포지션 1찾기
         ProductImage firstImage = imageStorageRepository.findByProduct_ProductIdAndPosition(productId, 1);
 
         if (firstImage != null) {
