@@ -57,7 +57,7 @@ public class ProductImage {
         this.product = product;
     }
 
-    public ProductImage(String fileUrl, String fileKey, int position, Product findProduct) {
+    public ProductImage(String fileUrl, String fileKey, String contentType, int position, Product findProduct) {
         this.fileUrl = fileUrl;
         this.fileKey = fileKey;
         this.position = 0;
