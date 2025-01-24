@@ -31,7 +31,7 @@ import lombok.NoArgsConstructor;
 })
 public class IssuedCoupon {
 
-    @Id
+    @Id @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @Column(nullable = false)
@@ -56,9 +56,8 @@ public class IssuedCoupon {
     @JoinColumn(name = "user_id")
     private User user;              // 쿠폰 소유 사용자
 
-    public IssuedCoupon(UUID id,LocalDateTime issuedAt, LocalDateTime expiredAt,
+    public IssuedCoupon(LocalDateTime issuedAt, LocalDateTime expiredAt,
         CouponTemplate couponTemplate, User user) {
-        this.id = id;
         this.issuedAt = issuedAt;
         this.expiredAt = expiredAt;
         this.couponTemplate = couponTemplate;

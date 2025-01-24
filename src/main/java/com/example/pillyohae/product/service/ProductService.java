@@ -1,6 +1,7 @@
 package com.example.pillyohae.product.service;
 
 
+import com.example.pillyohae.coupon.entity.CouponTemplate;
 import com.example.pillyohae.global.S3.S3Service;
 import com.example.pillyohae.global.dto.UploadFileInfo;
 import com.example.pillyohae.global.exception.CustomResponseStatusException;
@@ -39,6 +40,7 @@ public class ProductService {
     private final UserService userService;
     private final S3Service s3Service;
     private final PersonaService personaService;
+
 
     /**
      * 상품 생성
