@@ -18,7 +18,6 @@ import com.example.pillyohae.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -74,8 +73,7 @@ public class OrderService {
         applyCouponIfPresent(savedOrder, requestDto.getCouponIds());
 
         OrderDetailResponseDto.OrderInfoDto orderInfoDto = new OrderDetailResponseDto.OrderInfoDto(order.getId(),
-                order.getStatus(),order.getOrderName(), order.getTotalPrice(),order.getPaidAt(),
-                order.getImageUrl(),order.getShippingAddress());
+                order.getStatus(),order.getOrderName(), order.getTotalPrice(),order.getPaidAt(),order.getShippingAddress());
 
         List<OrderDetailResponseDto.OrderProductDto> orderProductDto = orderProducts.stream().map(orderProduct ->
                 new OrderDetailResponseDto.OrderProductDto(
@@ -83,7 +81,7 @@ public class OrderService {
                         orderProduct.getProductName(),
                         orderProduct.getQuantity(),
                         orderProduct.getPrice(),
-                        orderProduct.getStatus()
+                        orderProduct.getStatus(),orderProduct.getImageUrl()
                 )).toList();
 
         return new OrderDetailResponseDto(orderInfoDto, orderProductDto);
@@ -140,6 +138,12 @@ public class OrderService {
 
     }
 
+    /**
+     * seller의 order 상세 내역
+     * @param email
+     * @param orderId
+     * @return
+     */
     @Transactional
     public OrderDetailSellerResponseDto findOrderDetailSeller(String email, UUID orderId) {
 
@@ -152,7 +156,7 @@ public class OrderService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Order is in pending");
         }
 
-        OrderDetailSellerResponseDto.OrderProductDto productInfo = orderRepository.findOrderDetailSellerProductDtoByOrderId(orderId,user.getId());
+        List<OrderDetailSellerResponseDto.OrderProductDto> productInfo = orderRepository.findOrderDetailSellerProductDtoByOrderId(orderId,user.getId());
 
         OrderDetailSellerResponseDto.OrderInfoDto orderInfoDto = orderRepository.findOrderDetailSellerInfoDtoByOrderId(orderId);
 
@@ -208,12 +212,12 @@ public class OrderService {
 
         OrderDetailResponseDto.OrderInfoDto orderInfoDto = new OrderDetailResponseDto.OrderInfoDto(cancelOrder.getId()
                 ,cancelOrder.getStatus(),cancelOrder.getOrderName(),cancelOrder.getTotalPrice()
-                ,cancelOrder.getPaidAt(),cancelOrder.getImageUrl(),cancelOrder.getShippingAddress());
+                ,cancelOrder.getPaidAt(),cancelOrder.getShippingAddress());
 
 
 
         List<OrderDetailResponseDto.OrderProductDto> orderProductDtos = cancelOrder.getOrderProducts().stream()
-                .map(orderProduct -> new OrderDetailResponseDto.OrderProductDto(orderProduct.getId(), orderProduct.getProductName(),orderProduct.getQuantity(), orderProduct.getPrice(),orderProduct.getStatus())).toList();
+                .map(orderProduct -> new OrderDetailResponseDto.OrderProductDto(orderProduct.getId(), orderProduct.getProductName(),orderProduct.getQuantity(), orderProduct.getPrice(),orderProduct.getStatus(), orderProduct.getImageUrl())).toList();
 
         return new OrderDetailResponseDto(orderInfoDto,orderProductDtos);
     }
@@ -242,12 +246,12 @@ public class OrderService {
 
         OrderDetailResponseDto.OrderInfoDto orderInfoDto = new OrderDetailResponseDto.OrderInfoDto(cancelOrder.getId()
                 ,cancelOrder.getStatus(),cancelOrder.getOrderName(),cancelOrder.getTotalPrice()
-                ,cancelOrder.getPaidAt(),cancelOrder.getImageUrl(),cancelOrder.getShippingAddress());
+                ,cancelOrder.getPaidAt(),cancelOrder.getShippingAddress());
 
 
 
         List<OrderDetailResponseDto.OrderProductDto> orderProductDtos = cancelOrder.getOrderProducts().stream()
-                .map(orderProduct -> new OrderDetailResponseDto.OrderProductDto(orderProduct.getId(), orderProduct.getProductName(),orderProduct.getQuantity(), orderProduct.getPrice(),orderProduct.getStatus())).toList();
+                .map(orderProduct -> new OrderDetailResponseDto.OrderProductDto(orderProduct.getId(), orderProduct.getProductName(),orderProduct.getQuantity(), orderProduct.getPrice(),orderProduct.getStatus(),orderProduct.getImageUrl())).toList();
 
         return new OrderDetailResponseDto(orderInfoDto,orderProductDtos);
     }
@@ -320,6 +324,7 @@ public class OrderService {
             imageUrl = product.getImages().get(0).getFileUrl();
         }
         return new OrderProduct(
+                product.getProductName(),
                 productInfo.getQuantity(),
                 product.getPrice(),
                 product.getProductId(),

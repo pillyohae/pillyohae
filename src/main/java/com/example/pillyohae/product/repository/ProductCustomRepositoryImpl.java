@@ -1,7 +1,5 @@
 package com.example.pillyohae.product.repository;
 
-import static com.example.pillyohae.product.entity.QProduct.product;
-
 import com.example.pillyohae.global.exception.CustomResponseStatusException;
 import com.example.pillyohae.global.exception.code.ErrorCode;
 import com.example.pillyohae.product.entity.Product;
@@ -9,31 +7,30 @@ import com.example.pillyohae.product.entity.QProduct;
 import com.example.pillyohae.product.entity.type.ProductStatus;
 import com.example.pillyohae.recommendation.dto.RecommendationKeywordDto;
 import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.QueryFactory;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.ComparableExpressionBase;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import java.util.ArrayList;
-import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.example.pillyohae.product.entity.QProduct.product;
+
 @Repository
 public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 
     private final JPAQueryFactory jpaQueryFactory;
-    private final QueryFactory queryFactory;
 
-    public ProductCustomRepositoryImpl(JPAQueryFactory jpaQueryFactory, QueryFactory queryFactory) {
-
+    public ProductCustomRepositoryImpl(JPAQueryFactory jpaQueryFactory) {
         this.jpaQueryFactory = jpaQueryFactory;
-        this.queryFactory = queryFactory;
     }
 
     /**
@@ -114,7 +111,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
             boolean isAscending = sortOrder.isAscending();
             String property = sortOrder.getProperty();
 
-            // 동적으로 정렬 기준 생성
+            // 동적으로 정렬 기준 생성 // 정렬 필드와 방향을 기반으로 OrderSpecifier 생성
             ComparableExpressionBase<?> fieldPath = getComparableFieldPath(property, product);
             Order order = isAscending ? Order.ASC : Order.DESC;
 

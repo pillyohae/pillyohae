@@ -184,5 +184,21 @@ public class ProductController {
         return new ResponseEntity<>(updateImage, HttpStatus.OK);
     }
 
+    /**
+     * AI이미지 생성 및 S3 업로드, 위치 조정
+     *
+     * @param userDetails 사용자 정보
+     * @param productId   상품 id
+     * @return X
+     */
+    @PostMapping("/products/{productId}/ai-image")
+    public ResponseEntity<String> RepresentativeAiImage(
+        @AuthenticationPrincipal UserDetails userDetails,
+        @PathVariable Long productId
+    ) {
+        productService.setRepresentativeAiImage(productId, userDetails.getUsername());
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
 
 }

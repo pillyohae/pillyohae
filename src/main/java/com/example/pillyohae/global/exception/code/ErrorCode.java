@@ -32,6 +32,7 @@ public enum ErrorCode {
     NOT_FOUND_File(HttpStatus.NOT_FOUND, "File을 찾을 수 없습니다"),
     NOT_FOUND_PRODUCT(HttpStatus.NOT_FOUND, "Product를 찾을 수 없습니다"),
     NOT_FOUND_PROPERTY(HttpStatus.NOT_FOUND, "정렬기준을 확인해주세요"),
+    NOT_FOUND_IMAGE_POSITION1(HttpStatus.NOT_FOUND, "AI이미지로 변환할 대표이미지가 없습니다."),
     /**
      * Image
      */
@@ -42,9 +43,17 @@ public enum ErrorCode {
     BAD_POSITION(HttpStatus.BAD_REQUEST, "위치 값은 0보다 작을 수 없습니다."),
 
     /**
+     * BadRequest
+     */
+    STOCK_CANNOTBE_NEGATIVE(HttpStatus.BAD_REQUEST, "재고는 0보다 작을 수 없습니다."),
+    QUANTITY_CANNOTBE_NEGATIVE(HttpStatus.BAD_REQUEST, "주문량을 올바르게 입력해주세요."),
+    LACK_OF_STOCK(HttpStatus.BAD_REQUEST, "제품의 재고가 부족합니다"),
+
+    /**
      * unAuthorized
      */
     NOT_ALLOW_USER(HttpStatus.UNAUTHORIZED, "USER 권한은 사용할 수 없는 기능입니다"),
+    FORBIDDEN_ADMIN_ROLE_REQUIRED(HttpStatus.UNAUTHORIZED, "ADMIN 권한만 사용할 수 있는 기능입니다"),
 
     /**
      * Jwt error

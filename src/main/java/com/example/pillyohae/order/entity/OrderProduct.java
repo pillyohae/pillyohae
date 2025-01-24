@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
+import org.stringtemplate.v4.ST;
 
 @Getter
 @Entity
@@ -22,7 +23,7 @@ public class OrderProduct {
 
     // snapshot 결제 완료후 저장
     @Column(nullable = false)
-    private String productName = "초기값";
+    private String productName;
 
     // snapshot 결제 완료후 저장
     @Positive
@@ -53,7 +54,8 @@ public class OrderProduct {
     private String imageUrl;
 
     // 결제 하기전에 상품 갯수 및 식별정보 및 주문 식별 정보만 설정
-    public OrderProduct(Integer quantity, Long price , Long productId, User seller , String imageUrl, Order order) {
+    public OrderProduct(String productName, Integer quantity, Long price , Long productId, User seller , String imageUrl, Order order) {
+        this.productName = productName;
         this.quantity = quantity;
         this.price = price;
         this.productId = productId;

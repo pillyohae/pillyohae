@@ -59,7 +59,17 @@ public class OrderQueryRepositoryImpl implements OrderQueryRepository {
 
     @Override
     public Page<OrderSellerInfoDto> findSellerOrders(Long userId, LocalDateTime startAt, LocalDateTime endAt, Pageable pageable) {
-        List<OrderSellerInfoDto> content = queryFactory.select(new QOrderSellerInfoDto(order.id, orderProduct.id ,orderProduct.status, order.orderName, order.paidAt, orderProduct.imageUrl, orderProduct.price, orderProduct.quantity))
+        List<OrderSellerInfoDto> content = queryFactory.select(
+                        new QOrderSellerInfoDto(
+                                orderProduct.id,
+                                orderProduct.status,
+                                order.orderName,
+                                order.paidAt,
+                                order.shippingAddress,
+                                orderProduct.imageUrl,
+                                orderProduct.price,
+                                orderProduct.quantity
+                        ))
                 .from(orderProduct)
                 .leftJoin(orderProduct.seller)
                 .leftJoin(orderProduct.order, order)
@@ -73,8 +83,9 @@ public class OrderQueryRepositoryImpl implements OrderQueryRepository {
         long total = queryFactory
                 .select(orderProduct.count())
                 .from(orderProduct)
-                .where(dateEq(startAt, endAt),
-                        orderProduct.seller.id.eq(userId))
+                .leftJoin(orderProduct.seller)
+                .leftJoin(orderProduct.order, order)
+                .where(dateEq(startAt, endAt), orderProduct.seller.id.eq(userId), order.paidAt.isNotNull())
                 .fetchOne();
 
         return new PageImpl<>(content, pageable, total);
@@ -83,16 +94,17 @@ public class OrderQueryRepositoryImpl implements OrderQueryRepository {
     // orderitem에 저장된 내용을 가져옴
     @Override
     public List<OrderDetailResponseDto.OrderProductDto> findOrderProductsByOrderId(UUID orderId) {
-        return queryFactory.select(new QOrderDetailResponseDto_OrderProductDto(orderProduct.id, orderProduct.productName, orderProduct.quantity, orderProduct.price, orderProduct.status))
+        return queryFactory.select(new QOrderDetailResponseDto_OrderProductDto(orderProduct.id, orderProduct.productName, orderProduct.quantity, orderProduct.price, orderProduct.status, orderProduct.imageUrl))
                 .from(orderProduct)
                 .where(orderProduct.order.id.eq(orderId))
                 .fetch();
+
 
     }
 
     @Override
     public OrderDetailResponseDto.OrderInfoDto findOrderDetailOrderInfoDtoByOrderId(UUID orderId) {
-        return queryFactory.select(new QOrderDetailResponseDto_OrderInfoDto(order.id, order.status, order.orderName, order.totalPrice, order.paidAt, order.imageUrl, order.shippingAddress))
+        return queryFactory.select(new QOrderDetailResponseDto_OrderInfoDto(order.id, order.status, order.orderName, order.totalPrice, order.paidAt, order.shippingAddress))
                 .from(order)
                 .where(order.id.eq(orderId))
                 .fetchOne();
@@ -106,18 +118,18 @@ public class OrderQueryRepositoryImpl implements OrderQueryRepository {
                 .from(orderProduct)
                 .leftJoin(orderProduct.order, order)
                 .where(order.id.eq(orderId))
-                .fetchOne();
+                .fetchFirst();
 
     }
 
     @Override
-    public OrderDetailSellerResponseDto.OrderProductDto findOrderDetailSellerProductDtoByOrderId(UUID orderId, Long userId) {
+    public List<OrderDetailSellerResponseDto.OrderProductDto> findOrderDetailSellerProductDtoByOrderId(UUID orderId, Long userId) {
         return queryFactory.select(new QOrderDetailSellerResponseDto_OrderProductDto(orderProduct.id,orderProduct.productName,orderProduct.quantity,orderProduct.price,orderProduct.status))
                 .from(orderProduct)
                 .leftJoin(orderProduct.order, order)
                 .leftJoin(orderProduct.seller, user)
                 .where(order.id.eq(orderId), user.id.eq(userId))
-                .fetchOne();
+                .fetch();
     }
 
     private BooleanExpression dateEq(LocalDateTime startAt, LocalDateTime endAt) {

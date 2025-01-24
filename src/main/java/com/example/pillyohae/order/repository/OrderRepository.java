@@ -12,6 +12,6 @@ import java.util.UUID;
 
 public interface OrderRepository extends JpaRepository<Order, UUID>, OrderQueryRepository {
 
-    @Query("select o from Order o join fetch OrderProduct op where o.id = :orderId")
+    @Query("select o from Order o join fetch o.orderProducts op where o.id = :orderId")
     Optional<Order> findByOrderIdWithOrderProducts(UUID orderId);
 }

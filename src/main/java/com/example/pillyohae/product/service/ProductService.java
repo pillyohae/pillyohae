@@ -1,12 +1,15 @@
 package com.example.pillyohae.product.service;
 
+
 import com.example.pillyohae.global.S3.S3Service;
 import com.example.pillyohae.global.dto.UploadFileInfo;
 import com.example.pillyohae.global.exception.CustomResponseStatusException;
 import com.example.pillyohae.global.exception.code.ErrorCode;
+import com.example.pillyohae.persona.PersonaService;
 import com.example.pillyohae.product.dto.ProductCreateRequestDto;
 import com.example.pillyohae.product.dto.ProductCreateResponseDto;
 import com.example.pillyohae.product.dto.ProductGetResponseDto;
+import com.example.pillyohae.product.dto.ProductGetResponseDto.ImageResponseDto;
 import com.example.pillyohae.product.dto.ProductSearchResponseDto;
 import com.example.pillyohae.product.dto.ProductUpdateRequestDto;
 import com.example.pillyohae.product.dto.ProductUpdateResponseDto;
@@ -20,9 +23,10 @@ import com.example.pillyohae.product.repository.ProductRepository;
 import com.example.pillyohae.recommendation.dto.RecommendationKeywordDto;
 import com.example.pillyohae.user.entity.User;
 import com.example.pillyohae.user.service.UserService;
+import jakarta.persistence.EntityManager;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.annotation.Cacheable;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -34,12 +38,15 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ProductService {
 
     private final ProductRepository productRepository;
     private final ImageStorageRepository imageStorageRepository;
     private final UserService userService;
     private final S3Service s3Service;
+    private final PersonaService personaService;
+    private final EntityManager entityManager;
 
     /**
      * 상품 생성
@@ -49,7 +56,8 @@ public class ProductService {
      * @return 정상처리 시 ProductCreateResponseDto
      */
     @Transactional
-    public ProductCreateResponseDto createProduct(ProductCreateRequestDto requestDto, String email) {
+    public ProductCreateResponseDto createProduct(ProductCreateRequestDto requestDto,
+        String email) {
 
         User findUser = userService.findByEmail(email);
 
@@ -62,7 +70,8 @@ public class ProductService {
             savedProduct.getCompanyName(),
             savedProduct.getDescription(),
             savedProduct.getPrice(),
-            savedProduct.getStatus());
+            savedProduct.getStatus(),
+            savedProduct.getStock());
     }
 
     /**
@@ -73,7 +82,8 @@ public class ProductService {
      * @return 정상 처리 시 ProductUpdateResponseDto
      */
     @Transactional
-    public ProductUpdateResponseDto updateProduct(Long productId, ProductUpdateRequestDto requestDto) {
+    public ProductUpdateResponseDto updateProduct(Long productId,
+        ProductUpdateRequestDto requestDto) {
 
         Product findProduct = findById(productId);
         findProduct.updateProduct(
@@ -81,9 +91,14 @@ public class ProductService {
             requestDto.getCategory(),
             requestDto.getDescription(),
             requestDto.getCompanyName(),
-            requestDto.getPrice()
+            requestDto.getPrice(),
+            requestDto.getStock()
 
         );
+
+        if (requestDto.getStock() < 0) {
+            throw new CustomResponseStatusException(ErrorCode.STOCK_CANNOTBE_NEGATIVE);
+        }
 
         Product updatedProduct = productRepository.save(findProduct);
 
@@ -94,7 +109,8 @@ public class ProductService {
             updatedProduct.getDescription(),
             updatedProduct.getCompanyName(),
             updatedProduct.getPrice(),
-            updatedProduct.getStatus()
+            updatedProduct.getStatus(),
+            updatedProduct.getStock()
         );
     }
 
@@ -104,15 +120,17 @@ public class ProductService {
      * @param productId 상품 id
      * @return 정상 처리 시 ProductGetResponseDto
      */
-
     @Transactional
     public ProductGetResponseDto getProduct(Long productId) {
 
         Product findProduct = findById(productId);
 
-        List<String> imageUrls = findProduct.getImages()
+        List<ImageResponseDto> images = findProduct.getImages()
             .stream()
-            .map(ProductImage::getFileUrl)
+            .map(image -> new ImageResponseDto(
+                image.getFileUrl(),
+                image.getPosition()
+            ))
             .toList();
 
         return new ProductGetResponseDto(
@@ -123,7 +141,7 @@ public class ProductService {
             findProduct.getCompanyName(),
             findProduct.getPrice(),
             findProduct.getStatus(),
-            imageUrls
+            images
         );
     }
 
@@ -161,22 +179,26 @@ public class ProductService {
      * @return 정상 처리 시 Page<ProductSearchResponseDto> (페이지로 반환된 dto)
      */
     @Transactional
-    public Page<ProductSearchResponseDto> searchAndConvertProducts(String productName, String companyName, String category, int page, int size, String sortBy, Boolean isAsc) {
+    public Page<ProductSearchResponseDto> searchAndConvertProducts(String productName,
+        String companyName, String category, int page, int size, String sortBy, Boolean isAsc) {
 
         //정렬 방향과 속성 지정
         Sort.Direction direction = isAsc ? Sort.Direction.ASC : Sort.Direction.DESC;
         Sort sort = Sort.by(direction, sortBy);
         //페이징 객체 생성
         Pageable pageable = PageRequest.of(page, size, sort);
-        Page<Product> productsPage = productRepository.getAllProduct(productName, companyName, category, pageable);
+        Page<Product> productsPage = productRepository.getAllProduct(productName, companyName,
+            category, pageable);
 
+        // Response로 변환
         return productsPage.map(product -> new ProductSearchResponseDto(
             product.getProductId(),
             product.getProductName(),
             product.getCompanyName(),
             product.getCategory(),
             product.getPrice(),
-            product.getStatus()
+            product.getStatus(),
+            product.getThumbnailUrl() // 썸네일 생성 메서드 호출
         ));
     }
 
@@ -191,7 +213,8 @@ public class ProductService {
      * @return 정상 처리 시 Page<ProductSearchResponseDto> (페이지로 반환된 dto)
      */
     @Transactional
-    public Page<ProductSearchResponseDto> findSellersProducts(String email, int page, int size, String sortBy, Boolean isAsc) {
+    public Page<ProductSearchResponseDto> findSellersProducts(String email, int page, int size,
+        String sortBy, Boolean isAsc) {
 
         User user = userService.findByEmail(email);
 
@@ -202,17 +225,18 @@ public class ProductService {
         Pageable pageable = PageRequest.of(page, size, sort);
         Page<Product> productsPage = productRepository.findProductsByUserId(user.getId(), pageable);
 
-        return productsPage
-            .map(product -> new ProductSearchResponseDto(
-                product.getProductId(),
-                product.getProductName(),
-                product.getCompanyName(),
-                product.getCategory(),
-                product.getPrice(),
-                product.getStatus()
-            ));
-
+        // Response로 변환
+        return productsPage.map(product -> new ProductSearchResponseDto(
+            product.getProductId(),
+            product.getProductName(),
+            product.getCompanyName(),
+            product.getCategory(),
+            product.getPrice(),
+            product.getStatus(),
+            product.getThumbnailUrl() // 썸네일 생성 메서드 호출
+        ));
     }
+
 
     /**
      * 이미지 업로드
@@ -227,7 +251,8 @@ public class ProductService {
         // Product 조회
         Product findProduct = findById(productId);
 
-        int currentImageCount = imageStorageRepository.countByProduct_ProductId(findProduct.getProductId());
+        int currentImageCount = imageStorageRepository.countByProduct_ProductId(
+            findProduct.getProductId());
         if (currentImageCount >= 5) {
             throw new CustomResponseStatusException(ErrorCode.CANNOT_OVERLOAD_FILE);
         }
@@ -235,14 +260,13 @@ public class ProductService {
         // 파일 업로드 로직 호출
         UploadFileInfo imageInfo = s3Service.uploadFile(image);
 
-//        // 기존 이미지 리스트에서 position 설정
-//        Integer nextPosition = findProduct.getImages().size() + 1;
-
-        Integer nextPosition = imageStorageRepository.findMaxPositionByProductId(findProduct.getProductId())
-            .orElse(0) + 1;
+        Integer nextPosition =
+            imageStorageRepository.findMaxPositionByProductId(findProduct.getProductId())
+                .orElse(0) + 1;
 
         // FileStorage 객체 생성
-        ProductImage saveImage = new ProductImage(imageInfo.fileUrl(), imageInfo.fileKey(), image.getContentType(), image.getSize(), nextPosition, findProduct);
+        ProductImage saveImage = new ProductImage(imageInfo.fileUrl(), imageInfo.fileKey(),
+            image.getContentType(), image.getSize(), nextPosition, findProduct);
 
         // DB에 저장
         imageStorageRepository.save(saveImage);
@@ -293,10 +317,10 @@ public class ProductService {
      * @return UpdateImageResponseDto
      */
     @Transactional
-    public UpdateImageResponseDto updateImages(Long productId, UpdateImageRequestDto requestDto, String email) {
+    public UpdateImageResponseDto updateImages(Long productId, UpdateImageRequestDto requestDto,
+        String email) {
 
         Product findProduct = findById(productId);
-
         User user = userService.findByEmail(email);
 
         if (!findProduct.getUser().getId().equals(user.getId())) {
@@ -314,26 +338,75 @@ public class ProductService {
         Integer updatedPosition = requestDto.getPosition();
 
         // 기존 포지션 < 바뀔 포지션
-        if (originalPosition < updatedPosition) { // 효율이 떨어지는 코드, 이후 래팩토링필요
+        if (originalPosition < updatedPosition) {
 
             for (ProductImage targetPosition : images) {
-                if (originalPosition < targetPosition.getPosition() && targetPosition.getPosition() <= updatedPosition) {
+                if (originalPosition < targetPosition.getPosition()
+                    && targetPosition.getPosition() <= updatedPosition) {
                     targetPosition.downPosition();
                 }
             }
         } else {
             for (ProductImage targetPosition : images) {
-                if (updatedPosition <= targetPosition.getPosition() && targetPosition.getPosition() < originalPosition) {
+                if (updatedPosition <= targetPosition.getPosition()
+                    && targetPosition.getPosition() < originalPosition) {
                     targetPosition.upPosition();
                 }
             }
         }
-
         findProductImage.updatePosition(requestDto.getPosition());
 
-        imageStorageRepository.save(findProductImage);
-
         return UpdateImageResponseDto.toDto(findProductImage);
+    }
+
+    /**
+     * 대표이미지(position = 1) -> AI이미지로 변환 후 position = 0으로 배치
+     *
+     * @param productId 상품 id
+     * @param email     사용자 이메일
+     */
+    @Transactional
+    public void setRepresentativeAiImage(Long productId, String email) {
+
+        Product findProduct = findById(productId);
+        User user = userService.findByEmail(email);
+
+        if (!findProduct.getUser().getId().equals(user.getId())) {
+            throw new AccessDeniedException("권한이 없습니다.");
+        }
+
+        // 기존 포지션 1찾기
+        ProductImage firstImage = imageStorageRepository.findByProduct_ProductIdAndPosition(
+            productId, 1);
+
+        if (firstImage != null) {
+
+            // PersonaService를 통해 AI 이미지 생성
+            String aiImageUrl = personaService.generatePersonaFromProduct(firstImage.getFileUrl())
+                .getUrl();
+
+            // S3에 업로드
+            UploadFileInfo uploadImageInfo = s3Service.uploadFileFromUrl(aiImageUrl);
+
+            ProductImage positionZeroAiImage = imageStorageRepository.findByProduct_ProductIdAndPosition(
+                productId, 0);
+
+            if (positionZeroAiImage != null) {
+                deleteImage(productId, positionZeroAiImage.getId(), email);
+            }
+
+            // 새로 업로드된 이미지를 0번 이미지로 추가
+            ProductImage aiImage = new ProductImage(
+                uploadImageInfo.fileUrl(),
+                uploadImageInfo.fileKey(),
+                0,
+                findProduct);
+
+            imageStorageRepository.save(aiImage);
+            log.info("Representative AI image successfully saved for productId: {}", productId);
+        } else {
+            throw new CustomResponseStatusException(ErrorCode.NOT_FOUND_IMAGE_POSITION1);
+        }
     }
 
     public Product findById(Long productId) {
@@ -341,6 +414,7 @@ public class ProductService {
             .filter(product -> product.getStatus() != ProductStatus.DELETED)
             .orElseThrow(() -> new CustomResponseStatusException(ErrorCode.NOT_FOUND_PRODUCT));
     }
+
 
     /**
      * 추천 상품 조회
@@ -351,5 +425,7 @@ public class ProductService {
     public List<Product> findByNameLike(RecommendationKeywordDto[] recommendations) {
         return productRepository.findProductsByNameLike(recommendations);
     }
+
+
 }
 
