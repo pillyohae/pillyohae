@@ -48,8 +48,7 @@ public class ProductService {
      * @return 정상처리 시 ProductCreateResponseDto
      */
     @Transactional
-    public ProductCreateResponseDto createProduct(ProductCreateRequestDto requestDto,
-                                                  String email) {
+    public ProductCreateResponseDto createProduct(ProductCreateRequestDto requestDto, String email) {
 
         User findUser = userService.findByEmail(email);
 
@@ -74,8 +73,7 @@ public class ProductService {
      * @return 정상 처리 시 ProductUpdateResponseDto
      */
     @Transactional
-    public ProductUpdateResponseDto updateProduct(Long productId,
-                                                  ProductUpdateRequestDto requestDto) {
+    public ProductUpdateResponseDto updateProduct(Long productId, ProductUpdateRequestDto requestDto) {
 
         Product findProduct = findById(productId);
         findProduct.updateProduct(
@@ -171,8 +169,7 @@ public class ProductService {
      * @return 정상 처리 시 Page<ProductSearchResponseDto> (페이지로 반환된 dto)
      */
     @Transactional
-    public Page<ProductSearchResponseDto> searchAndConvertProducts(String productName,
-                                                                   String companyName, String category, int page, int size, String sortBy, Boolean isAsc) {
+    public Page<ProductSearchResponseDto> searchAndConvertProducts(String productName, String companyName, String category, int page, int size, String sortBy, Boolean isAsc) {
 
         //정렬 방향과 속성 지정
         Sort.Direction direction = isAsc ? Sort.Direction.ASC : Sort.Direction.DESC;
@@ -205,8 +202,7 @@ public class ProductService {
      * @return 정상 처리 시 Page<ProductSearchResponseDto> (페이지로 반환된 dto)
      */
     @Transactional
-    public Page<ProductSearchResponseDto> findSellersProducts(String email, int page, int size,
-                                                              String sortBy, Boolean isAsc) {
+    public Page<ProductSearchResponseDto> findSellersProducts(String email, int page, int size, String sortBy, Boolean isAsc) {
 
         User user = userService.findByEmail(email);
 
@@ -309,8 +305,7 @@ public class ProductService {
      * @return UpdateImageResponseDto
      */
     @Transactional
-    public UpdateImageResponseDto updateImages(Long productId, UpdateImageRequestDto requestDto,
-                                               String email) {
+    public UpdateImageResponseDto updateImages(Long productId, UpdateImageRequestDto requestDto, String email) {
 
         Product findProduct = findById(productId);
         User user = userService.findByEmail(email);
