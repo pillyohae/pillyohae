@@ -6,7 +6,15 @@ import com.example.pillyohae.global.dto.UploadFileInfo;
 import com.example.pillyohae.global.exception.CustomResponseStatusException;
 import com.example.pillyohae.global.exception.code.ErrorCode;
 import com.example.pillyohae.persona.PersonaService;
-import com.example.pillyohae.product.dto.*;
+import com.example.pillyohae.product.dto.ProductCreateRequestDto;
+import com.example.pillyohae.product.dto.ProductCreateResponseDto;
+import com.example.pillyohae.product.dto.ProductGetResponseDto;
+import com.example.pillyohae.product.dto.ProductGetResponseDto.ImageResponseDto;
+import com.example.pillyohae.product.dto.ProductSearchResponseDto;
+import com.example.pillyohae.product.dto.ProductUpdateRequestDto;
+import com.example.pillyohae.product.dto.ProductUpdateResponseDto;
+import com.example.pillyohae.product.dto.UpdateImageRequestDto;
+import com.example.pillyohae.product.dto.UpdateImageResponseDto;
 import com.example.pillyohae.product.entity.Product;
 import com.example.pillyohae.product.entity.ProductImage;
 import com.example.pillyohae.product.entity.type.ProductStatus;
@@ -16,6 +24,7 @@ import com.example.pillyohae.recommendation.dto.RecommendationKeywordDto;
 import com.example.pillyohae.user.entity.User;
 import com.example.pillyohae.user.service.UserService;
 import jakarta.persistence.EntityManager;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -26,8 +35,6 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -49,7 +56,8 @@ public class ProductService {
      * @return 정상처리 시 ProductCreateResponseDto
      */
     @Transactional
-    public ProductCreateResponseDto createProduct(ProductCreateRequestDto requestDto, String email) {
+    public ProductCreateResponseDto createProduct(ProductCreateRequestDto requestDto,
+        String email) {
 
         User findUser = userService.findByEmail(email);
 
@@ -74,7 +82,8 @@ public class ProductService {
      * @return 정상 처리 시 ProductUpdateResponseDto
      */
     @Transactional
-    public ProductUpdateResponseDto updateProduct(Long productId, ProductUpdateRequestDto requestDto) {
+    public ProductUpdateResponseDto updateProduct(Long productId,
+        ProductUpdateRequestDto requestDto) {
 
         Product findProduct = findById(productId);
         findProduct.updateProduct(
@@ -116,9 +125,12 @@ public class ProductService {
 
         Product findProduct = findById(productId);
 
-        List<String> imageUrls = findProduct.getImages()
+        List<ImageResponseDto> images = findProduct.getImages()
             .stream()
-            .map(ProductImage::getFileUrl)
+            .map(image -> new ImageResponseDto(
+                image.getFileUrl(),
+                image.getPosition()
+            ))
             .toList();
 
         return new ProductGetResponseDto(
@@ -129,7 +141,7 @@ public class ProductService {
             findProduct.getCompanyName(),
             findProduct.getPrice(),
             findProduct.getStatus(),
-            imageUrls
+            images
         );
     }
 
@@ -167,14 +179,16 @@ public class ProductService {
      * @return 정상 처리 시 Page<ProductSearchResponseDto> (페이지로 반환된 dto)
      */
     @Transactional
-    public Page<ProductSearchResponseDto> searchAndConvertProducts(String productName, String companyName, String category, int page, int size, String sortBy, Boolean isAsc) {
+    public Page<ProductSearchResponseDto> searchAndConvertProducts(String productName,
+        String companyName, String category, int page, int size, String sortBy, Boolean isAsc) {
 
         //정렬 방향과 속성 지정
         Sort.Direction direction = isAsc ? Sort.Direction.ASC : Sort.Direction.DESC;
         Sort sort = Sort.by(direction, sortBy);
         //페이징 객체 생성
         Pageable pageable = PageRequest.of(page, size, sort);
-        Page<Product> productsPage = productRepository.getAllProduct(productName, companyName, category, pageable);
+        Page<Product> productsPage = productRepository.getAllProduct(productName, companyName,
+            category, pageable);
 
         // Response로 변환
         return productsPage.map(product -> new ProductSearchResponseDto(
@@ -199,7 +213,8 @@ public class ProductService {
      * @return 정상 처리 시 Page<ProductSearchResponseDto> (페이지로 반환된 dto)
      */
     @Transactional
-    public Page<ProductSearchResponseDto> findSellersProducts(String email, int page, int size, String sortBy, Boolean isAsc) {
+    public Page<ProductSearchResponseDto> findSellersProducts(String email, int page, int size,
+        String sortBy, Boolean isAsc) {
 
         User user = userService.findByEmail(email);
 
@@ -236,7 +251,8 @@ public class ProductService {
         // Product 조회
         Product findProduct = findById(productId);
 
-        int currentImageCount = imageStorageRepository.countByProduct_ProductId(findProduct.getProductId());
+        int currentImageCount = imageStorageRepository.countByProduct_ProductId(
+            findProduct.getProductId());
         if (currentImageCount >= 5) {
             throw new CustomResponseStatusException(ErrorCode.CANNOT_OVERLOAD_FILE);
         }
@@ -244,12 +260,13 @@ public class ProductService {
         // 파일 업로드 로직 호출
         UploadFileInfo imageInfo = s3Service.uploadFile(image);
 
-        Integer nextPosition = imageStorageRepository.findMaxPositionByProductId(findProduct.getProductId())
-            .orElse(0) + 1;
+        Integer nextPosition =
+            imageStorageRepository.findMaxPositionByProductId(findProduct.getProductId())
+                .orElse(0) + 1;
 
         // FileStorage 객체 생성
-        ProductImage saveImage = new ProductImage(imageInfo.fileUrl(), imageInfo.fileKey(), image.getContentType(), image.getSize(), nextPosition, findProduct);
-
+        ProductImage saveImage = new ProductImage(imageInfo.fileUrl(), imageInfo.fileKey(),
+            image.getContentType(), image.getSize(), nextPosition, findProduct);
 
         // DB에 저장
         imageStorageRepository.save(saveImage);
@@ -300,7 +317,8 @@ public class ProductService {
      * @return UpdateImageResponseDto
      */
     @Transactional
-    public UpdateImageResponseDto updateImages(Long productId, UpdateImageRequestDto requestDto, String email) {
+    public UpdateImageResponseDto updateImages(Long productId, UpdateImageRequestDto requestDto,
+        String email) {
 
         Product findProduct = findById(productId);
         User user = userService.findByEmail(email);
@@ -323,13 +341,15 @@ public class ProductService {
         if (originalPosition < updatedPosition) {
 
             for (ProductImage targetPosition : images) {
-                if (originalPosition < targetPosition.getPosition() && targetPosition.getPosition() <= updatedPosition) {
+                if (originalPosition < targetPosition.getPosition()
+                    && targetPosition.getPosition() <= updatedPosition) {
                     targetPosition.downPosition();
                 }
             }
         } else {
             for (ProductImage targetPosition : images) {
-                if (updatedPosition <= targetPosition.getPosition() && targetPosition.getPosition() < originalPosition) {
+                if (updatedPosition <= targetPosition.getPosition()
+                    && targetPosition.getPosition() < originalPosition) {
                     targetPosition.upPosition();
                 }
             }
@@ -356,17 +376,20 @@ public class ProductService {
         }
 
         // 기존 포지션 1찾기
-        ProductImage firstImage = imageStorageRepository.findByProduct_ProductIdAndPosition(productId, 1);
+        ProductImage firstImage = imageStorageRepository.findByProduct_ProductIdAndPosition(
+            productId, 1);
 
         if (firstImage != null) {
 
             // PersonaService를 통해 AI 이미지 생성
-            String aiImageUrl = personaService.generatePersonaFromProduct(firstImage.getFileUrl()).getUrl();
+            String aiImageUrl = personaService.generatePersonaFromProduct(firstImage.getFileUrl())
+                .getUrl();
 
             // S3에 업로드
             UploadFileInfo uploadImageInfo = s3Service.uploadFileFromUrl(aiImageUrl);
 
-            ProductImage positionZeroAiImage = imageStorageRepository.findByProduct_ProductIdAndPosition(productId, 0);
+            ProductImage positionZeroAiImage = imageStorageRepository.findByProduct_ProductIdAndPosition(
+                productId, 0);
 
             if (positionZeroAiImage != null) {
                 deleteImage(productId, positionZeroAiImage.getId(), email);
