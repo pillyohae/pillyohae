@@ -141,7 +141,7 @@ public class PersonaService {
     private String createPersonaMessagePrompt(String productIngredient) {
         return String.format(
             "영양제의 특징을 살려 가상의 성격을 만들고 자신을 돋보이게 하는 대사를 한 문장씩 3개 만들어주세요. "
-                + "말투는 귀엽게 표현해주세요. 응답은 항상\"message\" 키를 포함하는 JSON 객체의 배열이어야 합니다. "
+                + "말투는 귀엽게 표현하고 이모지를 붙여주세요. 응답은 항상\"message\" 키를 포함하는 JSON 객체의 배열이어야 합니다. "
                 + "또한 응답에는 코드블럭, 개행을 제거해주세요. "
                 + "응답 형태: {\"message\":대사1},{\"message\":대사2},{\"message\":대사3} "
                 + "영양제: " + productIngredient
