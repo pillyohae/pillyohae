@@ -13,8 +13,9 @@ public class ProductCreateResponseDto {
     private String companyName;
     private Long price;
     private ProductStatus status;
+    private Integer stock;
 
-    public ProductCreateResponseDto(Long productId, String productName, String category, String description, String companyName, Long price, ProductStatus status) {
+    public ProductCreateResponseDto(Long productId, String productName, String category, String description, String companyName, Long price, ProductStatus status, Integer stock) {
         this.productId = productId;
         this.productName = productName;
         this.category = category;
@@ -22,5 +23,6 @@ public class ProductCreateResponseDto {
         this.companyName = companyName;
         this.price = price;
         this.status = status;
+        this.stock = stock;
     }
 }
