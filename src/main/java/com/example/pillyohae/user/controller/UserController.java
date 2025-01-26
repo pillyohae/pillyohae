@@ -1,25 +1,21 @@
 package com.example.pillyohae.user.controller;
 
 import com.example.pillyohae.coupon.dto.CouponListResponseDto;
+import com.example.pillyohae.coupon.dto.CouponTemplateListResponseDto;
+import com.example.pillyohae.coupon.entity.CouponTemplate;
 import com.example.pillyohae.coupon.service.CouponService;
-import com.example.pillyohae.order.dto.*;
+import com.example.pillyohae.order.dto.OrderDetailResponseDto;
+import com.example.pillyohae.order.dto.OrderInfoDto;
+import com.example.pillyohae.order.dto.OrderSellerInfoDto;
 import com.example.pillyohae.order.service.OrderService;
 import com.example.pillyohae.refresh.service.RefreshTokenService;
-import com.example.pillyohae.user.dto.TokenResponse;
-import com.example.pillyohae.user.dto.UserCreateRequestDto;
-import com.example.pillyohae.user.dto.UserCreateResponseDto;
-import com.example.pillyohae.user.dto.UserDeleteRequestDto;
-import com.example.pillyohae.user.dto.UserLoginRequestDto;
-import com.example.pillyohae.user.dto.UserProfileResponseDto;
-import com.example.pillyohae.user.dto.UserProfileUpdateRequestDto;
+import com.example.pillyohae.user.dto.*;
 import com.example.pillyohae.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import java.time.LocalDateTime;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -31,17 +27,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
-import org.springframework.web.bind.annotation.CookieValue;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 import static com.example.pillyohae.global.constant.TokenPrefix.TOKEN_PREFIX;
 
@@ -204,11 +193,12 @@ public class UserController {
 
     /**
      * 사용자 주문 조회
+     *
      * @param authentication 토큰을 통해 얻어온 사용자 정보를 담고있는 인증 객체
-     * @param startAt 조회 기준 시작 날짜
-     * @param endAt 조회 기준 끝 날자
-     * @param pageNumber 조회할 페이지
-     * @param pageSize 조회할 페이지의 크기
+     * @param startAt        조회 기준 시작 날짜
+     * @param endAt          조회 기준 끝 날자
+     * @param pageNumber     조회할 페이지
+     * @param pageSize       조회할 페이지의 크기
      * @return 정상적으로 완료시 OK 상태코드와 주문 정보를 반환
      */
     @GetMapping("/orders")
@@ -230,8 +220,9 @@ public class UserController {
 
     /**
      * 사용자 주문 상세 조회
+     *
      * @param authentication 토큰을 통해 얻어온 사용자 정보를 담고있는 인증 객체
-     * @param orderId 주문 식별자
+     * @param orderId        주문 식별자
      * @return 정상적으로 완료시 OK 상태코드와 주문 상세 정보를 반환
      */
     @GetMapping("/orders/{orderId}/orderItems")
@@ -244,17 +235,19 @@ public class UserController {
 
     /**
      * 유저의 쿠폰 조회
+     *
      * @param authentication 토큰을 통해 얻어온 사용자 정보를 담고있는 인증 객체
-     * @param totalPrice 주문에 사용할 쿠폰 조회시 현재 주문 총 금액
+     * @param totalPrice     주문에 사용할 쿠폰 조회시 현재 주문 총 금액
      * @return 정상적으로 완료시 OK 상태코드와 사용 가능한 쿠폰 목록 정보를 반환
      */
     @GetMapping("/coupons")
-    public ResponseEntity<CouponListResponseDto> getCouponListToUse(Authentication authentication, @RequestParam(required = false) Long totalPrice ) {
+    public ResponseEntity<CouponListResponseDto> getCouponListToUse(Authentication authentication, @RequestParam(required = false) Long totalPrice) {
         return ResponseEntity.ok(couponService.findCouponListToUse(authentication.getName(), totalPrice));
     }
 
     /**
      * 판매자의 주문 조회
+     *
      * @param authentication
      * @param startAt
      * @param endAt
@@ -264,19 +257,26 @@ public class UserController {
      */
     @GetMapping("/sellers/orders")
     public ResponseEntity<Page<OrderSellerInfoDto>> findAllSellerOrders(
-            Authentication authentication,
-            @RequestParam(name = "startAt",required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startAt,
-            @RequestParam(name = "endAt",required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endAt,
-            @RequestParam(name = "pageNumber", defaultValue = "0") @Min(0) Integer pageNumber,
-            @RequestParam(name = "pageSize", defaultValue = "10") @Min(1) @Max(100) Integer pageSize
+        Authentication authentication,
+        @RequestParam(name = "startAt", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startAt,
+        @RequestParam(name = "endAt", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endAt,
+        @RequestParam(name = "pageNumber", defaultValue = "0") @Min(0) Integer pageNumber,
+        @RequestParam(name = "pageSize", defaultValue = "10") @Min(1) @Max(100) Integer pageSize
     ) {
         return ResponseEntity.ok(orderService.findSellerOrders(
-                authentication.getName(),
-                startAt,
-                endAt,
-                pageNumber,
-                pageSize
+            authentication.getName(),
+            startAt,
+            endAt,
+            pageNumber,
+            pageSize
         ));
+    }
+
+    // 상태에 따른 쿠폰 조회 (관리자만 조회 가능)
+    @GetMapping("/admin/coupons")
+    public ResponseEntity<CouponTemplateListResponseDto> getAvailableCoupons(Authentication authentication,
+                                                                             @RequestParam(required = false) CouponTemplate.CouponStatus couponStatus) {
+        return ResponseEntity.ok(couponService.findCouponList(couponStatus));
     }
 
 }

@@ -11,6 +11,8 @@ import com.example.pillyohae.survey.entity.Survey;
 import com.example.pillyohae.survey.service.SurveyService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.messages.UserMessage;
@@ -22,9 +24,6 @@ import org.springframework.ai.openai.api.OpenAiApi.ChatModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Slf4j
 @Service
@@ -92,9 +91,12 @@ public class RecommendationService {
      */
     private String createRecommendationPrompt(String surveyCategories) {
 
-        return String.format("사용자가 건강 관심사를 나열하면, 각각에 부합하는 보충제를 JSON 형식으로 반환하세요. 응답은 항상 \"recommendation\"키를 포함하는 JSON 객체의 배열 형식이어야 합니다. 관심사는 쉼표로 구분되며, 각 관심사에 대한 추천 보충제는 \"recommendation\" 키에 연결됩니다."
-            + "또한 응답에는 코드블럭, 개행, 공백을 제거해주세요." + "메시지 형태: 관심사1, 관심사2, 관심사3" + " 응답 형태: " + "[{\"recommendation\":\"보충제1\"},{\"recommendation\":\"보충제2\"},{\"recommendation\":\"보충제3\"}]" + "메시지: "
-            + surveyCategories);
+        return String.format(
+            "사용자가 건강 관심사를 나열하면, 각각에 부합하는 보충제를 JSON 형식으로 반환하세요. 응답은 항상 \"recommendation\"키를 포함하는 JSON 객체의 배열 형식이어야 합니다. 관심사는 쉼표로 구분되며, 각 관심사에 대한 추천 보충제는 \"recommendation\" 키에 연결됩니다."
+                + "또한 응답에는 코드블럭, 개행, 공백을 제거해주세요." + "메시지 형태: 관심사1, 관심사2, 관심사3" + " 응답 형태: "
+                + "[{\"recommendation\":\"보충제1\"},{\"recommendation\":\"보충제2\"},{\"recommendation\":\"보충제3\"}]"
+                + "메시지: "
+                + surveyCategories);
     }
 
     /**
@@ -111,7 +113,7 @@ public class RecommendationService {
             ChatResponse response = chatModel.call(new Prompt(userMessage,
                 OpenAiChatOptions.builder().model(ChatModel.GPT_4_O.getValue()).build()));
 
-            String result = response.getResult().getOutput().getContent().replace(" ", "");
+            String result = response.getResult().getOutput().getText().replace(" ", "");
 
             ObjectMapper objectMapper = new ObjectMapper();
             return objectMapper.readValue(result, new TypeReference<>() {
@@ -119,7 +121,8 @@ public class RecommendationService {
 
         } catch (Exception e) {
             log.error("추천 상품 키워드 생성에 실패했습니다.", e);
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "추천 상품 키워드 생성에 실패했습니다.");
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                "추천 상품 키워드 생성에 실패했습니다.");
         }
     }
 

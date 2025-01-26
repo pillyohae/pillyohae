@@ -1,12 +1,14 @@
 package com.example.pillyohae.product.service;
 
 
+import com.example.pillyohae.coupon.entity.CouponTemplate;
 import com.example.pillyohae.global.S3.S3Service;
 import com.example.pillyohae.global.dto.UploadFileInfo;
 import com.example.pillyohae.global.exception.CustomResponseStatusException;
 import com.example.pillyohae.global.exception.code.ErrorCode;
 import com.example.pillyohae.persona.PersonaService;
 import com.example.pillyohae.product.dto.*;
+import com.example.pillyohae.product.dto.ProductGetResponseDto.ImageResponseDto;
 import com.example.pillyohae.product.entity.Product;
 import com.example.pillyohae.product.entity.ProductImage;
 import com.example.pillyohae.product.entity.type.ProductStatus;
@@ -15,7 +17,6 @@ import com.example.pillyohae.product.repository.ProductRepository;
 import com.example.pillyohae.recommendation.dto.RecommendationKeywordDto;
 import com.example.pillyohae.user.entity.User;
 import com.example.pillyohae.user.service.UserService;
-import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -39,7 +40,7 @@ public class ProductService {
     private final UserService userService;
     private final S3Service s3Service;
     private final PersonaService personaService;
-    private final EntityManager entityManager;
+
 
     /**
      * 상품 생성
@@ -116,9 +117,13 @@ public class ProductService {
 
         Product findProduct = findById(productId);
 
-        List<String> imageUrls = findProduct.getImages()
+        List<ImageResponseDto> images = findProduct.getImages()
             .stream()
-            .map(ProductImage::getFileUrl)
+            .map(image -> new ImageResponseDto(
+                image.getId(),
+                image.getFileUrl(),
+                image.getPosition()
+            ))
             .toList();
 
         return new ProductGetResponseDto(
@@ -129,7 +134,7 @@ public class ProductService {
             findProduct.getCompanyName(),
             findProduct.getPrice(),
             findProduct.getStatus(),
-            imageUrls
+            images
         );
     }
 
@@ -174,7 +179,8 @@ public class ProductService {
         Sort sort = Sort.by(direction, sortBy);
         //페이징 객체 생성
         Pageable pageable = PageRequest.of(page, size, sort);
-        Page<Product> productsPage = productRepository.getAllProduct(productName, companyName, category, pageable);
+        Page<Product> productsPage = productRepository.getAllProduct(productName, companyName,
+            category, pageable);
 
         // Response로 변환
         return productsPage.map(product -> new ProductSearchResponseDto(
@@ -244,12 +250,13 @@ public class ProductService {
         // 파일 업로드 로직 호출
         UploadFileInfo imageInfo = s3Service.uploadFile(image);
 
-        Integer nextPosition = imageStorageRepository.findMaxPositionByProductId(findProduct.getProductId())
-            .orElse(0) + 1;
+        Integer nextPosition =
+            imageStorageRepository.findMaxPositionByProductId(findProduct.getProductId())
+                .orElse(0) + 1;
 
         // FileStorage 객체 생성
-        ProductImage saveImage = new ProductImage(imageInfo.fileUrl(), imageInfo.fileKey(), image.getContentType(), image.getSize(), nextPosition, findProduct);
-
+        ProductImage saveImage = new ProductImage(imageInfo.fileUrl(), imageInfo.fileKey(),
+            image.getContentType(), image.getSize(), nextPosition, findProduct);
 
         // DB에 저장
         imageStorageRepository.save(saveImage);
@@ -284,10 +291,12 @@ public class ProductService {
             throw new CustomResponseStatusException(ErrorCode.INVALID_IMAGE_PRODUCT_MATCH);
         }
 
-        imageStorageRepository.deleteById(imageId);
-        s3Service.deleteFile(findImage.getFileKey()); // TODO s3삭제 시 주문페이지에서 이미지는 어떻게 할 것인지 정하기
+        imageStorageRepository.deleteImageByIdAndPosition(productId, findImage.getPosition(), imageId);
 
-        imageStorageRepository.updatePositionsAfterDelete(productId, findImage.getPosition());
+        // position > 1인 경우 자리 재배치 / position <= 1인 경우 자리 재배치 X
+        if (findImage.getPosition() > 1) {
+            imageStorageRepository.updatePositionsAfterDelete(productId, findImage.getPosition());
+        }
 
     }
 
@@ -323,13 +332,15 @@ public class ProductService {
         if (originalPosition < updatedPosition) {
 
             for (ProductImage targetPosition : images) {
-                if (originalPosition < targetPosition.getPosition() && targetPosition.getPosition() <= updatedPosition) {
+                if (originalPosition < targetPosition.getPosition()
+                    && targetPosition.getPosition() <= updatedPosition) {
                     targetPosition.downPosition();
                 }
             }
         } else {
             for (ProductImage targetPosition : images) {
-                if (updatedPosition <= targetPosition.getPosition() && targetPosition.getPosition() < originalPosition) {
+                if (updatedPosition <= targetPosition.getPosition()
+                    && targetPosition.getPosition() < originalPosition) {
                     targetPosition.upPosition();
                 }
             }
@@ -340,7 +351,7 @@ public class ProductService {
     }
 
     /**
-     * 대표이미지(position = 1) -> AI이미지로 변환 후 position = 0으로 배치
+     * 대표이미지(position = 1) -> AI이미지로 변환 후 해당 AI 이미지 position = 0으로 배치
      *
      * @param productId 상품 id
      * @param email     사용자 이메일
@@ -356,25 +367,39 @@ public class ProductService {
         }
 
         // 기존 포지션 1찾기
-        ProductImage firstImage = imageStorageRepository.findByProduct_ProductIdAndPosition(productId, 1);
+        ProductImage firstImage = imageStorageRepository.findByProduct_ProductIdAndPosition(
+            productId, 1);
 
         if (firstImage != null) {
 
             // PersonaService를 통해 AI 이미지 생성
-            String aiImageUrl = personaService.generatePersonaFromProduct(firstImage.getFileUrl()).getUrl();
+            String aiImageUrl = personaService.generatePersonaFromProduct(firstImage.getFileUrl())
+                .getUrl();
 
             // S3에 업로드
             UploadFileInfo uploadImageInfo = s3Service.uploadFileFromUrl(aiImageUrl);
+
+            // 0번 이미지 찾기
+            ProductImage positionZeroAiImage = imageStorageRepository.findByProduct_ProductIdAndPosition(
+                productId, 0);
+
+            //0번 이미지가 이미 있으면 삭제
+            if (positionZeroAiImage != null) {
+                deleteImage(productId, positionZeroAiImage.getId(), email);
+            }
 
             // 새로 업로드된 이미지를 0번 이미지로 추가
             ProductImage aiImage = new ProductImage(
                 uploadImageInfo.fileUrl(),
                 uploadImageInfo.fileKey(),
+                "image/png",
                 0,
                 findProduct);
 
             imageStorageRepository.save(aiImage);
             log.info("Representative AI image successfully saved for productId: {}", productId);
+        } else {
+            throw new CustomResponseStatusException(ErrorCode.NOT_FOUND_IMAGE_POSITION1);
         }
     }
 
@@ -396,5 +421,31 @@ public class ProductService {
     }
 
 
+    public UploadFileInfo uploadImageToPositionOne(Long productId, MultipartFile mainImage) {
+
+        // Product 조회
+        Product findProduct = findById(productId);
+
+        // 파일 업로드 로직 호출
+        UploadFileInfo firstImageInfo = s3Service.uploadFile(mainImage);
+
+        ProductImage originalMainImage = imageStorageRepository.findByProduct_ProductIdAndPosition(productId, 1);
+
+        if (originalMainImage != null) {
+            throw new CustomResponseStatusException(ErrorCode.IMAGE_ALREADY_EXIST);
+        }
+
+        ProductImage newPositionOneImage = new ProductImage(
+            firstImageInfo.fileUrl(),
+            firstImageInfo.fileKey(),
+            mainImage.getContentType(),
+            mainImage.getSize(),
+            1,
+            findProduct
+        );
+        imageStorageRepository.save(newPositionOneImage);
+
+        return new UploadFileInfo(newPositionOneImage.getFileUrl(), newPositionOneImage.getFileKey());
+    }
 }
 

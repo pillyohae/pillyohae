@@ -1,7 +1,6 @@
 package com.example.pillyohae.global.config;
 
 import com.example.pillyohae.global.message_queue.RedisMessageSubscriber;
-import com.example.pillyohae.global.message_queue.handler.CouponMessageHandler;
 import com.example.pillyohae.global.message_queue.handler.PaymentMessageHandler;
 import com.example.pillyohae.global.message_queue.publisher.MessagePublisher;
 import com.example.pillyohae.global.message_queue.publisher.RedisMessagePublisher;
@@ -95,16 +94,16 @@ public class RedisConfig {
     }
 
     @Bean
-    MessageListenerAdapter messageListener(CouponMessageHandler couponMessageHandler, PaymentMessageHandler paymentMessageHandler) {
-        return new MessageListenerAdapter(new RedisMessageSubscriber(new ObjectMapper(), couponMessageHandler, paymentMessageHandler));
+    MessageListenerAdapter messageListener(PaymentMessageHandler paymentMessageHandler) {
+        return new MessageListenerAdapter(new RedisMessageSubscriber(new ObjectMapper(),paymentMessageHandler));
     }
 
     @Bean
-    RedisMessageListenerContainer redisContainer(CouponMessageHandler couponMessageHandler, PaymentMessageHandler paymentMessageHandler) {
+    RedisMessageListenerContainer redisContainer(PaymentMessageHandler paymentMessageHandler) {
         RedisMessageListenerContainer container
                 = new RedisMessageListenerContainer();
         container.setConnectionFactory(redisConnectionFactory());
-        container.addMessageListener(messageListener(couponMessageHandler,paymentMessageHandler), topic());
+        container.addMessageListener(messageListener(paymentMessageHandler), topic());
         return container;
     }
 
