@@ -20,13 +20,13 @@ public class CouponTemplateQueryRepositoryImpl implements CouponTemplateQueryRep
         if (queryFactory == null) {
             throw new IllegalStateException("QueryFactory is not initialized");
         }
-//        return queryFactory.select(new QCouponTemplateListResponseDto_CouponInfo(couponTemplate.id,couponTemplate.name,
-//                        couponTemplate.description, couponTemplate.discountType,couponTemplate.fixedAmount
-//                        ,couponTemplate.fixedRate, couponTemplate.maxDiscountAmount,couponTemplate.minimumPrice, couponTemplate.expiredType, couponTemplate.expiredAt,couponTemplate.couponLifetime,couponTemplate.status))
-//                .from(couponTemplate)
-//                .where(statusEq(status), couponTemplate.expiredAt.after(LocalDateTime.now()), couponTemplate.isDeleted.eq(false))
-//                .fetch();
-        return null;
+        return queryFactory.select(new QCouponTemplateListResponseDto_CouponInfo(couponTemplate.id,couponTemplate.name,
+                        couponTemplate.description, couponTemplate.discountType,couponTemplate.fixedAmount
+                        ,couponTemplate.fixedRate, couponTemplate.maxDiscountAmount,couponTemplate.minimumPrice, couponTemplate.expiredType, couponTemplate.expiredAt,couponTemplate.couponLifetime,couponTemplate.status))
+                .from(couponTemplate)
+                .where(statusEq(status), couponTemplate.expiredAt.after(LocalDateTime.now()), couponTemplate.isDeleted.eq(false))
+                .fetch();
+
 
 
 
