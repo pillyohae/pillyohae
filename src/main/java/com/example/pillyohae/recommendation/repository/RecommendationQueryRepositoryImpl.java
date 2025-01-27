@@ -1,9 +1,13 @@
 package com.example.pillyohae.recommendation.repository;
 
+import static com.example.pillyohae.product.entity.QProductImage.productImage;
 import static com.example.pillyohae.recommendation.entity.QRecommendation.recommendation;
 
+import com.example.pillyohae.product.entity.QProduct;
 import com.example.pillyohae.recommendation.dto.QRecommendationQueryResponseDto;
 import com.example.pillyohae.recommendation.dto.RecommendationQueryResponseDto;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
 
@@ -26,12 +30,34 @@ public class RecommendationQueryRepositoryImpl implements RecommendationQueryRep
         return queryFactory.select(new QRecommendationQueryResponseDto(
                 recommendation.product.productId,
                 recommendation.product.productName,
-                recommendation.product.imageUrl,
+                productImage.fileUrl,
                 recommendation.product.price
             ))
             .from(recommendation)
-            .where(recommendation.survey.id.eq(surveyId))
+            .leftJoin(productImage)
+            .on(productImageJoinCondition(recommendation.product))
+            .where(recommendation.survey.id.eq(surveyId)
+
+            )
             .fetch();
+    }
+
+    private BooleanExpression productImageJoinCondition(QProduct product) {
+        return productImage.product.eq(product)
+            .and(productImage.position.eq(0)
+                .or(productImage.position.eq(1)
+                    .and(thumbnailExists(product)))
+                .not()
+            );
+    }
+
+    private BooleanExpression thumbnailExists(QProduct product) {
+        return JPAExpressions.select(productImage.fileUrl)
+            .from(productImage)
+            .where(productImage.product.eq(product)
+                .and(productImage.position.eq(0))
+            )
+            .exists();
     }
 
 }
