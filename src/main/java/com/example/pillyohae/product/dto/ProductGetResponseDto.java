@@ -42,5 +42,7 @@ public class ProductGetResponseDto {
         private Long imageId;
         private String imageUrl;
         private Integer position;
+
+
     }
 }
