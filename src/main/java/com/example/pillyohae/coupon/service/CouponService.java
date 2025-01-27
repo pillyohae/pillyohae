@@ -37,7 +37,6 @@ public class CouponService {
     private final IssuedCouponRepository issuedCouponRepository;
     private final UserService userService;
     private final OrderRepository orderRepository;
-    private final CouponIssueService couponIssueService;
 
     // message queue
     private final RedisMessagePublisher messagePublisher;
