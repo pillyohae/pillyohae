@@ -2,6 +2,7 @@ package com.example.pillyohae.user.controller;
 
 import com.example.pillyohae.coupon.dto.CouponListResponseDto;
 import com.example.pillyohae.coupon.dto.CouponTemplateListResponseDto;
+import com.example.pillyohae.coupon.dto.CouponUpdateStatusResponseDto;
 import com.example.pillyohae.coupon.entity.CouponTemplate;
 import com.example.pillyohae.coupon.service.CouponService;
 import com.example.pillyohae.order.dto.OrderDetailResponseDto;
@@ -278,5 +279,32 @@ public class UserController {
                                                                              @RequestParam(required = false) CouponTemplate.CouponStatus couponStatus) {
         return ResponseEntity.ok(couponService.findCouponList(couponStatus));
     }
+
+    /**
+     * 관리자의 쿠폰 상태 업데이트
+     * @param authentication
+     * @param couponStatus 변경할 쿠폰 상태 ACTIVE OR INACTIVE
+     * @param couponTemplateId 수정할 쿠폰 식별자
+     * @return 쿠폰 식별자 및 상태
+     */
+    @PutMapping("/admin/coupons/{couponTemplateId}/status")
+    public ResponseEntity<CouponUpdateStatusResponseDto> updateCouponStatus(Authentication authentication,
+                                                                            @RequestParam(required = true) CouponTemplate.CouponStatus couponStatus, @PathVariable(name = "couponTemplateId") UUID couponTemplateId){
+        return ResponseEntity.ok(couponService.updateCouponStatus(couponTemplateId,couponStatus));
+    }
+
+    /**
+     * 관리자의 쿠폰 soft 삭제
+     * @param authentication
+     * @param couponTemplateId 삭제할 쿠폰 식별자
+     * @return
+     */
+    @DeleteMapping("/admin/coupons/{couponTemplateId}")
+    public ResponseEntity<Void> deleteCoupon(Authentication authentication,
+                                                                          @PathVariable(name = "couponTemplateId") UUID couponTemplateId){
+        couponService.deleteCoupon(couponTemplateId);
+        return ResponseEntity.ok().build();
+    }
+
 
 }

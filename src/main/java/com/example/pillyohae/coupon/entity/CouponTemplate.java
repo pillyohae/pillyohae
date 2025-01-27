@@ -82,9 +82,10 @@ public class CouponTemplate {
     private CouponStatus status;
 
     @Column
-    private Period couponLifetime;
+    private Integer couponLifetime;
 
-
+    @Column
+    private Boolean isDeleted = Boolean.FALSE;
 
     /**
      * 사용자에게 발급된 쿠폰 목록
@@ -109,10 +110,11 @@ public class CouponTemplate {
         if(couponLifetime == null) {
             couponLifetime = 0;
         }
-        this.couponLifetime = Period.ofDays(couponLifetime);
+        this.couponLifetime = couponLifetime;
 
         this.status = CouponStatus.ACTIVE;
         this.currentIssuanceCount = 0;
+        this.isDeleted = false;
     }
 
     public LocalDateTime getIssuedCouponExpiredAt() {
@@ -126,15 +128,23 @@ public class CouponTemplate {
         }
 
         if (ExpiredType.DURATION_BASED == this.expiredType) {
-            return LocalDateTime.now().plus(couponLifetime);
+            return LocalDateTime.now().plus(Period.ofDays(couponLifetime));
         }
 
         throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,"쿠폰 만료일자 타입이 FIXED_DATE 또는 DURATION_BASED 가 아닙니다");
     }
 
+    public void delete(){
+        this.isDeleted = true;
+    }
+
     public void incrementIssuanceCount() {
 
         this.currentIssuanceCount++;
+    }
+
+    public void updateStatus(CouponStatus status) {
+        this.status = status;
     }
 
 

@@ -24,8 +24,10 @@ public class CouponTemplateQueryRepositoryImpl implements CouponTemplateQueryRep
                         couponTemplate.description, couponTemplate.discountType,couponTemplate.fixedAmount
                         ,couponTemplate.fixedRate, couponTemplate.maxDiscountAmount,couponTemplate.minimumPrice, couponTemplate.expiredType, couponTemplate.expiredAt,couponTemplate.couponLifetime,couponTemplate.status))
                 .from(couponTemplate)
-                .where(statusEq(status), couponTemplate.expiredAt.after(LocalDateTime.now()))
+                .where(statusEq(status), couponTemplate.expiredAt.after(LocalDateTime.now()), couponTemplate.isDeleted.eq(false))
                 .fetch();
+
+
 
 
     }
