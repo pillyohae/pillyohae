@@ -72,7 +72,7 @@ public class CouponService {
                 , couponTemplate.getDiscountType(), couponTemplate.getExpiredType(), couponTemplate.getFixedAmount()
                 , couponTemplate.getFixedRate(), couponTemplate.getMaxDiscountAmount(), couponTemplate.getMinimumPrice()
                 , couponTemplate.getMaxIssuanceCount(), couponTemplate.getStartAt(), couponTemplate.getExpiredAt()
-                , couponTemplate.getCouponLifetime().getDays());
+                , couponTemplate.getCouponLifetime());
     }
 
     // 유저 개인이 발행
@@ -134,6 +134,26 @@ public class CouponService {
                 issuedCouponRepository.findCouponListByPriceAndUserId(totalPrice, user.getId())
         );
     }
+
+    @Transactional
+    public CouponUpateStatusResponseDto updateCouponStatus(UUID couponTemplateId, CouponTemplate.CouponStatus couponStatus) {
+        CouponTemplate couponTemplate = couponTemplateRepository.findById(couponTemplateId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "쿠폰을 찾을 수 없습니다."));
+
+        couponTemplate.updateStatus(couponStatus);
+
+        return new CouponUpateStatusResponseDto(couponTemplate.getStatus(),couponTemplate.getId());
+    }
+
+    @Transactional
+    public void deleteCoupon(UUID couponTemplateId) {
+        CouponTemplate couponTemplate = couponTemplateRepository.findById(couponTemplateId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "쿠폰을 찾을 수 없습니다."));
+
+        couponTemplate.delete();
+
+    }
+
 
     private Long validateMinimumPrice(Long minimumPrice) {
         if (minimumPrice == null) {
