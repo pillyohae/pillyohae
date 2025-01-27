@@ -132,6 +132,17 @@ public class OrderQueryRepositoryImpl implements OrderQueryRepository {
                 .fetch();
     }
 
+    @Override
+    public List<OrderProductFetchJoinProduct> findOrderProductWithProduct(UUID orderId){
+        return queryFactory
+                .select(new QOrderProductFetchJoinProduct(orderProduct, product))
+                .from(orderProduct)
+                .join(product)
+                .on(orderProduct.productId.eq(product.productId)) // 조인 조건 명시
+                .where(orderProduct.order.id.eq(orderId)) // 필터 조건
+                .fetch();
+    }
+
     private BooleanExpression dateEq(LocalDateTime startAt, LocalDateTime endAt) {
         if (startAt == null && endAt == null) {
             return null;

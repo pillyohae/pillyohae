@@ -1,6 +1,6 @@
 package com.example.pillyohae.global.message_queue;
 
-import com.example.pillyohae.global.message_queue.handler.CouponMessageHandler;
+
 import com.example.pillyohae.global.message_queue.handler.PaymentMessageHandler;
 import com.example.pillyohae.global.message_queue.message.CouponMessage;
 import com.example.pillyohae.global.message_queue.message.PaymentMessage;
@@ -20,12 +20,11 @@ public class RedisMessageSubscriber implements MessageListener {
 
     public static List<String> messageList = new ArrayList<String>();
     private final ObjectMapper objectMapper;
-    private final CouponMessageHandler couponMessageHandler;
+
     private final PaymentMessageHandler paymentMessageHandler;
 
-    public RedisMessageSubscriber(ObjectMapper objectMapper, CouponMessageHandler couponMessageHandler, PaymentMessageHandler paymentMessageHandler) {
+    public RedisMessageSubscriber(ObjectMapper objectMapper, PaymentMessageHandler paymentMessageHandler) {
         this.objectMapper = objectMapper;
-        this.couponMessageHandler = couponMessageHandler;
         this.paymentMessageHandler = paymentMessageHandler;
     }
 
@@ -36,10 +35,7 @@ public class RedisMessageSubscriber implements MessageListener {
         messageBody = StringEscapeUtils.unescapeJson(messageBody);
         try {
             JSONObject jsonObject = objectMapper.readValue(messageBody, JSONObject.class);
-            if("coupon".equals(jsonObject.get("domainType"))){
-                CouponMessage couponMessage = objectMapper.readValue(messageBody,CouponMessage.class);
-                couponMessageHandler.handle(couponMessage);
-            } else if ("payment".equals(jsonObject.get("domainType"))) {
+           if ("payment".equals(jsonObject.get("domainType"))) {
                 PaymentMessage paymentMessage = objectMapper.readValue(messageBody,PaymentMessage.class);
                 paymentMessageHandler.handle(paymentMessage);
             }

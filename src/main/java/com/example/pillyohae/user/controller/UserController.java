@@ -272,7 +272,6 @@ public class UserController {
         ));
     }
 
-
     // 상태에 따른 쿠폰 조회 (관리자만 조회 가능)
     @GetMapping("/admin/coupons")
     public ResponseEntity<CouponTemplateListResponseDto> getAvailableCoupons(Authentication authentication,

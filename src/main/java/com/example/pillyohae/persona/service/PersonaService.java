@@ -61,7 +61,7 @@ public class PersonaService {
         ChatResponse response = chatModel.call(new Prompt(userMessage,
             OpenAiChatOptions.builder().model(OpenAiApi.ChatModel.GPT_4_O.getValue()).build()));
 
-        return response.getResult().getOutput().getContent();
+        return response.getResult().getOutput().getText();
     }
 
     private String createImagePrompt(String productDescription) {
@@ -119,7 +119,7 @@ public class PersonaService {
             ChatResponse response = chatModel.call(new Prompt(userMessage,
                 OpenAiChatOptions.builder().model(OpenAiApi.ChatModel.GPT_4_O.getValue()).build()));
 
-            String result = response.getResult().getOutput().getContent();
+            String result = response.getResult().getOutput().getText();
             log.info("persona message result : {}", result);
 
             ObjectMapper objectMapper = new ObjectMapper();
