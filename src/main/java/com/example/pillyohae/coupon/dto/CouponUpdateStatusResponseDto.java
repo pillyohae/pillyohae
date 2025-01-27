@@ -8,7 +8,7 @@ import java.util.UUID;
 
 @Getter
 @RequiredArgsConstructor
-public class CouponUpateStatusResponseDto {
+public class CouponUpdateStatusResponseDto {
     private final CouponTemplate.CouponStatus status;
     private final UUID id;
 }

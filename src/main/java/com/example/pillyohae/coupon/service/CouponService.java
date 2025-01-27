@@ -136,13 +136,13 @@ public class CouponService {
     }
 
     @Transactional
-    public CouponUpateStatusResponseDto updateCouponStatus(UUID couponTemplateId, CouponTemplate.CouponStatus couponStatus) {
+    public CouponUpdateStatusResponseDto updateCouponStatus(UUID couponTemplateId, CouponTemplate.CouponStatus couponStatus) {
         CouponTemplate couponTemplate = couponTemplateRepository.findById(couponTemplateId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "쿠폰을 찾을 수 없습니다."));
 
         couponTemplate.updateStatus(couponStatus);
 
-        return new CouponUpateStatusResponseDto(couponTemplate.getStatus(),couponTemplate.getId());
+        return new CouponUpdateStatusResponseDto(couponTemplate.getStatus(),couponTemplate.getId());
     }
 
     @Transactional

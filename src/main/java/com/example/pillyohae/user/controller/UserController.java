@@ -2,7 +2,7 @@ package com.example.pillyohae.user.controller;
 
 import com.example.pillyohae.coupon.dto.CouponListResponseDto;
 import com.example.pillyohae.coupon.dto.CouponTemplateListResponseDto;
-import com.example.pillyohae.coupon.dto.CouponUpateStatusResponseDto;
+import com.example.pillyohae.coupon.dto.CouponUpdateStatusResponseDto;
 import com.example.pillyohae.coupon.entity.CouponTemplate;
 import com.example.pillyohae.coupon.service.CouponService;
 import com.example.pillyohae.order.dto.OrderDetailResponseDto;
@@ -288,8 +288,8 @@ public class UserController {
      * @return 쿠폰 식별자 및 상태
      */
     @PutMapping("/admin/coupons/{couponTemplateId}/status")
-    public ResponseEntity<CouponUpateStatusResponseDto> updateCouponStatus(Authentication authentication,
-                                                                          @RequestParam(required = true) CouponTemplate.CouponStatus couponStatus, @PathVariable(name = "couponTemplateId") UUID couponTemplateId){
+    public ResponseEntity<CouponUpdateStatusResponseDto> updateCouponStatus(Authentication authentication,
+                                                                            @RequestParam(required = true) CouponTemplate.CouponStatus couponStatus, @PathVariable(name = "couponTemplateId") UUID couponTemplateId){
         return ResponseEntity.ok(couponService.updateCouponStatus(couponTemplateId,couponStatus));
     }
 
