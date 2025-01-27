@@ -5,6 +5,8 @@ import com.example.pillyohae.coupon.entity.CouponTemplate;
 import com.example.pillyohae.coupon.entity.IssuedCoupon;
 import com.example.pillyohae.coupon.repository.CouponTemplateRepository;
 import com.example.pillyohae.coupon.repository.IssuedCouponRepository;
+import com.example.pillyohae.global.distributedLock.DistributedLock;
+import com.example.pillyohae.global.distributedLock.DistributedLockAop;
 import com.example.pillyohae.global.message_queue.publisher.RedisMessagePublisher;
 import com.example.pillyohae.order.repository.OrderRepository;
 import com.example.pillyohae.user.entity.User;
@@ -17,9 +19,11 @@ import org.redisson.api.RedissonClient;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -33,7 +37,6 @@ public class CouponService {
     private final IssuedCouponRepository issuedCouponRepository;
     private final UserService userService;
     private final OrderRepository orderRepository;
-    private final CouponIssueService couponIssueService;
 
     // message queue
     private final RedisMessagePublisher messagePublisher;
@@ -46,6 +49,7 @@ public class CouponService {
     private static final int MAX_RETRY_ATTEMPTS = 3;
     private static final long RETRY_DELAY_MS = 1000;
     private final ObjectMapper objectMapper;
+    private final DistributedLockAop distributedLockAop;
 
 
     @Transactional
@@ -76,10 +80,10 @@ public class CouponService {
     }
 
     // 유저 개인이 발행
-    @Transactional
+    @DistributedLock(key = "'couponTemplateId:' + #couponTemplateId", waitTime = 10L, leaseTime = 10L)
     public CouponGiveResponseDto giveCoupon(String email, UUID couponTemplateId) {
 
-        IssuedCoupon issuedCoupon = tryIssueCoupon(couponTemplateId, email);
+        IssuedCoupon issuedCoupon = issueCoupon(couponTemplateId, email);
 
         CouponTemplate couponTemplate = issuedCoupon.getCouponTemplate();
 
@@ -88,41 +92,6 @@ public class CouponService {
                 , couponTemplate.getMaxDiscountAmount(), couponTemplate.getMinimumPrice(), couponTemplate.getIssuedCouponExpiredAt());
 
     }
-
-    public IssuedCoupon tryIssueCoupon(UUID couponTemplateId, String email) {
-        // 락 생성
-        RLock lock = redissonClient.getLock("coupon:" + couponTemplateId);
-        boolean isLocked = false;
-        int attempts = 0;
-        while (attempts < MAX_RETRY_ATTEMPTS) {
-            try {
-                isLocked = lock.tryLock(60, 1,TimeUnit.SECONDS);
-                if (isLocked) {
-                    return couponIssueService.issueCoupon(couponTemplateId, email);
-                }
-                // 에러 캐치 후 3회 재시도
-            } catch (InterruptedException e) {
-                System.out.println("충돌 발생");
-                attempts++;
-                if (attempts < MAX_RETRY_ATTEMPTS) {
-                    try {
-                        Thread.sleep(RETRY_DELAY_MS);
-                    } catch (InterruptedException ie) {
-                        Thread.currentThread().interrupt();
-                        break;
-                    }
-                }
-            } finally {
-                if (lock.isHeldByCurrentThread()){
-                    lock.unlock();
-                }
-            }
-        }
-        throw new ResponseStatusException(HttpStatus.CONFLICT, "쿠폰 발급 timeout");
-
-    }
-
-
 
     @Transactional
     public CouponListResponseDto findCouponListToUse(String email, Long totalPrice) {
@@ -152,6 +121,53 @@ public class CouponService {
 
         couponTemplate.delete();
 
+    }
+
+    protected IssuedCoupon issueCoupon(UUID couponTemplateId, String email) {
+        User user = userService.findByEmail(email);
+
+        List<IssuedCoupon> userIssuedCoupons = issuedCouponRepository.findIssuedCouponsWithTemplateByUserId(
+                user.getId());
+
+        CouponTemplate couponTemplate = couponTemplateRepository.findById(couponTemplateId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        checkDuplicateCoupon(userIssuedCoupons, couponTemplate);
+
+        checkCouponQuantity(couponTemplate);
+
+        checkCouponTemplateStatus(couponTemplate);
+
+        couponTemplate.incrementIssuanceCount();
+
+        IssuedCoupon issuedCoupon = new IssuedCoupon(LocalDateTime.now(), couponTemplate.getIssuedCouponExpiredAt(), couponTemplate, user);
+
+        issuedCouponRepository.saveAndFlush(issuedCoupon);
+
+        return issuedCoupon;
+    }
+
+    // 쿠폰 중복 검사
+    private void checkDuplicateCoupon(List<IssuedCoupon> userIssuedCoupons, CouponTemplate couponTemplate) {
+        List<CouponTemplate> userCouponTemplates = userIssuedCoupons.stream()
+                .map(IssuedCoupon::getCouponTemplate).toList();
+
+        if (userCouponTemplates.contains(couponTemplate)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "쿠폰을 중복해서 가질 수 없습니다");
+        }
+    }
+
+    private void checkCouponQuantity(CouponTemplate couponTemplate) {
+        if (couponTemplate.getCurrentIssuanceCount() >= couponTemplate.getMaxIssuanceCount()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "쿠폰 수량이 소진되었습니다");
+        }
+    }
+
+    // 쿠폰 상태 검증
+    private void checkCouponTemplateStatus(CouponTemplate couponTemplate) {
+        if (couponTemplate.getStatus() != CouponTemplate.CouponStatus.ACTIVE) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "사용 가능한 쿠폰이 아닙니다. 현재 상태: " + couponTemplate.getStatus());
+        }
     }
 
 

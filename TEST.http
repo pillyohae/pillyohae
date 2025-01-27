@@ -129,7 +129,7 @@ Content-Type: application/json
   "expiredType": "FIXED_DATE",
   "fixedAmount": 10000,
   "minimumPrice": 20000,
-  "startAt": "2025-01-27T10:18:59",
+  "startAt": "2025-01-27T16:32:59",
   "expiredAt": "2025-02-20T23:59:59",
   "maxIssueCount": 1000
 }
@@ -240,7 +240,7 @@ GET http://localhost:8080/coupons?couponStatus = INACTIVE
 Authorization: Bearer {{accessToken}}
 
 ###
-POST http://localhost:8080/coupons/82ca2dae-6b5c-45dc-90a0-83d7fc73d02f/issue
+POST http://localhost:8080/coupons/b8f905d0-c0e5-4fe1-b9a0-7427b3e44efa/issue
 Authorization: Bearer {{accessToken}}
 ###
 
