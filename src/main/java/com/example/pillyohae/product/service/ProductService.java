@@ -1,7 +1,6 @@
 package com.example.pillyohae.product.service;
 
 
-import com.example.pillyohae.coupon.entity.CouponTemplate;
 import com.example.pillyohae.global.S3.S3Service;
 import com.example.pillyohae.global.dto.UploadFileInfo;
 import com.example.pillyohae.global.exception.CustomResponseStatusException;
@@ -247,7 +246,7 @@ public class ProductService {
      * @return UploadFileInfo 반환되는 이미지 정보들
      */
     @Transactional
-    public UploadFileInfo uploadImages(Long productId, MultipartFile image) {
+    public ImageUploadResponseDto uploadImages(Long productId, MultipartFile image) {
 
         // Product 조회
         Product findProduct = findById(productId);
@@ -272,7 +271,7 @@ public class ProductService {
         imageStorageRepository.save(saveImage);
 
         // 업로드 결과 반환
-        return new UploadFileInfo(saveImage.getFileUrl(), saveImage.getFileKey());
+        return new ImageUploadResponseDto(saveImage.getId(), saveImage.getPosition(), saveImage.getFileUrl(), saveImage.getFileKey());
     }
 
 
@@ -367,7 +366,7 @@ public class ProductService {
      * @param email     사용자 이메일
      */
     @Transactional
-    public void setRepresentativeAiImage(Long productId, String email) {
+    public ImageUploadResponseDto setRepresentativeAiImage(Long productId, String email) {
 
         Product findProduct = findById(productId);
         User user = userService.findByEmail(email);
@@ -380,58 +379,48 @@ public class ProductService {
         ProductImage firstImage = imageStorageRepository.findByProduct_ProductIdAndPosition(
             productId, 1);
 
-        if (firstImage != null) {
-
-            // PersonaService를 통해 AI 이미지 생성
-            String aiImageUrl = personaService.generatePersonaFromProduct(firstImage.getFileUrl())
-                .getUrl();
-
-            // S3에 업로드
-            UploadFileInfo uploadImageInfo = s3Service.uploadFileFromUrl(aiImageUrl);
-
-            // 0번 이미지 찾기
-            ProductImage positionZeroAiImage = imageStorageRepository.findByProduct_ProductIdAndPosition(
-                productId, 0);
-
-            //0번 이미지가 이미 있으면 삭제
-            if (positionZeroAiImage != null) {
-                deleteImage(productId, positionZeroAiImage.getId(), email);
-            }
-
-            // 새로 업로드된 이미지를 0번 이미지로 추가
-            ProductImage aiImage = new ProductImage(
-                uploadImageInfo.fileUrl(),
-                uploadImageInfo.fileKey(),
-                "image/png",
-                0,
-                findProduct);
-
-            imageStorageRepository.save(aiImage);
-            log.info("Representative AI image successfully saved for productId: {}", productId);
-        } else {
+        if (firstImage == null) {
             throw new CustomResponseStatusException(ErrorCode.NOT_FOUND_IMAGE_POSITION1);
         }
-    }
 
-    public Product findById(Long productId) {
-        return productRepository.findById(productId)
-            .filter(product -> product.getStatus() != ProductStatus.DELETED)
-            .orElseThrow(() -> new CustomResponseStatusException(ErrorCode.NOT_FOUND_PRODUCT));
-    }
+        // PersonaService를 통해 AI 이미지 생성
+        String aiImageUrl = personaService.generatePersonaFromProduct(firstImage.getFileUrl())
+            .getUrl();
 
+        // S3에 업로드
+        UploadFileInfo uploadImageInfo = s3Service.uploadFileFromUrl(aiImageUrl);
+
+        // 0번 이미지 찾기
+        ProductImage positionZeroAiImage = imageStorageRepository.findByProduct_ProductIdAndPosition(
+            productId, 0);
+
+        //0번 이미지가 이미 있으면 삭제
+        if (positionZeroAiImage != null) {
+            deleteImage(productId, positionZeroAiImage.getId(), email);
+        }
+
+        // 새로 업로드된 이미지를 0번 이미지로 추가
+        ProductImage aiImage = new ProductImage(
+            uploadImageInfo.fileUrl(),
+            uploadImageInfo.fileKey(),
+            "image/png",
+            0,
+            findProduct);
+
+        imageStorageRepository.save(aiImage);
+        log.info("Representative AI image successfully saved for productId: {}", productId);
+
+        return new ImageUploadResponseDto(aiImage.getId(), aiImage.getPosition(), aiImage.getFileUrl(), aiImage.getFileKey());
+    }
 
     /**
-     * 추천 상품 조회
+     * 메인이미지 재업로드(Position1)
      *
-     * @param recommendations 추천 키워드
-     * @return 추천 상품 목록
+     * @param productId 상품 id
+     * @param mainImage 사용자가 올리는 대표이미지파일(1번 위치에 올릴 파일)
+     * @return UploadFileInfo 반환되는 이미지 정보들
      */
-    public List<Product> findByNameLike(RecommendationKeywordDto[] recommendations) {
-        return productRepository.findProductsByNameLike(recommendations);
-    }
-
-
-    public UploadFileInfo uploadImageToPositionOne(Long productId, MultipartFile mainImage) {
+    public ImageUploadResponseDto uploadImageToPositionOne(Long productId, MultipartFile mainImage) {
 
         // Product 조회
         Product findProduct = findById(productId);
@@ -455,7 +444,25 @@ public class ProductService {
         );
         imageStorageRepository.save(newPositionOneImage);
 
-        return new UploadFileInfo(newPositionOneImage.getFileUrl(), newPositionOneImage.getFileKey());
+        return new ImageUploadResponseDto(newPositionOneImage.getId(), newPositionOneImage.getPosition(), newPositionOneImage.getFileUrl(), newPositionOneImage.getFileKey());
     }
+
+    public Product findById(Long productId) {
+        return productRepository.findById(productId)
+            .filter(product -> product.getStatus() != ProductStatus.DELETED)
+            .orElseThrow(() -> new CustomResponseStatusException(ErrorCode.NOT_FOUND_PRODUCT));
+    }
+
+
+    /**
+     * 추천 상품 조회
+     *
+     * @param recommendations 추천 키워드
+     * @return 추천 상품 목록
+     */
+    public List<Product> findByNameLike(RecommendationKeywordDto[] recommendations) {
+        return productRepository.findProductsByNameLike(recommendations);
+    }
+
 }
 
