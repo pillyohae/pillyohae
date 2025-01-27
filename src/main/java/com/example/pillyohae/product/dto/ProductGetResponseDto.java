@@ -17,10 +17,11 @@ public class ProductGetResponseDto {
     private String companyName;
     private Long price;
     private ProductStatus status;
+    private Integer stock;
     private List<ImageResponseDto> images;
 
-    public ProductGetResponseDto(Long productId, String productName, String category,
-                                 String description, String companyName, Long price, ProductStatus status,
+    public ProductGetResponseDto(Long productId, String productName, String category, String description,
+                                 String companyName, Long price, ProductStatus status, Integer stock,
                                  List<ImageResponseDto> images) {
         this.productId = productId;
         this.productName = productName;
@@ -29,6 +30,7 @@ public class ProductGetResponseDto {
         this.companyName = companyName;
         this.price = price;
         this.status = status;
+        this.stock = stock;
         this.images = images;
     }
 

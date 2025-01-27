@@ -134,6 +134,7 @@ public class ProductService {
             findProduct.getCompanyName(),
             findProduct.getPrice(),
             findProduct.getStatus(),
+            findProduct.getStock(),
             images
         );
     }
@@ -190,6 +191,7 @@ public class ProductService {
             product.getCategory(),
             product.getPrice(),
             product.getStatus(),
+            product.getStock(),
             product.getThumbnailUrl() // 썸네일 생성 메서드 호출
         ));
     }
@@ -224,6 +226,7 @@ public class ProductService {
             product.getCategory(),
             product.getPrice(),
             product.getStatus(),
+            product.getStock(),
             product.getThumbnailUrl() // 썸네일 생성 메서드 호출
         ));
     }
