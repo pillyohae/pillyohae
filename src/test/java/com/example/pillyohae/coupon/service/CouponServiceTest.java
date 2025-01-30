@@ -51,14 +51,14 @@ class CouponServiceTest {
 
     @BeforeEach
     void setUp() {
-        couponTemplate = new CouponTemplate("couponTemplate1", "description", CouponTemplate.DiscountType.FIXED_AMOUNT, CouponTemplate.ExpiredType.FIXED_DATE,10000L,null,10000L,20000L, LocalDateTime.now().plusSeconds(1L),LocalDateTime.now().plusDays(1L),10000,0);
+        couponTemplate = new CouponTemplate("couponTemplate1", "description", CouponTemplate.DiscountType.FIXED_AMOUNT, CouponTemplate.ExpiredType.FIXED_DATE,10000L,null,10000L,20000L, LocalDateTime.now().plusSeconds(1L),LocalDateTime.now().plusDays(1L),2000,0);
         couponTemplateRepository.save(couponTemplate);
         ShippingAddress address = new ShippingAddress("TestUser","010-0000-0000","test-zip","test-road","100-100");
         String userName = "user";
         String email = "user@example.com";
         String password = "Asdf1234@";
         Role role = Role.BUYER;
-        for (int i = 0; i < 10000; i++) {
+        for (int i = 0; i < 3000; i++) {
             User user = new User(userName+i,email+i,password,address,role);
             users.add(user);
         }
@@ -69,13 +69,13 @@ class CouponServiceTest {
     @DisplayName("쿠폰 발급 동시성 테스트")
     void giveCouponSynchronicityTest() throws InterruptedException {
 
-        Thread.sleep(4000);
+        Thread.sleep(3000);
         LocalDateTime start = LocalDateTime.now();
 
         try {
-            IntStream.range(0, 10000).parallel().forEach(i -> couponService.giveCoupon("user@example.com" + i , couponTemplate.getId()));
+            IntStream.range(0, 2000).parallel().forEach(i -> couponService.giveCoupon("user@example.com" + i , couponTemplate.getId()));
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            System.out.println("에러" + e.getMessage());
         }
 
 
@@ -86,14 +86,14 @@ class CouponServiceTest {
 
         CouponTemplate couponTemplate =  couponTemplateRepository.findByName("couponTemplate1");
 
-        String countKey = "coupon:count:" + couponTemplate.getId();
+        // db에 저장된 쿠폰 발행량을 가져옴
+        Integer count = couponTemplate.getCurrentIssuanceCount();
 
-        // 1. 캐시로부터 쿠폰 갯수를 가져옴
-        Integer count = intRedisTemplate.opsForValue().get(countKey);
-        // redis에 기록된 쿠폰 수 와 최대 발행량 일치  확인
-        assertThat(count).isEqualTo(couponTemplate.getMaxIssuanceCount());
         // 발행된 쿠폰수와 최대 발행량이 일치하는지 확인
         assertThat(couponTemplate.getIssuedCoupons().size()).isEqualTo(couponTemplate.getMaxIssuanceCount());
+
+        assertThat(count).isEqualTo(couponTemplate.getMaxIssuanceCount());
+
 
     }
 

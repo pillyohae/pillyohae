@@ -1,6 +1,5 @@
 package com.example.pillyohae.product.controller;
 
-import com.example.pillyohae.global.dto.UploadFileInfo;
 import com.example.pillyohae.product.dto.*;
 import com.example.pillyohae.product.service.ProductService;
 import jakarta.validation.Valid;
@@ -140,11 +139,11 @@ public class ProductController {
      * @return UploadFileInfo 반환되는 이미지 정보들
      */
     @PostMapping("/products/{productId}/images")
-    public ResponseEntity<UploadFileInfo> uploadImages(
+    public ResponseEntity<ImageUploadResponseDto> uploadImages(
         @PathVariable Long productId,
         @RequestPart(name = "image") MultipartFile image
     ) {
-        UploadFileInfo uploadFileInfo = productService.uploadImages(productId, image);
+        ImageUploadResponseDto uploadFileInfo = productService.uploadImages(productId, image);
         return new ResponseEntity<>(uploadFileInfo, HttpStatus.OK);
     }
 
@@ -189,16 +188,31 @@ public class ProductController {
      *
      * @param userDetails 사용자 정보
      * @param productId   상품 id
-     * @return X
+     * @return ImageUploadResponseDto 이미지 정보
      */
     @PostMapping("/products/{productId}/ai-image")
-    public ResponseEntity<String> RepresentativeAiImage(
+    public ResponseEntity<ImageUploadResponseDto> RepresentativeAiImage(
         @AuthenticationPrincipal UserDetails userDetails,
         @PathVariable Long productId
     ) {
-        productService.setRepresentativeAiImage(productId, userDetails.getUsername());
-        return new ResponseEntity<>(HttpStatus.OK);
+        ImageUploadResponseDto imageUploadResponseDto = productService.setRepresentativeAiImage(productId, userDetails.getUsername());
+        return new ResponseEntity<>(imageUploadResponseDto, HttpStatus.OK);
     }
 
+    /**
+     * 메인이미지 재업로드(Position1)
+     *
+     * @param productId 상품 id
+     * @param MainImage 사용자가 올리는 대표이미지파일(1번 위치에 올릴 파일)
+     * @return ImageUploadResponseDto 이미지 정보
+     */
+    @PostMapping("/products/{productId}/images/upload-main-image")
+    public ResponseEntity<ImageUploadResponseDto> uploadMainImage(
+        @PathVariable Long productId,
+        @RequestParam(name = "image") MultipartFile MainImage
+    ) {
+        ImageUploadResponseDto uploadImageToPositionOne = productService.uploadImageToPositionOne(productId, MainImage);
+        return new ResponseEntity<>(uploadImageToPositionOne, HttpStatus.OK);
+    }
 
 }

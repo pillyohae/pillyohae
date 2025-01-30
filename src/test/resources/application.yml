@@ -11,6 +11,8 @@ spring:
     url: ${TEST_DATABASE_URL}
     username: ${TEST_DATABASE_USERNAME}
     password: ${TEST_DATABASE_PASSWORD}
+    hikari:
+      maximum-pool-size: 50
 
   jpa:
     show-sql: false
@@ -26,6 +28,7 @@ spring:
         format_sql: false
         enable_lazy_load_no_trans: true
         globally_quoted_identifiers: true
+
 
       ## batch 전략
       jdbc:

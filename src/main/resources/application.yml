@@ -86,9 +86,9 @@ security: # SecurityProperties의 prefix와 일치
     - "/users/sellers/**"
     - "/products"
     - "/products/**"
-    - "/coupons"
   admin-auth-list:
     - "/users/admin/**"
+    - "/coupons"
   method-specific-patterns:
     GET:
       - "/products/*"

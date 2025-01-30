@@ -28,6 +28,21 @@ Content-Type: application/json
   "detailAddress": "100-100",
   "role": "buyer"
 }
+###
+POST http://localhost:8080/users/signup
+Authorization:
+Content-Type: application/json
+
+{
+  "name": "송정학",
+  "email": "asdf3@naver.com",
+  "password": "Asdf1234@",
+  "phoneNumber": "010-0000-0000",
+  "postcode": "22222",
+  "roadAddress": "인천시연수구컨벤시아대로",
+  "detailAddress": "100-100",
+  "role": "buyer"
+}
 
 
 ###
@@ -58,7 +73,33 @@ Content-Type: application/json
 
 %}
 
+### 관리자 로그인
+POST http://localhost:8080/users/login
+Content-Type: application/json
 
+{
+  "email": "asdf3@naver.com",
+  "password": "Asdf1234@"
+}
+
+> {%
+    // 응답 헤더에서 "Authorization" 또는 토큰 키를 가져옴
+    const accessToken = response.headers.valueOf("Authorization");
+
+
+    // 토큰이 있는 경우만 처리
+    if (accessToken) {
+        // Bearer 토큰 형식이 포함되어 있다면 분리
+        const token = accessToken.replace("Bearer ", "").trim();
+
+        // 환경 변수에 저장
+        client.global.set("accessToken", token);
+        console.log("Access Token:", token); // 디버깅용 로그
+    } else {
+        console.warn("Authorization header not found in response.");
+    }
+
+%}
 
 ###
 POST http://localhost:8080/products
@@ -88,7 +129,7 @@ Content-Type: application/json
   "expiredType": "FIXED_DATE",
   "fixedAmount": 10000,
   "minimumPrice": 20000,
-  "startAt": "2025-01-22T15:17:50",
+  "startAt": "2025-01-27T16:32:59",
   "expiredAt": "2025-02-20T23:59:59",
   "maxIssueCount": 1000
 }
@@ -199,7 +240,7 @@ GET http://localhost:8080/coupons?couponStatus = INACTIVE
 Authorization: Bearer {{accessToken}}
 
 ###
-POST http://localhost:8080/coupons/e8aa751e-f2ae-4123-9760-6f95c660a9eb/issue
+POST http://localhost:8080/coupons/b8f905d0-c0e5-4fe1-b9a0-7427b3e44efa/issue
 Authorization: Bearer {{accessToken}}
 ###
 
@@ -266,6 +307,9 @@ Authorization: Bearer {{accessToken}}
 
 ### 판매자 주문 상세 조회
 GET http://localhost:8080/users/sellers/orders/014f5655-3cc7-4ebd-9aa0-ca77aa386426
+Authorization: Bearer {{accessToken}}
+### 관리자 쿠폰 삭제
+DELETE http://localhost:8080/users/admin/coupons/d5445d13-6c37-4c31-b3fd-c8f1e649fd20
 Authorization: Bearer {{accessToken}}
 
 ### 구매자 주문 조회
