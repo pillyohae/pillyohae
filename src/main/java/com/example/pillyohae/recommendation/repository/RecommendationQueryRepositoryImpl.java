@@ -43,21 +43,20 @@ public class RecommendationQueryRepositoryImpl implements RecommendationQueryRep
     }
 
     private BooleanExpression productImageJoinCondition(QProduct product) {
-        return productImage.product.eq(product)
+        return productImage.product.productId.eq(product.productId)
             .and(productImage.position.eq(0)
                 .or(productImage.position.eq(1)
                     .and(thumbnailExists(product)))
-                .not()
             );
     }
 
     private BooleanExpression thumbnailExists(QProduct product) {
         return JPAExpressions.select(productImage.fileUrl)
             .from(productImage)
-            .where(productImage.product.eq(product)
+            .where(productImage.product.productId.eq(product.productId)
                 .and(productImage.position.eq(0))
             )
-            .exists();
+            .notExists();
     }
 
 }
