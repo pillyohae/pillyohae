@@ -17,17 +17,11 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.redisson.api.RedissonClient;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
+import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
@@ -47,7 +41,7 @@ public class PaymentService {
     JSONParser parser = new JSONParser();
 
     @DistributedLock(key = "order")
-    public ResponseEntity<Void> pay(String jsonBody) throws IOException, ParseException {
+    public JSONObject pay(String jsonBody) throws IOException, ParseException {
 
 
         JSONObject tossRequest = makeTossRequest(jsonBody);
@@ -69,7 +63,7 @@ public class PaymentService {
         redisMessagePublisher.publish(objectMapper.writeValueAsString(paymentMessage));
 
         // 일단 주문 성공을 했다고 알려준다. 이후 실제 결제되고 고객의 email에 결제 완료 메일을 보낸다.
-        return new ResponseEntity<>(HttpStatus.OK);
+        return tossRequest;
     }
 
     private JSONObject makeTossRequest(String jsonBody) {
