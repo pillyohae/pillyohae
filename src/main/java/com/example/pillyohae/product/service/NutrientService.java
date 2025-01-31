@@ -1,5 +1,7 @@
 package com.example.pillyohae.product.service;
 
+import com.example.pillyohae.global.exception.CustomResponseStatusException;
+import com.example.pillyohae.global.exception.code.ErrorCode;
 import com.example.pillyohae.product.dto.NutrientCreateRequestDto;
 import com.example.pillyohae.product.dto.NutrientResponseDto;
 import com.example.pillyohae.product.entity.Nutrient;
@@ -33,6 +35,10 @@ public class NutrientService {
     @Transactional
     public NutrientResponseDto createNutrient(NutrientCreateRequestDto requestDto) {
 
+        // 중복 이름 체크
+        if (nutrientRepository.existsByName(requestDto.getName())) {
+            throw new CustomResponseStatusException(ErrorCode.DUPLICATE_NUTRIENT_NAME);
+        }
         Nutrient nutrient = new Nutrient(requestDto.getName(), requestDto.getDescription());
         Nutrient savedNutrient = nutrientRepository.save(nutrient);
 
