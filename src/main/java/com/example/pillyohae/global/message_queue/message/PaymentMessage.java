@@ -9,6 +9,6 @@ import org.json.simple.JSONObject;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PaymentMessage {
-    private JSONObject tossRequest;
+    private JSONObject jsonObject;
     private String domainType;
 }

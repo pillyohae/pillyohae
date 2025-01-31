@@ -30,7 +30,7 @@ public class PaymentMessageHandler implements DomainMessageHandler<PaymentMessag
         // 주문 관련 비즈니스 로직 처리
         PaymentMessage paymentMessage = (PaymentMessage) message;
         try {
-            messageService.requestPayment(paymentMessage.getTossRequest());
+            messageService.savePayment(paymentMessage.getJsonObject());
         } catch (Exception e) {
             log.error(e.getMessage());
         }
