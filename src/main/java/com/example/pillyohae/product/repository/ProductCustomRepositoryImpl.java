@@ -2,6 +2,7 @@ package com.example.pillyohae.product.repository;
 
 import com.example.pillyohae.global.exception.CustomResponseStatusException;
 import com.example.pillyohae.global.exception.code.ErrorCode;
+import com.example.pillyohae.product.entity.Category;
 import com.example.pillyohae.product.entity.Product;
 import com.example.pillyohae.product.entity.QProduct;
 import com.example.pillyohae.product.entity.type.ProductStatus;
@@ -66,7 +67,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 
 
     @Override
-    public Page<Product> getAllProduct(String productName, String companyName, String category, Pageable pageable) {
+    public Page<Product> getAllProduct(String productName, String companyName, Category category, Pageable pageable) {
 
         List<OrderSpecifier<?>> orders = getSortOrders(pageable, product);
 
@@ -74,8 +75,8 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
             .selectFrom(product)
             .where(
                 productNameContains(productName),
-                companyNameEq(companyName),
-                categoryEq(category),
+                companyNameContains(companyName),
+                categoryContains(category),
                 product.deletedAt.isNull()
             )
             .offset(pageable.getOffset()) // 몇 번째 페이지부터 시작할 것 인지.
@@ -88,8 +89,8 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
             .from(product)
             .where(
                 productNameContains(productName),
-                companyNameEq(companyName),
-                categoryEq(category),
+                companyNameContains(companyName),
+                categoryContains(category),
                 product.deletedAt.isNull()
             );
 
@@ -132,12 +133,12 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
     }
 
 
-    private BooleanExpression categoryEq(String category) {
-        return category != null ? product.category.eq(category) : null;
+    private BooleanExpression categoryContains(Category category) {
+        return category != null ? product.category.name.contains(category.getName()) : null;
     }
 
-    private BooleanExpression companyNameEq(String companyName) {
-        return companyName != null ? product.companyName.eq(companyName) : null;
+    private BooleanExpression companyNameContains(String companyName) {
+        return companyName != null ? product.companyName.contains(companyName) : null;
     }
 
     private BooleanExpression productNameContains(String productName) {

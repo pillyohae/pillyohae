@@ -57,3 +57,15 @@ VALUES ('콜라겐', '피부 탄력 유지, 관절 및 연골 건강, 근육량 
 
 INSERT IGNORE INTO nutrients (name, description)
 VALUES ('프리바이오틱스', '장내 유익균을 활성화시켜 장 건강과 면역력을 증진시키는 효능');
+
+
+INSERT IGNORE INTO categories (name) VALUES ('눈');
+INSERT IGNORE INTO categories (name) VALUES ('면역력 / 항산화');
+INSERT IGNORE INTO categories (name) VALUES ('뼈, 관절');
+INSERT IGNORE INTO categories (name) VALUES ('소화(위)');
+INSERT IGNORE INTO categories (name) VALUES ('두뇌활동');
+INSERT IGNORE INTO categories (name) VALUES ('피부');
+INSERT IGNORE INTO categories (name) VALUES ('다이어트');
+INSERT IGNORE INTO categories (name) VALUES ('수면');
+INSERT IGNORE INTO categories (name) VALUES ('간');
+INSERT IGNORE INTO categories (name) VALUES ('대장');

@@ -32,6 +32,12 @@ public class NutrientService {
             .toList();
     }
 
+    /**
+     * 주요 성분 추가 (admin)
+     *
+     * @param requestDto
+     * @return
+     */
     @Transactional
     public NutrientResponseDto createNutrient(NutrientCreateRequestDto requestDto) {
 

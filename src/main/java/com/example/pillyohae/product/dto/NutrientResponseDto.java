@@ -4,12 +4,12 @@ import lombok.Getter;
 
 @Getter
 public class NutrientResponseDto {
-    private Long id;
+    private Long nutrientId;
     private String name;
     private String description;
 
-    public NutrientResponseDto(Long id, String name, String description) {
-        this.id = id;
+    public NutrientResponseDto(Long nutrientId, String name, String description) {
+        this.nutrientId = nutrientId;
         this.name = name;
         this.description = description;
     }
