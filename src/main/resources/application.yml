@@ -90,7 +90,6 @@ security: # SecurityProperties의 prefix와 일치
     - "/users/admin/**"
     - "/coupons"
     - "/products/nutrients"
-
   method-specific-patterns:
     GET:
       - "/products/*"

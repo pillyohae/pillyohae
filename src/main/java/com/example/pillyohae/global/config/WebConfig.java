@@ -65,15 +65,14 @@ public class WebConfig {
                 .requestMatchers(HttpMethod.POST, "/persona/*").permitAll()
                 .requestMatchers(HttpMethod.POST, "/refresh").permitAll()
                 .requestMatchers(HttpMethod.GET, "/coupons/available").permitAll()
+                .requestMatchers(HttpMethod.GET, "/products/nutrients").permitAll()
                 .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
                 .dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.INCLUDE,
                     DispatcherType.ERROR).permitAll()
-                .requestMatchers(securityProperties.getSellerAuthList().toArray(new String[0]))
-                //스프링 시큐리티의 hasRole 메서드는 내부적으로 ROLE_ 접두사를 해당 값에 자동으로 추가하도록 설계됨.
-                //"SELLER" 를 넣어도 ROLE_SELLER 와 비교하게 된다는 뜻.
-                .hasRole(Role.SELLER.getName().toUpperCase())
                 .requestMatchers(securityProperties.getAdminAuthList().toArray(new String[0]))
                 .hasRole(Role.ADMIN.getName().toUpperCase())
+                .requestMatchers(securityProperties.getSellerAuthList().toArray(new String[0]))
+                .hasRole(Role.SELLER.getName().toUpperCase())
                 .anyRequest().authenticated()
             )
             // Spring Security 예외에 대한 처리를 핸들러에 위임.
