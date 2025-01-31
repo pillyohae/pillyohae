@@ -8,21 +8,16 @@ import com.example.pillyohae.global.exception.code.ErrorCode;
 import com.example.pillyohae.persona.service.PersonaService;
 import com.example.pillyohae.product.dto.*;
 import com.example.pillyohae.product.dto.ProductGetResponseDto.ImageResponseDto;
-import com.example.pillyohae.product.dto.ProductSearchResponseDto;
-import com.example.pillyohae.product.dto.ProductUpdateRequestDto;
-import com.example.pillyohae.product.dto.ProductUpdateResponseDto;
-import com.example.pillyohae.product.dto.UpdateImageRequestDto;
-import com.example.pillyohae.product.dto.UpdateImageResponseDto;
+import com.example.pillyohae.product.entity.Nutrient;
 import com.example.pillyohae.product.entity.Product;
 import com.example.pillyohae.product.entity.ProductImage;
 import com.example.pillyohae.product.entity.type.ProductStatus;
 import com.example.pillyohae.product.repository.ImageStorageRepository;
+import com.example.pillyohae.product.repository.NutrientRepository;
 import com.example.pillyohae.product.repository.ProductRepository;
 import com.example.pillyohae.recommendation.dto.RecommendationKeywordDto;
 import com.example.pillyohae.user.entity.User;
 import com.example.pillyohae.user.service.UserService;
-import jakarta.persistence.EntityManager;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -44,6 +39,7 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final ImageStorageRepository imageStorageRepository;
     private final UserService userService;
+    private final NutrientRepository nutrientRepository;
     private final S3Service s3Service;
     private final PersonaService personaService;
 
@@ -60,7 +56,10 @@ public class ProductService {
 
         User findUser = userService.findByEmail(email);
 
-        Product savedProduct = productRepository.save(requestDto.toEntity(findUser));
+        Nutrient nutrient = nutrientRepository.findById(requestDto.getNutrientId())
+            .orElseThrow(() -> new CustomResponseStatusException(ErrorCode.NOT_FOUND_NUTRIENT));
+
+        Product savedProduct = productRepository.save(requestDto.toEntity(findUser, nutrient));
 
         return new ProductCreateResponseDto(
             savedProduct.getProductId(),
@@ -70,7 +69,8 @@ public class ProductService {
             savedProduct.getDescription(),
             savedProduct.getPrice(),
             savedProduct.getStatus(),
-            savedProduct.getStock());
+            savedProduct.getStock(),
+            savedProduct.getNutrient());
     }
 
     /**

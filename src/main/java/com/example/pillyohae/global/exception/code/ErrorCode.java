@@ -33,6 +33,7 @@ public enum ErrorCode {
     NOT_FOUND_PRODUCT(HttpStatus.NOT_FOUND, "Product를 찾을 수 없습니다"),
     NOT_FOUND_PROPERTY(HttpStatus.NOT_FOUND, "정렬기준을 확인해주세요"),
     NOT_FOUND_IMAGE_POSITION1(HttpStatus.NOT_FOUND, "AI이미지로 변환할 대표이미지가 없습니다."),
+    NOT_FOUND_NUTRIENT(HttpStatus.NOT_FOUND, "존재하지 않는 영양성분입니다"),
     /**
      * Image
      */

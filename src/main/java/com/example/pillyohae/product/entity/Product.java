@@ -7,7 +7,6 @@ import com.example.pillyohae.product.entity.type.ProductStatus;
 import com.example.pillyohae.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
-import org.springframework.data.jpa.repository.Lock;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -31,8 +30,6 @@ public class Product extends BaseTimeEntity {
 
     private Long price;
 
-    private String imageUrl;
-
     private Integer stock;
 
     @Enumerated(value = EnumType.STRING)
@@ -44,9 +41,13 @@ public class Product extends BaseTimeEntity {
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductImage> images = new ArrayList<>();
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "nutrient_nutrientId")
+    private Nutrient nutrient;
+
     private LocalDateTime deletedAt;
 
-    public Product(User user, String productName, String category, String description, String companyName, Long price, Integer stock) {
+    public Product(User user, String productName, String category, String description, String companyName, Long price, Integer stock, Nutrient nutrient) {
         this.user = user;
         this.productName = productName;
         this.category = category;
@@ -54,6 +55,7 @@ public class Product extends BaseTimeEntity {
         this.companyName = companyName;
         this.price = price;
         this.stock = stock;
+        this.nutrient = nutrient;
     }
 
     public Product(User user, String productName, String category, String description, String companyName, Long price, ProductStatus status) {
@@ -114,7 +116,7 @@ public class Product extends BaseTimeEntity {
             throw new CustomResponseStatusException(ErrorCode.LACK_OF_STOCK);
         }
         this.stock -= quantity; // 재고 차감
-        
+
         return this.stock; // 차감 후 남은 재고 반환
     }
 

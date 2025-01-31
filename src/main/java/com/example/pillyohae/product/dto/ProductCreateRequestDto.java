@@ -1,5 +1,6 @@
 package com.example.pillyohae.product.dto;
 
+import com.example.pillyohae.product.entity.Nutrient;
 import com.example.pillyohae.product.entity.Product;
 import com.example.pillyohae.product.entity.type.ProductStatus;
 import com.example.pillyohae.user.entity.User;
@@ -32,6 +33,9 @@ public class ProductCreateRequestDto {
     @Positive
     private Integer stock;
 
+    @NotNull
+    private Long nutrientId;
+
     //테스트 코드용
     public ProductCreateRequestDto(String productName, String category, String description, String companyName, Long price, ProductStatus status) {
         this.productName = productName;
@@ -42,7 +46,7 @@ public class ProductCreateRequestDto {
         this.status = status;
     }
 
-    public Product toEntity(User user) {
+    public Product toEntity(User user, Nutrient nutrient) {
         return new Product(
             user,
             this.productName,
@@ -50,7 +54,8 @@ public class ProductCreateRequestDto {
             this.description,
             this.companyName,
             this.price,
-            this.stock
+            this.stock,
+            nutrient
         );
     }
 }
