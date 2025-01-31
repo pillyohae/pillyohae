@@ -27,6 +27,12 @@ public class DistributedLockAop {
     private final RedissonClient redissonClient;
     private final AopForTransaction aopForTransaction;
 
+    /**
+     * AOP 적용 CLASS
+     * @param joinPoint 메소드 인자 변수명-변수값을 가져오고 어노테이션에 적용된 key 이름을 가져옴
+     * @return
+     * @throws Throwable
+     */
     @Around("@annotation(com.example.pillyohae.global.distributedLock.DistributedLock)")
     public Object lock(final ProceedingJoinPoint joinPoint) throws Throwable {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
@@ -34,7 +40,7 @@ public class DistributedLockAop {
         DistributedLock distributedLock = method.getAnnotation(DistributedLock.class);
 
         String key = REDISSON_LOCK_PREFIX + CustomSpringELParser.getDynamicValue(signature.getParameterNames(), joinPoint.getArgs(), distributedLock.key());
-        RLock rLock = redissonClient.getLock(key);  // (1)
+        RLock rLock = redissonClient.getLock(key);
 
         try {
             boolean available = rLock.tryLock(distributedLock.waitTime(), distributedLock.leaseTime(), distributedLock.timeUnit());  // (2)
@@ -42,12 +48,12 @@ public class DistributedLockAop {
                 return false;
             }
 
-            return aopForTransaction.proceed(joinPoint);  // (3)
+            return aopForTransaction.proceed(joinPoint);
         } catch (InterruptedException e) {
             throw new InterruptedException();
         } finally {
             try {
-                rLock.unlock();   // (4)
+                rLock.unlock();
             } catch (IllegalMonitorStateException e) {
                 log.info("Redisson Lock Already UnLock {} {}",
                         kv("serviceName", method.getName()),

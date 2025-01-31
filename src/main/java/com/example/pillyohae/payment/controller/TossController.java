@@ -26,7 +26,7 @@ public class TossController {
     @RequestMapping(value = "/confirm")
     public ResponseEntity<JSONObject> confirmPayment(@RequestBody String jsonBody) throws Exception {
 
-        return paymentService.pay(jsonBody);
+        return ResponseEntity.ok().body(paymentService.pay(jsonBody));
     }
 
 
