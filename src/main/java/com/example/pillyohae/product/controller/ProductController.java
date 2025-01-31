@@ -1,6 +1,7 @@
 package com.example.pillyohae.product.controller;
 
 import com.example.pillyohae.product.dto.*;
+import com.example.pillyohae.product.service.CategoryService;
 import com.example.pillyohae.product.service.NutrientService;
 import com.example.pillyohae.product.service.ProductService;
 import jakarta.validation.Valid;
@@ -21,6 +22,7 @@ import java.util.List;
 public class ProductController {
     private final ProductService productService;
     private final NutrientService nutrientService;
+    private final CategoryService categoryService;
 
     /**
      * 상품 생성
@@ -219,7 +221,6 @@ public class ProductController {
         return new ResponseEntity<>(uploadImageToPositionOne, HttpStatus.OK);
     }
 
-    //    @PreAuthorize("hasAuthority('ADMIN')")
     @PostMapping("/products/nutrients")
     public ResponseEntity<NutrientResponseDto> addNutrient(
         @Valid @RequestBody NutrientCreateRequestDto requestDto
@@ -238,6 +239,13 @@ public class ProductController {
     ) {
         List<NutrientResponseDto> nutrients = nutrientService.findAll();  // 영양소 목록 조회
         return new ResponseEntity<>(nutrients, HttpStatus.OK);
+    }
+
+    @GetMapping("/products/categories")
+    public ResponseEntity<List<CategoryResponseDto>> getCategories(
+    ) {
+        List<CategoryResponseDto> categories = categoryService.findAll();
+        return new ResponseEntity<>(categories, HttpStatus.OK);
     }
 
 }

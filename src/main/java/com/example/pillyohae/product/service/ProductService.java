@@ -8,10 +8,12 @@ import com.example.pillyohae.global.exception.code.ErrorCode;
 import com.example.pillyohae.persona.service.PersonaService;
 import com.example.pillyohae.product.dto.*;
 import com.example.pillyohae.product.dto.ProductGetResponseDto.ImageResponseDto;
+import com.example.pillyohae.product.entity.Category;
 import com.example.pillyohae.product.entity.Nutrient;
 import com.example.pillyohae.product.entity.Product;
 import com.example.pillyohae.product.entity.ProductImage;
 import com.example.pillyohae.product.entity.type.ProductStatus;
+import com.example.pillyohae.product.repository.CategoryRepository;
 import com.example.pillyohae.product.repository.ImageStorageRepository;
 import com.example.pillyohae.product.repository.NutrientRepository;
 import com.example.pillyohae.product.repository.ProductRepository;
@@ -38,8 +40,9 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final ImageStorageRepository imageStorageRepository;
-    private final UserService userService;
     private final NutrientRepository nutrientRepository;
+    private final CategoryRepository categoryRepository;
+    private final UserService userService;
     private final S3Service s3Service;
     private final PersonaService personaService;
 
@@ -59,7 +62,10 @@ public class ProductService {
         Nutrient nutrient = nutrientRepository.findById(requestDto.getNutrientId())
             .orElseThrow(() -> new CustomResponseStatusException(ErrorCode.NOT_FOUND_NUTRIENT));
 
-        Product savedProduct = productRepository.save(requestDto.toEntity(findUser, nutrient));
+        Category category = categoryRepository.findById(requestDto.getCategoryId())
+            .orElseThrow(() -> new CustomResponseStatusException(ErrorCode.NOT_FOUND_CATEGORY));
+
+        Product savedProduct = productRepository.save(requestDto.toEntity(findUser, nutrient, category));
 
         return new ProductCreateResponseDto(
             savedProduct.getProductId(),
@@ -84,31 +90,37 @@ public class ProductService {
     public ProductUpdateResponseDto updateProduct(Long productId, ProductUpdateRequestDto requestDto) {
 
         Product findProduct = findById(productId);
-        findProduct.updateProduct(
-            requestDto.getProductName(),
-            requestDto.getCategory(),
-            requestDto.getDescription(),
-            requestDto.getCompanyName(),
-            requestDto.getPrice(),
-            requestDto.getStock()
+        Nutrient nutrient = nutrientRepository.findById(requestDto.getNutrientId())
+            .orElseThrow(() -> new CustomResponseStatusException(ErrorCode.NOT_FOUND_NUTRIENT));
 
-        );
+        Category category = categoryRepository.findById(requestDto.getCategoryId())
+            .orElseThrow(() -> new CustomResponseStatusException(ErrorCode.NOT_FOUND_CATEGORY));
+
 
         if (requestDto.getStock() < 0) {
             throw new CustomResponseStatusException(ErrorCode.STOCK_CANNOTBE_NEGATIVE);
         }
 
-        Product updatedProduct = productRepository.save(findProduct);
+        findProduct.updateProduct(
+            requestDto.getProductName(),
+            category,
+            requestDto.getDescription(),
+            requestDto.getCompanyName(),
+            requestDto.getPrice(),
+            requestDto.getStock(),
+            nutrient
+        );
 
         return new ProductUpdateResponseDto(
-            updatedProduct.getProductId(),
-            updatedProduct.getProductName(),
-            updatedProduct.getCategory(),
-            updatedProduct.getDescription(),
-            updatedProduct.getCompanyName(),
-            updatedProduct.getPrice(),
-            updatedProduct.getStatus(),
-            updatedProduct.getStock()
+            findProduct.getProductId(),
+            findProduct.getProductName(),
+            findProduct.getCategory(),
+            findProduct.getDescription(),
+            findProduct.getCompanyName(),
+            findProduct.getPrice(),
+            findProduct.getStatus(),
+            findProduct.getStock(),
+            findProduct.getNutrient()
         );
     }
 
@@ -123,6 +135,19 @@ public class ProductService {
 
         Product findProduct = findById(productId);
 
+        //카테고리 정보 DTO로 변환
+        CategoryResponseDto categoryResponseDto = new CategoryResponseDto(
+            findProduct.getCategory().getCategoryId(),
+            findProduct.getCategory().getName()
+        );
+
+        //영양성분 정보 DTO로 변환
+        NutrientResponseDto nutrientResponseDto = new NutrientResponseDto(
+            findProduct.getNutrient().getNutrientId(),
+            findProduct.getNutrient().getName(),
+            findProduct.getNutrient().getDescription()
+        );
+
         List<ImageResponseDto> images = findProduct.getImages()
             .stream()
             .map(image -> new ImageResponseDto(
@@ -135,13 +160,14 @@ public class ProductService {
         return new ProductGetResponseDto(
             findProduct.getProductId(),
             findProduct.getProductName(),
-            findProduct.getCategory(),
+            categoryResponseDto,
             findProduct.getDescription(),
             findProduct.getCompanyName(),
             findProduct.getPrice(),
             findProduct.getStatus(),
             findProduct.getStock(),
-            images
+            images,
+            nutrientResponseDto
         );
     }
 
@@ -179,22 +205,21 @@ public class ProductService {
      * @return 정상 처리 시 Page<ProductSearchResponseDto> (페이지로 반환된 dto)
      */
     @Transactional
-    public Page<ProductSearchResponseDto> searchAndConvertProducts(String productName, String companyName, String category, int page, int size, String sortBy, Boolean isAsc) {
+    public Page<ProductSearchResponseDto> searchAndConvertProducts(String productName, String companyName, String categoryName, int page, int size, String sortBy, Boolean isAsc) {
 
         //정렬 방향과 속성 지정
         Sort.Direction direction = isAsc ? Sort.Direction.ASC : Sort.Direction.DESC;
         Sort sort = Sort.by(direction, sortBy);
         //페이징 객체 생성
         Pageable pageable = PageRequest.of(page, size, sort);
-        Page<Product> productsPage = productRepository.getAllProduct(productName, companyName,
-            category, pageable);
+        Page<Product> productsPage = productRepository.getAllProduct(productName, companyName, categoryName, pageable);
 
         // Response로 변환
         return productsPage.map(product -> new ProductSearchResponseDto(
             product.getProductId(),
             product.getProductName(),
             product.getCompanyName(),
-            product.getCategory(),
+            product.getCategory().getName(),
             product.getPrice(),
             product.getStatus(),
             product.getStock(),
@@ -229,7 +254,7 @@ public class ProductService {
             product.getProductId(),
             product.getProductName(),
             product.getCompanyName(),
-            product.getCategory(),
+            product.getCategory().getName(),
             product.getPrice(),
             product.getStatus(),
             product.getStock(),

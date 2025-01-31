@@ -66,7 +66,7 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 
 
     @Override
-    public Page<Product> getAllProduct(String productName, String companyName, String category, Pageable pageable) {
+    public Page<Product> getAllProduct(String productName, String companyName, String categoryName, Pageable pageable) {
 
         List<OrderSpecifier<?>> orders = getSortOrders(pageable, product);
 
@@ -74,8 +74,8 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
             .selectFrom(product)
             .where(
                 productNameContains(productName),
-                companyNameEq(companyName),
-                categoryEq(category),
+                companyNameContains(companyName),
+                categoryContains(categoryName),
                 product.deletedAt.isNull()
             )
             .offset(pageable.getOffset()) // 몇 번째 페이지부터 시작할 것 인지.
@@ -88,8 +88,8 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
             .from(product)
             .where(
                 productNameContains(productName),
-                companyNameEq(companyName),
-                categoryEq(category),
+                companyNameContains(companyName),
+                categoryContains(categoryName),
                 product.deletedAt.isNull()
             );
 
@@ -132,12 +132,12 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
     }
 
 
-    private BooleanExpression categoryEq(String category) {
-        return category != null ? product.category.eq(category) : null;
+    private BooleanExpression categoryContains(String categoryName) {
+        return categoryName != null ? product.category.name.contains(categoryName) : null;
     }
 
-    private BooleanExpression companyNameEq(String companyName) {
-        return companyName != null ? product.companyName.eq(companyName) : null;
+    private BooleanExpression companyNameContains(String companyName) {
+        return companyName != null ? product.companyName.contains(companyName) : null;
     }
 
     private BooleanExpression productNameContains(String productName) {

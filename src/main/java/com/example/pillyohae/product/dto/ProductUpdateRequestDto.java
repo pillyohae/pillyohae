@@ -5,11 +5,20 @@ import lombok.Getter;
 
 @Getter
 public class ProductUpdateRequestDto {
+
     private String productName;
-    private String category;
+
+    private Long categoryId;
+
     private String description;
+
     private String companyName;
+
     private Long price;
+
     private ProductStatus status;
+
     private Integer stock;
+
+    private Long nutrientId;
 }
