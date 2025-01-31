@@ -135,6 +135,19 @@ public class ProductService {
 
         Product findProduct = findById(productId);
 
+        //카테고리 정보 DTO로 변환
+        CategoryResponseDto categoryResponseDto = new CategoryResponseDto(
+            findProduct.getCategory().getCategoryId(),
+            findProduct.getCategory().getName()
+        );
+
+        //영양성분 정보 DTO로 변환
+        NutrientResponseDto nutrientResponseDto = new NutrientResponseDto(
+            findProduct.getNutrient().getNutrientId(),
+            findProduct.getNutrient().getName(),
+            findProduct.getNutrient().getDescription()
+        );
+
         List<ImageResponseDto> images = findProduct.getImages()
             .stream()
             .map(image -> new ImageResponseDto(
@@ -147,13 +160,14 @@ public class ProductService {
         return new ProductGetResponseDto(
             findProduct.getProductId(),
             findProduct.getProductName(),
-            findProduct.getCategory().getName(),
+            categoryResponseDto,
             findProduct.getDescription(),
             findProduct.getCompanyName(),
             findProduct.getPrice(),
             findProduct.getStatus(),
             findProduct.getStock(),
-            images
+            images,
+            nutrientResponseDto
         );
     }
 
