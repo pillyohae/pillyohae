@@ -1,6 +1,7 @@
 package com.example.pillyohae.product.controller;
 
 import com.example.pillyohae.product.dto.*;
+import com.example.pillyohae.product.service.NutrientService;
 import com.example.pillyohae.product.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -12,11 +13,14 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 @RestController
 @RequestMapping
 @RequiredArgsConstructor
 public class ProductController {
     private final ProductService productService;
+    private final NutrientService nutrientService;
 
     /**
      * 상품 생성
@@ -213,6 +217,27 @@ public class ProductController {
     ) {
         ImageUploadResponseDto uploadImageToPositionOne = productService.uploadImageToPositionOne(productId, MainImage);
         return new ResponseEntity<>(uploadImageToPositionOne, HttpStatus.OK);
+    }
+
+    //    @PreAuthorize("hasAuthority('ADMIN')")
+    @PostMapping("/products/nutrients")
+    public ResponseEntity<NutrientResponseDto> addNutrient(
+        @Valid @RequestBody NutrientCreateRequestDto requestDto
+    ) {
+        NutrientResponseDto nutrient = nutrientService.createNutrient(requestDto);
+        return new ResponseEntity<>(nutrient, HttpStatus.CREATED);
+    }
+
+    /**
+     * 영양소 목록 조회 (드롭다운 박스)
+     *
+     * @return List<NutrientResponseDto> 영양 정보
+     */
+    @GetMapping("/products/nutrients")
+    public ResponseEntity<List<NutrientResponseDto>> getNutrients(
+    ) {
+        List<NutrientResponseDto> nutrients = nutrientService.findAll();  // 영양소 목록 조회
+        return new ResponseEntity<>(nutrients, HttpStatus.OK);
     }
 
 }

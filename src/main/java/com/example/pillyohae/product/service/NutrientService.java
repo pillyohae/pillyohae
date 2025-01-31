@@ -1,0 +1,45 @@
+package com.example.pillyohae.product.service;
+
+import com.example.pillyohae.product.dto.NutrientCreateRequestDto;
+import com.example.pillyohae.product.dto.NutrientResponseDto;
+import com.example.pillyohae.product.entity.Nutrient;
+import com.example.pillyohae.product.repository.NutrientRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class NutrientService {
+
+    private final NutrientRepository nutrientRepository;
+
+    // 모든 영양소 조회 (상품생성시)
+    public List<NutrientResponseDto> findAll() {
+
+        List<Nutrient> nutrients = nutrientRepository.findAllOrderedByName();
+        return nutrients
+            .stream()
+            .map(nutrient -> new NutrientResponseDto(
+                nutrient.getNutrientId(),
+                nutrient.getName(),
+                nutrient.getDescription()
+            ))
+            .toList();
+    }
+
+    @Transactional
+    public NutrientResponseDto createNutrient(NutrientCreateRequestDto requestDto) {
+
+        Nutrient nutrient = new Nutrient(requestDto.getName(), requestDto.getDescription());
+        Nutrient savedNutrient = nutrientRepository.save(nutrient);
+
+        return new NutrientResponseDto(
+            savedNutrient.getNutrientId(),
+            savedNutrient.getName(),
+            savedNutrient.getDescription()
+        );
+    }
+}

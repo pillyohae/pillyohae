@@ -1,5 +1,6 @@
 package com.example.pillyohae.product.dto;
 
+import com.example.pillyohae.product.entity.Nutrient;
 import com.example.pillyohae.product.entity.type.ProductStatus;
 import lombok.Getter;
 
@@ -14,8 +15,9 @@ public class ProductCreateResponseDto {
     private Long price;
     private ProductStatus status;
     private Integer stock;
+    private String nutrientName;
 
-    public ProductCreateResponseDto(Long productId, String productName, String category, String description, String companyName, Long price, ProductStatus status, Integer stock) {
+    public ProductCreateResponseDto(Long productId, String productName, String category, String description, String companyName, Long price, ProductStatus status, Integer stock, Nutrient nutrient) {
         this.productId = productId;
         this.productName = productName;
         this.category = category;
@@ -24,5 +26,6 @@ public class ProductCreateResponseDto {
         this.price = price;
         this.status = status;
         this.stock = stock;
+        this.nutrientName = nutrient.getName();
     }
 }
