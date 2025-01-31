@@ -1,8 +1,6 @@
 package com.example.pillyohae.product.controller;
 
 import com.example.pillyohae.product.dto.*;
-import com.example.pillyohae.product.entity.Category;
-import com.example.pillyohae.product.repository.CategoryRepository;
 import com.example.pillyohae.product.service.CategoryService;
 import com.example.pillyohae.product.service.NutrientService;
 import com.example.pillyohae.product.service.ProductService;
@@ -105,7 +103,7 @@ public class ProductController {
     public ResponseEntity<Page<ProductSearchResponseDto>> getAllProduct(
         @RequestParam(required = false) String productName,
         @RequestParam(required = false) String companyName,
-        @RequestParam(required = false) Category category,
+        @RequestParam(required = false) String category,
         @RequestParam(value = "page", required = false, defaultValue = "1") int page,
         @RequestParam(value = "size", required = false, defaultValue = "20") int size,
         @RequestParam(value = "sortBy", required = false, defaultValue = "productId") String sortBy,

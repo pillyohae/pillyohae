@@ -38,7 +38,7 @@ public class ProductCreateRequestDto {
     private Long nutrientId;
 
     //테스트 코드용
-    public ProductCreateRequestDto(String productName, Long category, String description, String companyName, Long price, ProductStatus status) {
+    public ProductCreateRequestDto(String productName, Long categoryId, String description, String companyName, Long price, ProductStatus status) {
         this.productName = productName;
         this.categoryId = categoryId;
         this.description = description;

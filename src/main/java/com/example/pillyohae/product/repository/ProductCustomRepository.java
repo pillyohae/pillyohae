@@ -1,6 +1,5 @@
 package com.example.pillyohae.product.repository;
 
-import com.example.pillyohae.product.entity.Category;
 import com.example.pillyohae.product.entity.Product;
 import com.example.pillyohae.recommendation.dto.RecommendationKeywordDto;
 import org.springframework.data.domain.Page;
@@ -10,7 +9,7 @@ import java.util.List;
 
 public interface ProductCustomRepository {
 
-    Page<Product> getAllProduct(String productName, String companyName, Category category, Pageable pageable);
+    Page<Product> getAllProduct(String productName, String companyName, String categoryName, Pageable pageable);
 
     List<Product> findProductsByNameLike(RecommendationKeywordDto[] recommendations);
 }

@@ -205,14 +205,14 @@ public class ProductService {
      * @return 정상 처리 시 Page<ProductSearchResponseDto> (페이지로 반환된 dto)
      */
     @Transactional
-    public Page<ProductSearchResponseDto> searchAndConvertProducts(String productName, String companyName, Category category, int page, int size, String sortBy, Boolean isAsc) {
+    public Page<ProductSearchResponseDto> searchAndConvertProducts(String productName, String companyName, String categoryName, int page, int size, String sortBy, Boolean isAsc) {
 
         //정렬 방향과 속성 지정
         Sort.Direction direction = isAsc ? Sort.Direction.ASC : Sort.Direction.DESC;
         Sort sort = Sort.by(direction, sortBy);
         //페이징 객체 생성
         Pageable pageable = PageRequest.of(page, size, sort);
-        Page<Product> productsPage = productRepository.getAllProduct(productName, companyName, category, pageable);
+        Page<Product> productsPage = productRepository.getAllProduct(productName, companyName, categoryName, pageable);
 
         // Response로 변환
         return productsPage.map(product -> new ProductSearchResponseDto(
