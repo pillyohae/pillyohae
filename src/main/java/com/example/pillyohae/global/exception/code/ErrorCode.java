@@ -50,6 +50,7 @@ public enum ErrorCode {
     STOCK_CANNOTBE_NEGATIVE(HttpStatus.BAD_REQUEST, "재고는 0보다 작을 수 없습니다."),
     QUANTITY_CANNOTBE_NEGATIVE(HttpStatus.BAD_REQUEST, "주문량을 올바르게 입력해주세요."),
     LACK_OF_STOCK(HttpStatus.BAD_REQUEST, "제품의 재고가 부족합니다"),
+    DUPLICATE_NUTRIENT_NAME(HttpStatus.BAD_REQUEST, "중복된 영양성분입니다."),
 
     /**
      * unAuthorized
