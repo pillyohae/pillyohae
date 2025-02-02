@@ -1,6 +1,6 @@
 package com.example.pillyohae.product.service;
 
-import com.example.pillyohae.product.dto.CategoryResponseDto;
+import com.example.pillyohae.product.dto.category.CategoryResponseDto;
 import com.example.pillyohae.product.entity.Category;
 import com.example.pillyohae.product.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;

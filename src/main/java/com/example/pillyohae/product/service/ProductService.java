@@ -5,18 +5,18 @@ import com.example.pillyohae.global.S3.S3Service;
 import com.example.pillyohae.global.dto.UploadFileInfo;
 import com.example.pillyohae.global.exception.CustomResponseStatusException;
 import com.example.pillyohae.global.exception.code.ErrorCode;
+import com.example.pillyohae.persona.dto.PersonaMessageCreateResponseDto;
 import com.example.pillyohae.persona.service.PersonaService;
-import com.example.pillyohae.product.dto.*;
-import com.example.pillyohae.product.dto.ProductGetResponseDto.ImageResponseDto;
-import com.example.pillyohae.product.entity.Category;
-import com.example.pillyohae.product.entity.Nutrient;
-import com.example.pillyohae.product.entity.Product;
-import com.example.pillyohae.product.entity.ProductImage;
+import com.example.pillyohae.product.dto.category.CategoryResponseDto;
+import com.example.pillyohae.product.dto.image.ImageUploadResponseDto;
+import com.example.pillyohae.product.dto.image.UpdateImageRequestDto;
+import com.example.pillyohae.product.dto.image.UpdateImageResponseDto;
+import com.example.pillyohae.product.dto.nutrient.NutrientResponseDto;
+import com.example.pillyohae.product.dto.product.*;
+import com.example.pillyohae.product.dto.product.ProductGetResponseDto.ImageResponseDto;
+import com.example.pillyohae.product.entity.*;
 import com.example.pillyohae.product.entity.type.ProductStatus;
-import com.example.pillyohae.product.repository.CategoryRepository;
-import com.example.pillyohae.product.repository.ImageStorageRepository;
-import com.example.pillyohae.product.repository.NutrientRepository;
-import com.example.pillyohae.product.repository.ProductRepository;
+import com.example.pillyohae.product.repository.*;
 import com.example.pillyohae.recommendation.dto.RecommendationKeywordDto;
 import com.example.pillyohae.user.entity.User;
 import com.example.pillyohae.user.service.UserService;
@@ -42,6 +42,7 @@ public class ProductService {
     private final ImageStorageRepository imageStorageRepository;
     private final NutrientRepository nutrientRepository;
     private final CategoryRepository categoryRepository;
+    private final PersonaMessageRepository personaMessageRepository;
     private final UserService userService;
     private final S3Service s3Service;
     private final PersonaService personaService;
@@ -67,16 +68,25 @@ public class ProductService {
 
         Product savedProduct = productRepository.save(requestDto.toEntity(findUser, nutrient, category));
 
-        return new ProductCreateResponseDto(
-            savedProduct.getProductId(),
-            savedProduct.getProductName(),
-            savedProduct.getCategory(),
-            savedProduct.getCompanyName(),
-            savedProduct.getDescription(),
-            savedProduct.getPrice(),
-            savedProduct.getStatus(),
-            savedProduct.getStock(),
-            savedProduct.getNutrient());
+        // 페르소나 메시지 생성
+        List<PersonaMessageCreateResponseDto> personaMessages =
+            personaService.createPersonaMessageFromProduct(nutrient.getName());
+
+        // 생성된 메시지를 엔티티로 변환 후 저장
+        List<PersonaMessage> messageEntities = personaMessages
+            .stream()
+            .map(message -> new PersonaMessage(message.getMessage()))
+            .toList();
+
+        // 상품과 메시지 연관 관계 설정(상품에 메세지 추가)
+        savedProduct.addPersonaMessages(messageEntities);
+
+        // 메시지 저장
+        personaMessageRepository.saveAll(messageEntities);
+
+
+        return new ProductCreateResponseDto(savedProduct);
+
     }
 
     /**
@@ -90,6 +100,7 @@ public class ProductService {
     public ProductUpdateResponseDto updateProduct(Long productId, ProductUpdateRequestDto requestDto) {
 
         Product findProduct = findById(productId);
+
         Nutrient nutrient = nutrientRepository.findById(requestDto.getNutrientId())
             .orElseThrow(() -> new CustomResponseStatusException(ErrorCode.NOT_FOUND_NUTRIENT));
 
@@ -197,7 +208,7 @@ public class ProductService {
      *
      * @param productName 상품 이름(검색 조건)
      * @param companyName 판매사 이름(검색 조건)
-     * @param category    상품 분류(검색조건)
+     * @param companyName 상품 분류(검색조건)
      * @param page        페이지 번호
      * @param size        한페이지 게시글 수
      * @param sortBy      상품 정렬 조건(ex. productId, price)
@@ -212,19 +223,11 @@ public class ProductService {
         Sort sort = Sort.by(direction, sortBy);
         //페이징 객체 생성
         Pageable pageable = PageRequest.of(page, size, sort);
+        //상품 조회
         Page<Product> productsPage = productRepository.getAllProduct(productName, companyName, categoryName, pageable);
 
-        // Response로 변환
-        return productsPage.map(product -> new ProductSearchResponseDto(
-            product.getProductId(),
-            product.getProductName(),
-            product.getCompanyName(),
-            product.getCategory().getName(),
-            product.getPrice(),
-            product.getStatus(),
-            product.getStock(),
-            product.getThumbnailUrl() // 썸네일 생성 메서드 호출
-        ));
+        // Product 객체를 ProductSearchResponseDto로 변환 후 반환
+        return productsPage.map(ProductSearchResponseDto::new);
     }
 
     /**
@@ -249,17 +252,8 @@ public class ProductService {
         Pageable pageable = PageRequest.of(page, size, sort);
         Page<Product> productsPage = productRepository.findProductsByUserId(user.getId(), pageable);
 
-        // Response로 변환
-        return productsPage.map(product -> new ProductSearchResponseDto(
-            product.getProductId(),
-            product.getProductName(),
-            product.getCompanyName(),
-            product.getCategory().getName(),
-            product.getPrice(),
-            product.getStatus(),
-            product.getStock(),
-            product.getThumbnailUrl() // 썸네일 생성 메서드 호출
-        ));
+        // Product 객체를 ProductSearchResponseDto로 변환 후 반환
+        return productsPage.map(ProductSearchResponseDto::new);
     }
 
 

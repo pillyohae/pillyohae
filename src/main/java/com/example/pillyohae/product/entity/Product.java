@@ -47,6 +47,9 @@ public class Product extends BaseTimeEntity {
     @JoinColumn(name = "category_categoryId")
     private Category category;
 
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PersonaMessage> personaMessages = new ArrayList<>();
+
     private LocalDateTime deletedAt;
 
     public Product(User user, String productName, Category category, String description, String companyName, Long price, Integer stock, Nutrient nutrient) {
@@ -122,6 +125,13 @@ public class Product extends BaseTimeEntity {
         this.stock -= quantity; // 재고 차감
 
         return this.stock; // 차감 후 남은 재고 반환
+    }
+
+    // 상품 생성시 페르소나 메세지도 추가해주는 메서드
+    public void addPersonaMessages(List<PersonaMessage> messages) {
+        for (PersonaMessage message : messages) {
+            message.assignToProduct(this);
+        }
     }
 
     public Product() {

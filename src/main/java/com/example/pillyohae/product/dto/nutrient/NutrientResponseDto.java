@@ -1,4 +1,4 @@
-package com.example.pillyohae.product.dto;
+package com.example.pillyohae.product.dto.nutrient;
 
 import lombok.Getter;
 
