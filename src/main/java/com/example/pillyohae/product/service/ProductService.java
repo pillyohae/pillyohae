@@ -223,19 +223,11 @@ public class ProductService {
         Sort sort = Sort.by(direction, sortBy);
         //페이징 객체 생성
         Pageable pageable = PageRequest.of(page, size, sort);
+        //상품 조회
         Page<Product> productsPage = productRepository.getAllProduct(productName, companyName, categoryName, pageable);
 
-        // Response로 변환
-        return productsPage.map(product -> new ProductSearchResponseDto(
-            product.getProductId(),
-            product.getProductName(),
-            product.getCompanyName(),
-            product.getCategory().getName(),
-            product.getPrice(),
-            product.getStatus(),
-            product.getStock(),
-            product.getThumbnailUrl() // 썸네일 생성 메서드 호출
-        ));
+        // Product 객체를 ProductSearchResponseDto로 변환 후 반환
+        return productsPage.map(ProductSearchResponseDto::new);
     }
 
     /**
@@ -260,17 +252,8 @@ public class ProductService {
         Pageable pageable = PageRequest.of(page, size, sort);
         Page<Product> productsPage = productRepository.findProductsByUserId(user.getId(), pageable);
 
-        // Response로 변환
-        return productsPage.map(product -> new ProductSearchResponseDto(
-            product.getProductId(),
-            product.getProductName(),
-            product.getCompanyName(),
-            product.getCategory().getName(),
-            product.getPrice(),
-            product.getStatus(),
-            product.getStock(),
-            product.getThumbnailUrl() // 썸네일 생성 메서드 호출
-        ));
+        // Product 객체를 ProductSearchResponseDto로 변환 후 반환
+        return productsPage.map(ProductSearchResponseDto::new);
     }
 
 

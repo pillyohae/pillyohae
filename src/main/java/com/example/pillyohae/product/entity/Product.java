@@ -130,7 +130,7 @@ public class Product extends BaseTimeEntity {
     // 상품 생성시 페르소나 메세지도 추가해주는 메서드
     public void addPersonaMessages(List<PersonaMessage> messages) {
         for (PersonaMessage message : messages) {
-            message.assignToProduct(this); //setProduct() 대신 사용
+            message.assignToProduct(this);
         }
     }
 
