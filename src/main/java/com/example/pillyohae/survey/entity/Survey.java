@@ -2,6 +2,7 @@ package com.example.pillyohae.survey.entity;
 
 import com.example.pillyohae.global.entity.BaseCreatedTimeEntity;
 import com.example.pillyohae.recommendation.entity.Recommendation;
+import com.example.pillyohae.survey.dto.SurveySubmitRequestDto;
 import com.example.pillyohae.user.entity.User;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -26,7 +27,20 @@ public class Survey extends BaseCreatedTimeEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 
-    private String categories;
+    // 기본 정보
+    private Integer age;
+    private String gender;
+    private String height;
+    private String weight;
+
+    // 건강 목표 및 상태
+    // healthGoals는 DB에 하나의 문자열로 저장 (콤마로 구분)
+    private String healthGoals;
+    private String healthCondition;
+
+    // 생활습관 정보는 DB에 문자열로 저장 (예: JSON 또는 key=value 형식)
+    private String lifestyle;
+
 
     @OneToMany(mappedBy = "survey", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<Recommendation> recommendation = new ArrayList<>();
@@ -34,10 +48,20 @@ public class Survey extends BaseCreatedTimeEntity {
     public Survey() {
     }
 
-    public Survey(User user, String categories) {
+    public Survey(User user, SurveySubmitRequestDto requestDto) {
         this.user = user;
-        this.categories = categories;
+        this.age = requestDto.getAge();
+        this.gender = requestDto.getGender();
+        this.height = requestDto.getHeight();
+        this.weight = requestDto.getWeight();
+        // healthGoals는 리스트를 콤마로 구분한 문자열로 변환
+        this.healthGoals = requestDto.getHealthGoals() != null
+            ? String.join(",", requestDto.getHealthGoals()) : "";
+        this.healthCondition = requestDto.getHealthCondition() != null
+            ? requestDto.getHealthCondition() : "";
+        // lifestyle 정보를 JSON 문자열로 저장하거나 원하는 포맷으로 변환 (여기서는 toString() 사용)
+        this.lifestyle = requestDto.getLifestyle() != null
+            ? requestDto.getLifestyle().toString() : "";
     }
-
 
 }

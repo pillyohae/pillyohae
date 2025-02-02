@@ -33,11 +33,12 @@ public class SurveyService {
 
         User user = userService.findByEmail(email);
 
-        Survey savedSurvey = new Survey(user, requestDto.getCategories());
+        Survey savedSurvey = new Survey(user, requestDto);
 
         surveyRepository.save(savedSurvey);
 
-        return new SurveySubmitResponseDto(savedSurvey.getId(), savedSurvey.getCategories(), savedSurvey.getCreatedAt());
+        return new SurveySubmitResponseDto(savedSurvey.getId(), savedSurvey.getHealthGoals(),
+            savedSurvey.getCreatedAt());
     }
 
     /**
@@ -84,7 +85,8 @@ public class SurveyService {
 
         User user = userService.findByEmail(email);
         Survey findSurvey = surveyRepository.findById(surveyId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "해당 설문 내역을 찾을 수 없습니다."));
+            .orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "해당 설문 내역을 찾을 수 없습니다."));
 
         if (!user.getId().equals(findSurvey.getUser().getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "권한이 없습니다.");
