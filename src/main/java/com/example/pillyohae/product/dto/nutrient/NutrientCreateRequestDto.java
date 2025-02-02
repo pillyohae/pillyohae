@@ -1,4 +1,4 @@
-package com.example.pillyohae.product.dto;
+package com.example.pillyohae.product.dto.nutrient;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;

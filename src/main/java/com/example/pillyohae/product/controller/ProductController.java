@@ -1,6 +1,12 @@
 package com.example.pillyohae.product.controller;
 
-import com.example.pillyohae.product.dto.*;
+import com.example.pillyohae.product.dto.category.CategoryResponseDto;
+import com.example.pillyohae.product.dto.image.ImageUploadResponseDto;
+import com.example.pillyohae.product.dto.image.UpdateImageRequestDto;
+import com.example.pillyohae.product.dto.image.UpdateImageResponseDto;
+import com.example.pillyohae.product.dto.nutrient.NutrientCreateRequestDto;
+import com.example.pillyohae.product.dto.nutrient.NutrientResponseDto;
+import com.example.pillyohae.product.dto.product.*;
 import com.example.pillyohae.product.service.CategoryService;
 import com.example.pillyohae.product.service.NutrientService;
 import com.example.pillyohae.product.service.ProductService;
@@ -209,15 +215,15 @@ public class ProductController {
      * 메인이미지 재업로드(Position1)
      *
      * @param productId 상품 id
-     * @param MainImage 사용자가 올리는 대표이미지파일(1번 위치에 올릴 파일)
+     * @param mainImage 사용자가 올리는 대표이미지파일(1번 위치에 올릴 파일)
      * @return ImageUploadResponseDto 이미지 정보
      */
     @PostMapping("/products/{productId}/images/upload-main-image")
     public ResponseEntity<ImageUploadResponseDto> uploadMainImage(
         @PathVariable Long productId,
-        @RequestParam(name = "image") MultipartFile MainImage
+        @RequestPart(name = "image") MultipartFile mainImage
     ) {
-        ImageUploadResponseDto uploadImageToPositionOne = productService.uploadImageToPositionOne(productId, MainImage);
+        ImageUploadResponseDto uploadImageToPositionOne = productService.uploadImageToPositionOne(productId, mainImage);
         return new ResponseEntity<>(uploadImageToPositionOne, HttpStatus.OK);
     }
 

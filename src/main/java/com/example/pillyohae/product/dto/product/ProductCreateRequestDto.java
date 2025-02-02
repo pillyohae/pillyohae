@@ -1,4 +1,4 @@
-package com.example.pillyohae.product.dto;
+package com.example.pillyohae.product.dto.product;
 
 import com.example.pillyohae.product.entity.Category;
 import com.example.pillyohae.product.entity.Nutrient;

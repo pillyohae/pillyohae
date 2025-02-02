@@ -2,8 +2,8 @@ package com.example.pillyohae.product.service;
 
 import com.example.pillyohae.global.exception.CustomResponseStatusException;
 import com.example.pillyohae.global.exception.code.ErrorCode;
-import com.example.pillyohae.product.dto.NutrientCreateRequestDto;
-import com.example.pillyohae.product.dto.NutrientResponseDto;
+import com.example.pillyohae.product.dto.nutrient.NutrientCreateRequestDto;
+import com.example.pillyohae.product.dto.nutrient.NutrientResponseDto;
 import com.example.pillyohae.product.entity.Nutrient;
 import com.example.pillyohae.product.repository.NutrientRepository;
 import lombok.RequiredArgsConstructor;

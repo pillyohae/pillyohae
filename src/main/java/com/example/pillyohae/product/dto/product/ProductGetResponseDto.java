@@ -1,5 +1,7 @@
-package com.example.pillyohae.product.dto;
+package com.example.pillyohae.product.dto.product;
 
+import com.example.pillyohae.product.dto.category.CategoryResponseDto;
+import com.example.pillyohae.product.dto.nutrient.NutrientResponseDto;
 import com.example.pillyohae.product.entity.type.ProductStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
