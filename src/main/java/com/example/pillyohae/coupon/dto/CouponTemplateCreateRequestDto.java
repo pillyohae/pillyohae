@@ -4,13 +4,17 @@ import com.example.pillyohae.coupon.entity.CouponTemplate;
 import com.example.pillyohae.global.validation.ValidCouponPeriod;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.Future;
+import jakarta.validation.constraints.FutureOrPresent;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
+import java.time.LocalDateTime;
+import java.util.Objects;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Length;
-
-import java.time.LocalDateTime;
-import java.util.Objects;
 
 @Getter
 @ValidCouponPeriod
@@ -59,22 +63,21 @@ public class CouponTemplateCreateRequestDto {
     private Integer couponLifetime;
 
 
-
     @JsonCreator
     public CouponTemplateCreateRequestDto(
-            @JsonProperty("couponName") String couponName,
-            @JsonProperty("couponDescription") String couponDescription,
-            @JsonProperty("discountType") CouponTemplate.DiscountType discountType,
-            @JsonProperty("expiredType") CouponTemplate.ExpiredType expiredType,
-            @JsonProperty("fixedAmount") Long fixedAmount,
-            @JsonProperty("fixedRate") Long fixedRate,
-            @JsonProperty("maxDiscountAmount") Long maxDiscountAmount,
-            @JsonProperty("minimumPrice") Long minimumPrice,
-            @JsonProperty("startAt") LocalDateTime startAt,
-            @JsonProperty("expiredAt") LocalDateTime expiredAt,
-            @JsonProperty("maxIssueCount") Integer maxIssueCount,
-            @JsonProperty("couponLifetime") Integer couponLifetime
-    )  {
+        @JsonProperty("couponName") String couponName,
+        @JsonProperty("couponDescription") String couponDescription,
+        @JsonProperty("discountType") CouponTemplate.DiscountType discountType,
+        @JsonProperty("expiredType") CouponTemplate.ExpiredType expiredType,
+        @JsonProperty("fixedAmount") Long fixedAmount,
+        @JsonProperty("fixedRate") Long fixedRate,
+        @JsonProperty("maxDiscountAmount") Long maxDiscountAmount,
+        @JsonProperty("minimumPrice") Long minimumPrice,
+        @JsonProperty("startAt") LocalDateTime startAt,
+        @JsonProperty("expiredAt") LocalDateTime expiredAt,
+        @JsonProperty("maxIssueCount") Integer maxIssueCount,
+        @JsonProperty("couponLifetime") Integer couponLifetime
+    ) {
         validateDiscountTypeFields(discountType, fixedAmount, fixedRate, maxDiscountAmount);
         validateExpiredTypeFields(expiredType, couponLifetime);
         this.couponName = couponName;
@@ -91,54 +94,56 @@ public class CouponTemplateCreateRequestDto {
 
     }
 
-    private void validateDiscountTypeFields(CouponTemplate.DiscountType discountType, Long fixedAmount, Long fixedRate, Long maxDiscountAmount) {
+    private void validateDiscountTypeFields(CouponTemplate.DiscountType discountType,
+        Long fixedAmount, Long fixedRate, Long maxDiscountAmount) {
 
-        if (discountType == CouponTemplate.DiscountType.FIXED_AMOUNT){
+        if (discountType == CouponTemplate.DiscountType.FIXED_AMOUNT) {
             validateFixedAmountType(fixedAmount);
-            if(maxDiscountAmount == null){
+            if (maxDiscountAmount == null) {
                 this.maxDiscountAmount = fixedAmount;
             }
         }
 
-        if (discountType == CouponTemplate.DiscountType.PERCENTAGE){
+        if (discountType == CouponTemplate.DiscountType.PERCENTAGE) {
             validateFixedRateType(fixedRate);
             this.maxDiscountAmount = Objects.requireNonNullElse(maxDiscountAmount, 1000_000_000L);
 
         }
     }
 
-    private void validateExpiredTypeFields(CouponTemplate.ExpiredType expiredType, Integer couponLifetime) {
-        if (expiredType == CouponTemplate.ExpiredType.DURATION_BASED){
+    private void validateExpiredTypeFields(CouponTemplate.ExpiredType expiredType,
+        Integer couponLifetime) {
+        if (expiredType == CouponTemplate.ExpiredType.DURATION_BASED) {
             validateCouponLifetime(couponLifetime);
         }
 
     }
 
-    private void validateFixedAmountType(Long fixedAmount){
-        if(fixedAmount == null){
+    private void validateFixedAmountType(Long fixedAmount) {
+        if (fixedAmount == null) {
             throw new IllegalArgumentException("정액 할인 쿠폰은 할인값이 있어야 합니다");
         }
 
-        if(fixedAmount <= 0){
+        if (fixedAmount <= 0) {
             throw new IllegalArgumentException("정액 할인 쿠폰은 할인값이 0보다 커야합니다");
         }
     }
 
-    private void validateFixedRateType(Long fixedRate){
-        if(fixedRate == null){
+    private void validateFixedRateType(Long fixedRate) {
+        if (fixedRate == null) {
             throw new IllegalArgumentException("정률 할인 쿠폰은 할인율이 있어야 합니다");
         }
 
-        if(fixedRate <= 0 || fixedRate > 100){
+        if (fixedRate <= 0 || fixedRate > 100) {
             throw new IllegalArgumentException("정률 할인 쿠폰은 할인율이 0보다 크고 100 이하여야 합니다다");
         }
     }
 
-    private void validateCouponLifetime(Integer couponLifetime){
-        if(couponLifetime == null){
+    private void validateCouponLifetime(Integer couponLifetime) {
+        if (couponLifetime == null) {
             throw new IllegalArgumentException("유효기간 타입의 쿠폰은 유효기간을 설정해야 합니다");
         }
-        if(couponLifetime <= 0){
+        if (couponLifetime <= 0) {
             throw new IllegalArgumentException("유효기간 타입의 쿠폰은 유효기간을 0보다 크게 설정 해야 합니다");
         }
     }

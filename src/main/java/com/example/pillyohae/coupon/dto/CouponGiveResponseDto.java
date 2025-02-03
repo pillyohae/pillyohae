@@ -1,15 +1,15 @@
 package com.example.pillyohae.coupon.dto;
 
 import com.example.pillyohae.coupon.entity.CouponTemplate;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-
 import java.time.LocalDateTime;
 import java.util.UUID;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
 public class CouponGiveResponseDto {
+
     private UUID couponId;
     private String couponName;
     private String couponDescription;
@@ -20,7 +20,9 @@ public class CouponGiveResponseDto {
     private Long minimumPrice;
     private LocalDateTime expiredAt;
 
-    public CouponGiveResponseDto(UUID couponId, String couponName, String couponDescription, CouponTemplate.DiscountType discountType, Long fixedAmount, Long fixedRate, Long maxDiscountAmount, Long minimumPrice, LocalDateTime expiredAt) {
+    public CouponGiveResponseDto(UUID couponId, String couponName, String couponDescription,
+        CouponTemplate.DiscountType discountType, Long fixedAmount, Long fixedRate,
+        Long maxDiscountAmount, Long minimumPrice, LocalDateTime expiredAt) {
         this.couponId = couponId;
         this.couponName = couponName;
         this.couponDescription = couponDescription;
