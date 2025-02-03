@@ -79,6 +79,7 @@ dependencies {
     // json-simple
     implementation 'com.googlecode.json-simple:json-simple:1.1.1'
 
+    // configuration
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 
     // spring AI (OpenAI)
@@ -98,6 +99,12 @@ dependencies {
     // redis cahce
     implementation 'org.springframework.boot:spring-boot-starter-cache'
 
+
+
+
+    // RabbitMq
+    implementation 'org.springframework.boot:spring-boot-starter-amqp'
+    testImplementation 'org.springframework.amqp:spring-rabbit-test'
 }
 
 

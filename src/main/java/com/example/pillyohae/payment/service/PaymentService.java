@@ -8,7 +8,6 @@ import com.example.pillyohae.order.repository.OrderProductRepository;
 import com.example.pillyohae.order.repository.OrderRepository;
 import com.example.pillyohae.order.service.OrderService;
 import com.example.pillyohae.payment.repository.PaymentRepository;
-import com.example.pillyohae.product.entity.Product;
 import com.example.pillyohae.product.repository.ProductRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +30,7 @@ import java.util.UUID;
 public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final OrderService orderService;
-    private final MessagePublisher redisMessagePublisher;
+    private final MessagePublisher orderMessagePublisher;
     private final ObjectMapper objectMapper;
     private final RedissonClient redissonClient;
     private final ProductRepository productRepository;
@@ -40,7 +39,7 @@ public class PaymentService {
 
     JSONParser parser = new JSONParser();
 
-    @DistributedLock(key = "order")
+    @DistributedLock(key = "'order'", waitTime = 10L, leaseTime = 10L)
     public JSONObject pay(String jsonBody) throws IOException, ParseException {
 
 
@@ -58,9 +57,8 @@ public class PaymentService {
             }
             // stock이 0보다 작거나 같아지면 되돌림
         }
-        List<Product> products = orderProductWithProductList.stream().map(OrderProductFetchJoinProduct::getProduct).toList();
         PaymentMessage paymentMessage = new PaymentMessage(tossRequest,"payment");
-        redisMessagePublisher.publish(objectMapper.writeValueAsString(paymentMessage));
+        orderMessagePublisher.directSendMessage(paymentMessage);
 
         // 일단 주문 성공을 했다고 알려준다. 이후 실제 결제되고 고객의 email에 결제 완료 메일을 보낸다.
         return tossRequest;
