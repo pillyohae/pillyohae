@@ -43,13 +43,14 @@ spring:
 
   data:
     redis:
-      host: localhost
+      host: ${REDIS_HOST}
       port: 6379
       lettuce:
         pool:
           max-active: 8  # 최대 연결 수
           max-idle: 8    # 유휴 연결 수
           min-idle: 0    # 최소 유휴 연결 수
+
   rabbitmq:
     host: ${RABBITMQ_HOST}
     port: ${RABBITMQ_PORT}

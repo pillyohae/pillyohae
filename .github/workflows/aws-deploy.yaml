@@ -32,7 +32,7 @@ jobs:
         run: ./gradlew bootJar
 
 
-      # 5. 도커 이미지 빌드 및 푸시 (선택사항)
+      # 5. 도커 이미지 빌드 및 푸시
       - name: Docker Build and Push
         if: ${{ github.event_name == 'pull_request' && (github.head_ref == 'main' || github.head_ref == 'develop') }}
         env:
@@ -42,10 +42,10 @@ jobs:
           DATABASE_ID: ${{ secrets.DATABASE_ID }}
           DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
           DOCKER_HUB_REPOSITORY: ${{ secrets.DOCKER_HUB_REPOSITORY }}
-          BUCKET_NAME: ${{secrets.BUCKET_NAME}}
-          AWS_REGION: ${{secrets.AWS_REGION}}
-          ACCESS_KEY: ${{secrets.AWS_ACCESS_KEY}}
-          SECRET_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+#          BUCKET_NAME: ${{secrets.BUCKET_NAME}}
+#          AWS_REGION: ${{secrets.AWS_REGION}}
+#          ACCESS_KEY: ${{secrets.AWS_ACCESS_KEY}}
+#          SECRET_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
 
         run: |
           echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
@@ -101,4 +101,5 @@ jobs:
               -e TOSS_SECRET_KEY=${{secrets.TOSS_SECRET_KEY}}\
               -e JWT_SECRET_KEY=${{secrets.JWT_SECRET_KEY}}\
               -p 8080:8080 "${{secrets.DOCKER_HUB_REPOSITORY}}":main
+        
           
