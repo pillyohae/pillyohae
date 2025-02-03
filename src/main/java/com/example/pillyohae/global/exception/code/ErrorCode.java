@@ -34,6 +34,7 @@ public enum ErrorCode {
     NOT_FOUND_PROPERTY(HttpStatus.NOT_FOUND, "정렬기준을 확인해주세요"),
     NOT_FOUND_IMAGE_POSITION1(HttpStatus.NOT_FOUND, "AI이미지로 변환할 대표이미지가 없습니다."),
     NOT_FOUND_NUTRIENT(HttpStatus.NOT_FOUND, "존재하지 않는 영양성분입니다"),
+    NOT_FOUND_CATEGORY(HttpStatus.NOT_FOUND, "존재하지 않는 카테고리입니다."),
     /**
      * Image
      */
@@ -50,6 +51,7 @@ public enum ErrorCode {
     STOCK_CANNOTBE_NEGATIVE(HttpStatus.BAD_REQUEST, "재고는 0보다 작을 수 없습니다."),
     QUANTITY_CANNOTBE_NEGATIVE(HttpStatus.BAD_REQUEST, "주문량을 올바르게 입력해주세요."),
     LACK_OF_STOCK(HttpStatus.BAD_REQUEST, "제품의 재고가 부족합니다"),
+    DUPLICATE_NUTRIENT_NAME(HttpStatus.BAD_REQUEST, "중복된 영양성분입니다."),
 
     /**
      * unAuthorized

@@ -12,6 +12,7 @@ spring:
     username: ${DATABASE_USERNAME}
     password: ${DATABASE_PASSWORD}
 
+
   jpa:
     show-sql: true
     database-platform: org.hibernate.dialect.MySQL8Dialect
@@ -20,7 +21,7 @@ spring:
       ddl-auto: ${JPA_HIBERNATE_DDL}
       naming:
         physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
-    generate-ddl: false
+    generate-ddl: true
     properties:
       hibernate:
         format_sql: true
@@ -50,6 +51,7 @@ spring:
           max-active: 8  # 최대 연결 수
           max-idle: 8    # 유휴 연결 수
           min-idle: 0    # 최소 유휴 연결 수
+
   rabbitmq:
     host: ${RABBITMQ_HOST}
     port: ${RABBITMQ_PORT}
@@ -66,6 +68,11 @@ rabbitmq:
     name: exchange.direct
   routing:
     key : order
+
+  sql:
+    init:
+      mode: always
+
 
 toss:
   secret-key: ${TOSS_SECRET_KEY}

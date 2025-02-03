@@ -1,28 +1,26 @@
 package com.example.pillyohae.product.repository;
 
+import static com.example.pillyohae.product.entity.QProduct.product;
+
 import com.example.pillyohae.global.exception.CustomResponseStatusException;
 import com.example.pillyohae.global.exception.code.ErrorCode;
 import com.example.pillyohae.product.entity.Product;
 import com.example.pillyohae.product.entity.QProduct;
 import com.example.pillyohae.product.entity.type.ProductStatus;
 import com.example.pillyohae.recommendation.dto.RecommendationKeywordDto;
-import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.ComparableExpressionBase;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.util.ArrayList;
+import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static com.example.pillyohae.product.entity.QProduct.product;
 
 @Repository
 public class ProductCustomRepositoryImpl implements ProductCustomRepository {
@@ -44,15 +42,17 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 
         List<Product> queries = new ArrayList<>();
 
-        BooleanBuilder builder = new BooleanBuilder();
-        builder.and(product.status.eq(ProductStatus.SELLING));
-
         // 각 키워드별 한 개씩 조회
         for (RecommendationKeywordDto keyword : keywords) {
             Product result = jpaQueryFactory.select(product)
                 .from(product)
-                .where(product.productName.contains(keyword.getRecommendation()))
-                .where(builder)
+                .where(
+                    product.status.eq(ProductStatus.SELLING)
+                        .and(
+                            product.productName.contains(keyword.getRecommendation())
+                                .or(product.nutrient.name.contains(keyword.getRecommendation()))
+                        )
+                )
                 .limit(1)
                 .fetchOne();
 
@@ -66,7 +66,8 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 
 
     @Override
-    public Page<Product> getAllProduct(String productName, String companyName, String category, Pageable pageable) {
+    public Page<Product> getAllProduct(String productName, String companyName, String categoryName,
+        Pageable pageable) {
 
         List<OrderSpecifier<?>> orders = getSortOrders(pageable, product);
 
@@ -74,8 +75,8 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
             .selectFrom(product)
             .where(
                 productNameContains(productName),
-                companyNameEq(companyName),
-                categoryEq(category),
+                companyNameContains(companyName),
+                categoryContains(categoryName),
                 product.deletedAt.isNull()
             )
             .offset(pageable.getOffset()) // 몇 번째 페이지부터 시작할 것 인지.
@@ -88,8 +89,8 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
             .from(product)
             .where(
                 productNameContains(productName),
-                companyNameEq(companyName),
-                categoryEq(category),
+                companyNameContains(companyName),
+                categoryContains(categoryName),
                 product.deletedAt.isNull()
             );
 
@@ -132,12 +133,12 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
     }
 
 
-    private BooleanExpression categoryEq(String category) {
-        return category != null ? product.category.eq(category) : null;
+    private BooleanExpression categoryContains(String categoryName) {
+        return categoryName != null ? product.category.name.contains(categoryName) : null;
     }
 
-    private BooleanExpression companyNameEq(String companyName) {
-        return companyName != null ? product.companyName.eq(companyName) : null;
+    private BooleanExpression companyNameContains(String companyName) {
+        return companyName != null ? product.companyName.contains(companyName) : null;
     }
 
     private BooleanExpression productNameContains(String productName) {
