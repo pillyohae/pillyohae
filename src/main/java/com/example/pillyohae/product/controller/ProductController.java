@@ -227,6 +227,12 @@ public class ProductController {
         return new ResponseEntity<>(uploadImageToPositionOne, HttpStatus.OK);
     }
 
+    /**
+     * 주요성분 추가
+     *
+     * @param requestDto 주요성분 추가 시 필요한 요청정보
+     * @return NutrientResponseDto 주요성분 정보
+     */
     @PostMapping("/products/nutrients")
     public ResponseEntity<NutrientResponseDto> addNutrient(
         @Valid @RequestBody NutrientCreateRequestDto requestDto
@@ -236,9 +242,9 @@ public class ProductController {
     }
 
     /**
-     * 영양소 목록 조회 (드롭다운 박스)
+     * 주요성분 목록 조회 (드롭다운 박스)
      *
-     * @return List<NutrientResponseDto> 영양 정보
+     * @return List<NutrientResponseDto> 주요성분 정보 리스트
      */
     @GetMapping("/products/nutrients")
     public ResponseEntity<List<NutrientResponseDto>> getNutrients(
@@ -247,6 +253,11 @@ public class ProductController {
         return new ResponseEntity<>(nutrients, HttpStatus.OK);
     }
 
+    /**
+     * 카테고리 목록 조회 (드롭다운 박스)
+     *
+     * @return List<CategoryResponseDto> 카테고리 리스트
+     */
     @GetMapping("/products/categories")
     public ResponseEntity<List<CategoryResponseDto>> getCategories(
     ) {

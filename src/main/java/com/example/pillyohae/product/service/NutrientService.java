@@ -18,7 +18,11 @@ public class NutrientService {
 
     private final NutrientRepository nutrientRepository;
 
-    // 모든 영양소 조회 (상품생성시)
+    /**
+     * 모든 주요성분 조회 (상품생성시)
+     *
+     * @return List<NutrientResponseDto> 주요성분 리스트
+     */
     public List<NutrientResponseDto> findAll() {
 
         List<Nutrient> nutrients = nutrientRepository.findAllOrderedByName();
@@ -33,7 +37,7 @@ public class NutrientService {
     }
 
     /**
-     * 주요 성분 추가 (admin)
+     * 주요 성분 추가 (admin 권한필요)
      *
      * @param requestDto
      * @return

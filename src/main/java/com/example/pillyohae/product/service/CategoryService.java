@@ -14,6 +14,11 @@ public class CategoryService {
 
     private final CategoryRepository categoryRepository;
 
+    /**
+     * 모든 카테고리 조회 (상품생성시)
+     *
+     * @return List<CategoryResponseDto> 카테고리 리스트
+     */
     public List<CategoryResponseDto> findAll() {
 
         List<Category> categories = categoryRepository.findAllOrderByName();

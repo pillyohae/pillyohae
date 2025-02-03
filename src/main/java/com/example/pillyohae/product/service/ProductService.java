@@ -439,6 +439,7 @@ public class ProductService {
      * @param mainImage 사용자가 올리는 대표이미지파일(1번 위치에 올릴 파일)
      * @return UploadFileInfo 반환되는 이미지 정보들
      */
+    @Transactional
     public ImageUploadResponseDto uploadImageToPositionOne(Long productId, MultipartFile mainImage) {
 
         // Product 조회

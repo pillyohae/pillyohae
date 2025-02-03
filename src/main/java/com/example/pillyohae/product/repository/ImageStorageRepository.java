@@ -14,7 +14,7 @@ public interface ImageStorageRepository extends JpaRepository<ProductImage, Long
 
     int countByProduct_ProductId(Long productProductId);
 
-    List<ProductImage> findByProduct_ProductId(Long productId); //TODO leftjoin 추가 ?? fetchjoin
+    List<ProductImage> findByProduct_ProductId(Long productId);
 
     @Query("SELECT MAX(pi.position) FROM ProductImage pi WHERE pi.product.productId = :productId")
     Optional<Integer> findMaxPositionByProductId(@Param("productId") Long productId);
