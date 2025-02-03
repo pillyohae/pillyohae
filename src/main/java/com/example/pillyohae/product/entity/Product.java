@@ -22,8 +22,6 @@ public class Product extends BaseTimeEntity {
 
     private String productName;
 
-    private String category;
-
     private String description;
 
     private String companyName;
@@ -45,9 +43,16 @@ public class Product extends BaseTimeEntity {
     @JoinColumn(name = "nutrient_nutrientId")
     private Nutrient nutrient;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_categoryId")
+    private Category category;
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PersonaMessage> personaMessages = new ArrayList<>();
+
     private LocalDateTime deletedAt;
 
-    public Product(User user, String productName, String category, String description, String companyName, Long price, Integer stock, Nutrient nutrient) {
+    public Product(User user, String productName, Category category, String description, String companyName, Long price, Integer stock, Nutrient nutrient) {
         this.user = user;
         this.productName = productName;
         this.category = category;
@@ -58,7 +63,7 @@ public class Product extends BaseTimeEntity {
         this.nutrient = nutrient;
     }
 
-    public Product(User user, String productName, String category, String description, String companyName, Long price, ProductStatus status) {
+    public Product(User user, String productName, Category category, String description, String companyName, Long price, ProductStatus status) {
         this.user = user;
         this.productName = productName;
         this.category = category;
@@ -68,13 +73,15 @@ public class Product extends BaseTimeEntity {
         this.status = status;
     }
 
-    public void updateProduct(String productName, String category, String description, String companyName, Long price, Integer stock) {
+
+    public void updateProduct(String productName, Category category, String description, String companyName, Long price, Integer stock, Nutrient nutrient) {
         this.productName = productName;
         this.category = category;
         this.description = description;
         this.companyName = companyName;
         this.price = price;
         this.stock = stock;
+        this.nutrient = nutrient;
 
     }
 
@@ -118,6 +125,13 @@ public class Product extends BaseTimeEntity {
         this.stock -= quantity; // 재고 차감
 
         return this.stock; // 차감 후 남은 재고 반환
+    }
+
+    // 상품 생성시 페르소나 메세지도 추가해주는 메서드
+    public void addPersonaMessages(List<PersonaMessage> messages) {
+        for (PersonaMessage message : messages) {
+            message.assignToProduct(this);
+        }
     }
 
     public Product() {

@@ -13,12 +13,10 @@ public class Nutrient {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long nutrientId;
 
+    @Column(name = "name", unique = true)
     private String name;
 
     private String description;
-
-//    @OneToMany(mappedBy = "nutrient", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private List<ProductNutrient> productNutrients = new ArrayList<>();
 
     public Nutrient(String name, String description) {
         this.name = name;

@@ -1,4 +1,4 @@
-package com.example.pillyohae.product.dto;
+package com.example.pillyohae.product.dto.image;
 
 import com.example.pillyohae.product.entity.ProductImage;
 import lombok.Getter;
