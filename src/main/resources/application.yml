@@ -50,6 +50,22 @@ spring:
           max-active: 8  # 최대 연결 수
           max-idle: 8    # 유휴 연결 수
           min-idle: 0    # 최소 유휴 연결 수
+  rabbitmq:
+    host: ${RABBITMQ_HOST}
+    port: ${RABBITMQ_PORT}
+    username: ${RABBITMQ_USERNAME}
+    password: ${RABBITMQ_PASSWORD}
+
+
+
+
+rabbitmq:
+  queue:
+    name: order1
+  exchange:
+    name: exchange.direct
+  routing:
+    key : order
 
 toss:
   secret-key: ${TOSS_SECRET_KEY}

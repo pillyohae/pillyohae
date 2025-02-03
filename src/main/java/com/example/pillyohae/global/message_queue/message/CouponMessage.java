@@ -15,7 +15,7 @@ import java.util.UUID;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CouponMessage {
+public class CouponMessage implements Message {
     private UUID couponTemplateId;
     private UUID issuedCouponId;
     private Long userId;
@@ -25,4 +25,8 @@ public class CouponMessage {
     private LocalDateTime issueTime;
     private String domainType;
 
+    @Override
+    public String getDomainType() {
+        return domainType;
+    }
 }

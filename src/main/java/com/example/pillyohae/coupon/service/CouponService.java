@@ -6,27 +6,20 @@ import com.example.pillyohae.coupon.entity.IssuedCoupon;
 import com.example.pillyohae.coupon.repository.CouponTemplateRepository;
 import com.example.pillyohae.coupon.repository.IssuedCouponRepository;
 import com.example.pillyohae.global.distributedLock.DistributedLock;
-import com.example.pillyohae.global.distributedLock.DistributedLockAop;
-import com.example.pillyohae.global.message_queue.publisher.RedisMessagePublisher;
-import com.example.pillyohae.order.repository.OrderRepository;
 import com.example.pillyohae.user.entity.User;
 import com.example.pillyohae.user.service.UserService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.redisson.api.RLock;
-import org.redisson.api.RedissonClient;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 @Service
 @RequiredArgsConstructor
@@ -36,20 +29,6 @@ public class CouponService {
     private final CouponTemplateRepository couponTemplateRepository;
     private final IssuedCouponRepository issuedCouponRepository;
     private final UserService userService;
-    private final OrderRepository orderRepository;
-
-    // message queue
-    private final RedisMessagePublisher messagePublisher;
-    private final RedisTemplate<String, Object> objectRedisTemplate;
-    private final RedisTemplate<String, Integer> intRedisTemplate;
-
-    // Redission
-    private final RedissonClient redissonClient;
-
-    private static final int MAX_RETRY_ATTEMPTS = 3;
-    private static final long RETRY_DELAY_MS = 1000;
-    private final ObjectMapper objectMapper;
-    private final DistributedLockAop distributedLockAop;
 
 
     @Transactional
@@ -82,8 +61,13 @@ public class CouponService {
     // 유저 개인이 발행
     @DistributedLock(key = "'couponTemplateId:' + #couponTemplateId", waitTime = 10L, leaseTime = 10L)
     public CouponGiveResponseDto giveCoupon(String email, UUID couponTemplateId) {
+        IssuedCoupon issuedCoupon;
+        try {
+            issuedCoupon = issueCoupon(couponTemplateId, email);
+        } catch (Exception e){
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
 
-        IssuedCoupon issuedCoupon = issueCoupon(couponTemplateId, email);
 
         CouponTemplate couponTemplate = issuedCoupon.getCouponTemplate();
 
@@ -123,7 +107,7 @@ public class CouponService {
 
     }
 
-    protected IssuedCoupon issueCoupon(UUID couponTemplateId, String email) {
+    protected IssuedCoupon issueCoupon(UUID couponTemplateId, String email) throws IOException, TimeoutException {
         User user = userService.findByEmail(email);
 
         List<IssuedCoupon> userIssuedCoupons = issuedCouponRepository.findIssuedCouponsWithTemplateByUserId(
@@ -143,6 +127,10 @@ public class CouponService {
         IssuedCoupon issuedCoupon = new IssuedCoupon(LocalDateTime.now(), couponTemplate.getIssuedCouponExpiredAt(), couponTemplate, user);
 
         issuedCouponRepository.saveAndFlush(issuedCoupon);
+
+
+
+
 
         return issuedCoupon;
     }
