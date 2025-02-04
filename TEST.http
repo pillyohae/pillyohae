@@ -1,5 +1,5 @@
 ###
-POST http://localhost:8080/users/signup
+POST http://ec2-52-87-160-81.compute-1.amazonaws.com:8080/users/signup
 Authorization:
 Content-Type: application/json
 
@@ -14,7 +14,7 @@ Content-Type: application/json
   "role": "seller"
 }
 ###
-POST http://localhost:8080/users/signup
+POST http://ec2-52-87-160-81.compute-1.amazonaws.com:8080/users/signup
 Authorization:
 Content-Type: application/json
 
@@ -29,7 +29,7 @@ Content-Type: application/json
   "role": "buyer"
 }
 ###
-POST http://localhost:8080/users/signup
+POST http://ec2-52-87-160-81.compute-1.amazonaws.com:8080/users/signup
 Authorization:
 Content-Type: application/json
 
@@ -45,8 +45,8 @@ Content-Type: application/json
 }
 
 
-###
-POST http://localhost:8080/users/login
+### 판매자 로그인
+POST http://ec2-52-87-160-81.compute-1.amazonaws.com:8080/users/login
 Content-Type: application/json
 
 {
@@ -101,8 +101,8 @@ Content-Type: application/json
 
 %}
 
-###
-POST http://localhost:8080/products
+### 판매상품 생성
+POST http://ec2-52-87-160-81.compute-1.amazonaws.com:8080/products
 Authorization: Bearer {{accessToken}}
 Content-Type: application/json
 
@@ -112,8 +112,11 @@ Content-Type: application/json
   "description": "Asdf1234@",
   "companyName": "a",
   "price":10000 ,
+  "categoryId": 1,
   "imageUrl": "a"  ,
-  "status": "SELLING"
+  "status": "SELLING",
+  "nutrientId": 1,
+  "stock": 100
 
 
 }

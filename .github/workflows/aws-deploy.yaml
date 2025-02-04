@@ -106,6 +106,7 @@ jobs:
                 -e RABBITMQ_USERNAME=${{secrets.RABBITMQ_USERNAME}} \
                 -e RABBITMQ_PASSWORD=${{secrets.RABBITMQ_PASSWORD}} \
                 -e REDIS_HOST=${{secrets.REDIS_HOST}} \
+                -e OPENAI_API_KEY=${{secrets.OPEN_API_KEY}}
                 -p 8080:8080 "${{secrets.DOCKER_HUB_REPOSITORY}}:main"
         
           
