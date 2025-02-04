@@ -1,5 +1,7 @@
 package com.example.pillyohae.user.controller;
 
+import static com.example.pillyohae.global.constant.TokenPrefix.TOKEN_PREFIX;
+
 import com.example.pillyohae.coupon.dto.CouponListResponseDto;
 import com.example.pillyohae.coupon.dto.CouponTemplateListResponseDto;
 import com.example.pillyohae.coupon.dto.CouponUpdateStatusResponseDto;
@@ -10,13 +12,21 @@ import com.example.pillyohae.order.dto.OrderInfoDto;
 import com.example.pillyohae.order.dto.OrderSellerInfoDto;
 import com.example.pillyohae.order.service.OrderService;
 import com.example.pillyohae.refresh.service.RefreshTokenService;
-import com.example.pillyohae.user.dto.*;
+import com.example.pillyohae.user.dto.TokenResponse;
+import com.example.pillyohae.user.dto.UserCreateRequestDto;
+import com.example.pillyohae.user.dto.UserCreateResponseDto;
+import com.example.pillyohae.user.dto.UserDeleteRequestDto;
+import com.example.pillyohae.user.dto.UserLoginRequestDto;
+import com.example.pillyohae.user.dto.UserProfileResponseDto;
+import com.example.pillyohae.user.dto.UserProfileUpdateRequestDto;
 import com.example.pillyohae.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import java.time.LocalDateTime;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -28,12 +38,17 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
-import org.springframework.web.bind.annotation.*;
-
-import java.time.LocalDateTime;
-import java.util.UUID;
-
-import static com.example.pillyohae.global.constant.TokenPrefix.TOKEN_PREFIX;
+import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
 @RestController
@@ -242,8 +257,10 @@ public class UserController {
      * @return 정상적으로 완료시 OK 상태코드와 사용 가능한 쿠폰 목록 정보를 반환
      */
     @GetMapping("/coupons")
-    public ResponseEntity<CouponListResponseDto> getCouponListToUse(Authentication authentication, @RequestParam(required = false) Long totalPrice) {
-        return ResponseEntity.ok(couponService.findCouponListToUse(authentication.getName(), totalPrice));
+    public ResponseEntity<CouponListResponseDto> getCouponListToUse(Authentication authentication,
+        @RequestParam(required = false) Long totalPrice) {
+        return ResponseEntity.ok(
+            couponService.findCouponListToUse(authentication.getName(), totalPrice));
     }
 
     /**
@@ -275,33 +292,38 @@ public class UserController {
 
     // 상태에 따른 쿠폰 조회 (관리자만 조회 가능)
     @GetMapping("/admin/coupons")
-    public ResponseEntity<CouponTemplateListResponseDto> getAvailableCoupons(Authentication authentication,
-                                                                             @RequestParam(required = false) CouponTemplate.CouponStatus couponStatus) {
+    public ResponseEntity<CouponTemplateListResponseDto> getAvailableCoupons(
+        Authentication authentication,
+        @RequestParam(required = false) CouponTemplate.CouponStatus couponStatus) {
         return ResponseEntity.ok(couponService.findCouponList(couponStatus));
     }
 
     /**
      * 관리자의 쿠폰 상태 업데이트
+     *
      * @param authentication
-     * @param couponStatus 변경할 쿠폰 상태 ACTIVE OR INACTIVE
+     * @param couponStatus     변경할 쿠폰 상태 ACTIVE OR INACTIVE
      * @param couponTemplateId 수정할 쿠폰 식별자
      * @return 쿠폰 식별자 및 상태
      */
     @PutMapping("/admin/coupons/{couponTemplateId}/status")
-    public ResponseEntity<CouponUpdateStatusResponseDto> updateCouponStatus(Authentication authentication,
-                                                                            @RequestParam(required = true) CouponTemplate.CouponStatus couponStatus, @PathVariable(name = "couponTemplateId") UUID couponTemplateId){
-        return ResponseEntity.ok(couponService.updateCouponStatus(couponTemplateId,couponStatus));
+    public ResponseEntity<CouponUpdateStatusResponseDto> updateCouponStatus(
+        Authentication authentication,
+        @RequestParam(required = true) CouponTemplate.CouponStatus couponStatus,
+        @PathVariable(name = "couponTemplateId") UUID couponTemplateId) {
+        return ResponseEntity.ok(couponService.updateCouponStatus(couponTemplateId, couponStatus));
     }
 
     /**
      * 관리자의 쿠폰 soft 삭제
+     *
      * @param authentication
      * @param couponTemplateId 삭제할 쿠폰 식별자
      * @return
      */
     @DeleteMapping("/admin/coupons/{couponTemplateId}")
     public ResponseEntity<Void> deleteCoupon(Authentication authentication,
-                                                                          @PathVariable(name = "couponTemplateId") UUID couponTemplateId){
+        @PathVariable(name = "couponTemplateId") UUID couponTemplateId) {
         couponService.deleteCoupon(couponTemplateId);
         return ResponseEntity.ok().build();
     }

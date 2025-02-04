@@ -1,14 +1,17 @@
 package com.example.pillyohae.recommendation.service;
 
+import com.example.pillyohae.product.dto.product.ProductRecommendationDto;
 import com.example.pillyohae.product.entity.Product;
 import com.example.pillyohae.product.service.ProductService;
 import com.example.pillyohae.recommendation.dto.RecommendationCreateResponseDto;
-import com.example.pillyohae.recommendation.dto.RecommendationKeywordDto;
 import com.example.pillyohae.recommendation.dto.RecommendationQueryResponseDto;
+import com.example.pillyohae.recommendation.dto.RecommendationResultWrapper;
 import com.example.pillyohae.recommendation.entity.Recommendation;
 import com.example.pillyohae.recommendation.repository.RecommendationRepository;
 import com.example.pillyohae.survey.entity.Survey;
 import com.example.pillyohae.survey.service.SurveyService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -44,30 +47,37 @@ public class RecommendationService {
     public List<RecommendationCreateResponseDto> create(String email, Long surveyId) {
 
         Survey survey = surveyService.findSurvey(email, surveyId);
+        List<ProductRecommendationDto> dtos = productService.getAllProductsWithNutrient();
 
-        // 1. 프롬프트 생성
-        String prompt = createRecommendationPrompt(survey);
+        // 1. 프롬프트 생성 (상품 목록 dtos 포함)
+        String prompt = createRecommendationPrompt(survey, dtos);
         log.info("prompt : {}", prompt);
 
-        // 2. 추천 상품 키워드 생성
-        RecommendationKeywordDto[] keywords = createRecommendationKeyword(prompt);
+        // 2. AI 응답 파싱: 추천 결과 및 전체 추천 이유
+        RecommendationResultWrapper resultWrapper = createRecommendationResult(prompt);
+        List<String> recommendedProductNames = resultWrapper.getRecommendedProducts();
+        String overallRecommendationReason = resultWrapper.getRecommendationReason();
 
-        // 3. 키워드로 상품 조회
-        List<Product> recommendationProducts = productService.findByNameLike(keywords);
-        log.info("recommendationProducts : {}", recommendationProducts.size());
+        // 3. 키워드(추천된 상품 이름들)로 상품 조회
+        List<Product> recommendationProducts = productService.findByNameLike(
+            recommendedProductNames);
+        log.info("추천 상품 조회 개수 : {}", recommendationProducts.size());
 
         if (recommendationProducts.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "추천 상품을 찾을 수 없습니다.");
         }
 
-        // 4. DB 저장 및 결과 반환
+        // 4. Survey에 전체 추천 이유 저장 (데이터 중복 방지)
+        survey.updateRecommendationReason(overallRecommendationReason);
+
+        // 5. 추천 상품 저장 (Recommendation 엔티티에서는 추천 이유를 제외)
         List<Recommendation> savedRecommendations = new ArrayList<>();
         for (Product product : recommendationProducts) {
             savedRecommendations.add(new Recommendation(survey, product));
         }
-
         recommendationRepository.saveAll(savedRecommendations);
 
+        // 6. 응답 DTO 구성: 각 추천 상품 정보와 함께 Survey의 추천 이유를 포함하여 반환
         List<RecommendationCreateResponseDto> responseDtoList = new ArrayList<>();
         for (Recommendation recommendation : savedRecommendations) {
             responseDtoList.add(RecommendationCreateResponseDto.builder()
@@ -77,9 +87,9 @@ public class RecommendationService {
                 .price(recommendation.getProduct().getPrice())
                 .build());
         }
-
         return responseDtoList;
     }
+
 
     /**
      * 추천 프롬프트 생성 JSON 형식의 String 으로 반환
@@ -87,10 +97,20 @@ public class RecommendationService {
      * @param
      * @return 추천 프롬프트
      */
-    private String createRecommendationPrompt(Survey survey) {
+    private String createRecommendationPrompt(Survey survey, List<ProductRecommendationDto> dtos) {
+        // dtos를 JSON 문자열로 변환 (예: [{"productName": "수정 테스트"}, {"productName": "오메가3"}, ...])
+        String dtosJson;
+        try {
+            dtosJson = new ObjectMapper().writeValueAsString(dtos);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("상품 목록 JSON 변환 실패", e);
+        }
         return String.format(
-            "당신은 전문적인 영양제 추천 AI입니다. 아래 사용자 정보를 바탕으로 최적의 영양제 이름을 최대 3개 추천하세요. " +
-                "추천 결과는 오직 영양제 이름만을 콤마(,)로 구분하여 출력해 주세요. " +
+            "당신은 전문적인 영양제 추천 AI입니다. 아래 사용자 정보와 게시된 상품 목록을 바탕으로, " +
+                "최적의 영양제 이름을 최대 3개 추천하고, 왜 이러한 추천을 했는지 전체 추천 이유를 최소 3줄짜리 문장으로 상세하게 작성해 주세요. " +
+                "반드시 JSON 형식으로 응답해야 하며, 여기에 코드 블록(```json` 등)은 포함하지 마세요. " +
+                "반드시 두 개의 키 'recommendedProducts'와 'recommendationReason'를 포함하는 JSON 객체를 반환하세요.\n\n"
+                +
                 "사용자 정보:\n" +
                 "- 연령: %d세\n" +
                 "- 성별: %s\n" +
@@ -98,15 +118,19 @@ public class RecommendationService {
                 "- 몸무게: %s\n" +
                 "- 건강 목표: %s\n" +
                 "- 건강 상태: %s\n" +
-                "- 생활 습관: %s\n" +
-                "예시 출력: 오메가3,비타민B군,L-카르니틴",
+                "- 생활 습관: %s\n\n" +
+                "게시된 상품 목록:\n%s\n\n" +
+                "예시 출력:\n" +
+                "{\"recommendedProducts\": [\"오메가3\", \"비타민B군\", \"멜라토닌\"], " +
+                "\"recommendationReason\": \"사용자의 건강 정보와 게시된 상품들을 종합적으로 고려할 때, 이 제품들이 혈액순환 개선 및 면역력 강화에 효과적입니다.\"}",
             survey.getAge(),
             survey.getGender(),
             survey.getHeight(),
             survey.getWeight(),
             survey.getHealthGoals(),
             survey.getHealthCondition(),
-            survey.getLifestyle()
+            survey.getLifestyle(),
+            dtosJson
         );
     }
 
@@ -118,7 +142,7 @@ public class RecommendationService {
      * @param prompt 요청 프롬프트
      * @return 추천 상품 키워드
      */
-    private RecommendationKeywordDto[] createRecommendationKeyword(String prompt) {
+    private RecommendationResultWrapper createRecommendationResult(String prompt) {
         UserMessage userMessage = new UserMessage(prompt);
         try {
             ChatResponse response = chatModel.call(new Prompt(
@@ -126,21 +150,15 @@ public class RecommendationService {
                 OpenAiChatOptions.builder().model(ChatModel.GPT_4_O.getValue()).build()
             ));
 
-            // AI 응답 예시: "오메가3,비타민B군,L-카르니틴"
             String result = response.getResult().getOutput().getText().trim();
             log.info("result : {}", result);
 
-            // 콤마로 분리 (양쪽 공백 제거)
-            String[] parts = result.split("\\s*,\\s*");
-            RecommendationKeywordDto[] dtos = new RecommendationKeywordDto[parts.length];
-            for (int i = 0; i < parts.length; i++) {
-                dtos[i] = new RecommendationKeywordDto(parts[i]);
-            }
-            return dtos;
+            ObjectMapper objectMapper = new ObjectMapper();
+            return objectMapper.readValue(result, RecommendationResultWrapper.class);
         } catch (Exception e) {
-            log.error("추천 상품 키워드 생성에 실패했습니다.", e);
+            log.error("추천 상품 결과 생성에 실패했습니다.", e);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-                "추천 상품 키워드 생성에 실패했습니다.");
+                "추천 상품 결과 생성에 실패했습니다.");
         }
     }
 

@@ -88,6 +88,7 @@ public class RefreshTokenService {
 
         // JWT 토큰 자체의 유효성 검증
         if (!jwtProvider.validateRefreshToken(refreshToken)) {
+            log.error("JWT refresh token validation failed");
             throw new CustomResponseStatusException(ErrorCode.UNAUTHORIZED_TOKEN);
         }
 
@@ -102,8 +103,13 @@ public class RefreshTokenService {
         // 3. redisTemplate 의 get 을 사용해 RT:userId 가 키인 값의 value -> 즉 리프레시 토큰값을 가져온다.
         String storedToken = redisTemplate.opsForValue().get(REFRESH_TOKEN_PREFIX + user.getId());
 
+        log.info("Stored token : {}", storedToken);
+        log.info("Received refresh token: {}", refreshToken);
+
         // 4. 현재 들어온 리프레시토큰과 같지않거나 null 이라면 유효하지 않은 토큰 에러를 반환
         if (storedToken == null || !storedToken.equals(refreshToken)) {
+            log.error("Stored token mismatch or null. Stored: {}, Received: {}", storedToken,
+                refreshToken);
             throw new CustomResponseStatusException(ErrorCode.UNAUTHORIZED_TOKEN);
         }
     }
