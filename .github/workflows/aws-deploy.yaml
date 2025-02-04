@@ -91,7 +91,7 @@ jobs:
             sudo docker run -d \
                 --name server \
                 -e TZ=Asia/Seoul \
-                -e JPA_HIBERNATE_DDL=${{secretes.JPA_HIBERNATE_DDL}}
+                -e JPA_HIBERNATE_DDL=${{secrets.JPA_HIBERNATE_DDL}}
                 -e DATABASE_URL=${{secrets.DATABASE_URL}} \
                 -e DATABASE_USERNAME=${{secrets.DATABASE_ID}} \
                 -e DATABASE_PASSWORD=${{secrets.DATABASE_PASSWORD}} \
