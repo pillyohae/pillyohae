@@ -3,13 +3,13 @@ package com.example.pillyohae.global.config;
 import com.example.pillyohae.global.filter.JwtAuthFilter;
 import com.example.pillyohae.user.entity.type.Role;
 import jakarta.servlet.DispatcherType;
+import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -45,7 +45,7 @@ public class WebConfig {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.addAllowedOriginPattern("*"); // 모든 출처 허용
+        configuration.setAllowedOriginPatterns(Arrays.asList("*"));
         configuration.addAllowedMethod("*"); // 모든 HTTP 메서드 허용
         configuration.addAllowedHeader("*"); // 모든 헤더 허용
         configuration.addExposedHeader("Authorization"); // 클라이언트가 접근 가능한 헤더
@@ -66,7 +66,7 @@ public class WebConfig {
      */
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.cors(Customizer.withDefaults()) // CORS 설정 적용
+        http.cors(cors -> cors.configurationSource(corsConfigurationSource())) // CORS 설정 적용
             .csrf(AbstractHttpConfigurer::disable) // CSRF 보호 비활성화 (JWT 사용 시 필요)
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(securityProperties.getWhiteList().toArray(new String[0]))
@@ -77,6 +77,7 @@ public class WebConfig {
                 .requestMatchers(HttpMethod.POST, "/refresh").permitAll() // JWT 토큰 갱신 허용
                 .requestMatchers(HttpMethod.GET, "/coupons/available")
                 .permitAll() // 사용 가능한 쿠폰 목록 조회 허용
+                .requestMatchers(HttpMethod.POST, "/users/logout").permitAll()
                 .requestMatchers(HttpMethod.GET, "/products/nutrients").permitAll() // 영양제 정보 조회 허용
                 .requestMatchers(PathRequest.toStaticResources().atCommonLocations())
                 .permitAll() // 정적 리소스 허용
