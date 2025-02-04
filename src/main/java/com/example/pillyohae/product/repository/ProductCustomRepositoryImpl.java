@@ -7,7 +7,6 @@ import com.example.pillyohae.global.exception.code.ErrorCode;
 import com.example.pillyohae.product.entity.Product;
 import com.example.pillyohae.product.entity.QProduct;
 import com.example.pillyohae.product.entity.type.ProductStatus;
-import com.example.pillyohae.recommendation.dto.RecommendationKeywordDto;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -34,23 +33,23 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
     /**
      * 추천 상품 조회용
      *
-     * @param keywords 추천 상품 키워드
+     * @param recommendedProductNames 추천 상품 키워드
      * @return 추천 상품 목록
      */
     @Override
-    public List<Product> findProductsByNameLike(RecommendationKeywordDto[] keywords) {
+    public List<Product> findProductsByNameLike(List<String> recommendedProductNames) {
 
         List<Product> queries = new ArrayList<>();
 
         // 각 키워드별 한 개씩 조회
-        for (RecommendationKeywordDto keyword : keywords) {
+        for (String keyword : recommendedProductNames) {
             Product result = jpaQueryFactory.select(product)
                 .from(product)
                 .where(
                     product.status.eq(ProductStatus.SELLING)
                         .and(
-                            product.productName.contains(keyword.getRecommendation())
-                                .or(product.nutrient.name.contains(keyword.getRecommendation()))
+                            product.productName.contains(keyword)
+                                .or(product.nutrient.name.contains(keyword))
                         )
                 )
                 .limit(1)

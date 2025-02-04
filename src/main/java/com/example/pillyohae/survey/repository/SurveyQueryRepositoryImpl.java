@@ -26,7 +26,7 @@ public class SurveyQueryRepositoryImpl implements SurveyQueryRepository {
     public List<SurveyResponseDto> findAllByUserId(Long userid) {
 
         return queryFactory.select(
-                new QSurveyResponseDto(survey.id, survey.healthCondition, survey.createdAt))
+                new QSurveyResponseDto(survey.id, survey.healthGoals, survey.createdAt))
             .from(survey)
             .where(survey.user.id.eq(userid))
             .fetch();

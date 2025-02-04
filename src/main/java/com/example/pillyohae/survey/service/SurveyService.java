@@ -1,5 +1,6 @@
 package com.example.pillyohae.survey.service;
 
+import com.example.pillyohae.survey.dto.SurveyDetailsDto;
 import com.example.pillyohae.survey.dto.SurveyResponseDto;
 import com.example.pillyohae.survey.dto.SurveySubmitRequestDto;
 import com.example.pillyohae.survey.dto.SurveySubmitResponseDto;
@@ -75,6 +76,19 @@ public class SurveyService {
     }
 
     /**
+     * 설문 내용 상세 조회
+     *
+     * @param email    요청한 사용자 이메일
+     * @param surveyId 추천이유를 조회할 설문 ID
+     * @return 설문 추천 이유 반환
+     */
+    public SurveyDetailsDto findSurveyWithDetails(String email, Long surveyId) {
+        Survey findSurvey = findSurvey(email, surveyId);
+
+        return SurveyDetailsDto.toDto(findSurvey);
+    }
+
+    /**
      * 설문 단건 조회 및 권한 확인
      *
      * @param email    사용자 이메일
@@ -94,4 +108,6 @@ public class SurveyService {
 
         return findSurvey;
     }
+
+
 }

@@ -17,7 +17,8 @@ public class RecommendationCreateResponseDto {
     private final Long price;
 
     @Builder
-    public RecommendationCreateResponseDto(Long productId, String productName, String imageUrl, Long price) {
+    public RecommendationCreateResponseDto(Long productId, String productName, String imageUrl,
+        Long price) {
         this.productId = productId;
         this.productName = productName;
         this.imageUrl = imageUrl;
