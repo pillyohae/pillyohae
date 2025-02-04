@@ -20,17 +20,21 @@ import com.example.pillyohae.product.repository.*;
 import com.example.pillyohae.recommendation.dto.RecommendationKeywordDto;
 import com.example.pillyohae.user.entity.User;
 import com.example.pillyohae.user.service.UserService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.Duration;
 import java.util.List;
 
 @Service
@@ -46,6 +50,10 @@ public class ProductService {
     private final UserService userService;
     private final S3Service s3Service;
     private final PersonaService personaService;
+    private final RedisTemplate<String, String> redisTemplate;
+    private final ObjectMapper objectMapper;
+
+    private static final String PRODUCT_CACHE_KEY = "product:";
 
 
     /**
@@ -122,6 +130,9 @@ public class ProductService {
             nutrient
         );
 
+        // Redis 캐시 삭제
+        redisTemplate.delete(PRODUCT_CACHE_KEY + productId);
+
         return new ProductUpdateResponseDto(
             findProduct.getProductId(),
             findProduct.getProductName(),
@@ -133,6 +144,8 @@ public class ProductService {
             findProduct.getStock(),
             findProduct.getNutrient()
         );
+
+
     }
 
     /**
@@ -143,6 +156,18 @@ public class ProductService {
      */
     @Transactional
     public ProductGetResponseDto getProduct(Long productId) {
+        String key = PRODUCT_CACHE_KEY + productId;
+
+        // Redis에서 데이터 조회
+        String cachedProductJson = redisTemplate.opsForValue().get(key);
+        if (cachedProductJson != null) {
+            try {
+                log.info("Redis 캐시에서 제품 정보 조회: {}", productId);
+                return objectMapper.readValue(cachedProductJson, ProductGetResponseDto.class);
+            } catch (JsonProcessingException e) {
+                log.error("Redis 캐시 데이터 역직렬화 실패: {}", e.getMessage());
+            }
+        }
 
         Product findProduct = findById(productId);
 
@@ -168,7 +193,7 @@ public class ProductService {
             ))
             .toList();
 
-        return new ProductGetResponseDto(
+        ProductGetResponseDto responseDto = new ProductGetResponseDto(
             findProduct.getProductId(),
             findProduct.getProductName(),
             categoryResponseDto,
@@ -180,6 +205,17 @@ public class ProductService {
             images,
             nutrientResponseDto
         );
+
+        // DTO를 JSON 문자열로 변환 후 Redis에 저장
+        try {
+            String jsonProduct = objectMapper.writeValueAsString(responseDto);
+            redisTemplate.opsForValue().set(key, jsonProduct, Duration.ofMinutes(30)); // 변수로 따로 빼서 쓰기 후에 보수하기 쉽게, 아니면 properties로
+            log.info("Redis에 제품 정보 저장: {}", productId);
+        } catch (JsonProcessingException e) {
+            log.error("Redis 저장 실패: {}", e.getMessage());
+        }
+
+        return responseDto;
     }
 
 
@@ -201,18 +237,21 @@ public class ProductService {
         }
 
         findProduct.deleteProduct();
+
+        // Redis 캐시 삭제
+        redisTemplate.delete(PRODUCT_CACHE_KEY + productId);
     }
 
     /**
      * 상품 전체 조회(로그인 없이도 사용가능, 조건별 검색 가능)
      *
-     * @param productName 상품 이름(검색 조건)
-     * @param companyName 판매사 이름(검색 조건)
-     * @param companyName 상품 분류(검색조건)
-     * @param page        페이지 번호
-     * @param size        한페이지 게시글 수
-     * @param sortBy      상품 정렬 조건(ex. productId, price)
-     * @param isAsc       상품 정렬 순서(true: 오름차순, false: 내림차순)
+     * @param productName  상품 이름(검색 조건)
+     * @param companyName  판매사 이름(검색 조건)
+     * @param categoryName 상품 분류(검색조건)
+     * @param page         페이지 번호
+     * @param size         한페이지 게시글 수
+     * @param sortBy       상품 정렬 조건(ex. productId, price)
+     * @param isAsc        상품 정렬 순서(true: 오름차순, false: 내림차순)
      * @return 정상 처리 시 Page<ProductSearchResponseDto> (페이지로 반환된 dto)
      */
     @Transactional
