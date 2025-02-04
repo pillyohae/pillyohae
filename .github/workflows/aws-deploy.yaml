@@ -104,6 +104,6 @@ jobs:
               -e RABBITMQ_PORT=${{secrets.RABBITMQ_PORT}} \
               -e RABBITMQ_USERNAME=${{secrets.RABBITMQ_USERNAME}} \
               -e RABBITMQ_PASSWORD=${{secrets.RABBITMQ_PASSWORD}} \
-              -p 8080:8080 \ "${{secrets.DOCKER_HUB_REPOSITORY}}":main
+              -p 8080:8080 "${{secrets.DOCKER_HUB_REPOSITORY}}":main
         
           
