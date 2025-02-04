@@ -32,7 +32,7 @@ jobs:
         run: ./gradlew bootJar
 
 
-      # 5. 도커 이미지 빌드 및 푸시 (선택사항)
+      # 5. 도커 이미지 빌드 및 푸시
       - name: Docker Build and Push
         if: ${{ github.event_name == 'pull_request' && (github.head_ref == 'main' || github.head_ref == 'develop') }}
         env:
@@ -42,10 +42,10 @@ jobs:
           DATABASE_ID: ${{ secrets.DATABASE_ID }}
           DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
           DOCKER_HUB_REPOSITORY: ${{ secrets.DOCKER_HUB_REPOSITORY }}
-          BUCKET_NAME: ${{secrets.BUCKET_NAME}}
-          AWS_REGION: ${{secrets.AWS_REGION}}
-          ACCESS_KEY: ${{secrets.AWS_ACCESS_KEY}}
-          SECRET_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+#          BUCKET_NAME: ${{secrets.BUCKET_NAME}}
+#          AWS_REGION: ${{secrets.AWS_REGION}}
+#          ACCESS_KEY: ${{secrets.AWS_ACCESS_KEY}}
+#          SECRET_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
 
         run: |
           echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
@@ -89,16 +89,23 @@ jobs:
             sudo docker rm -f server 
             sudo docker pull "${{secrets.DOCKER_HUB_REPOSITORY}}:main"
             sudo docker run -d \
-              --name server \
-              -e TZ=Asia/Seoul \
-              -e DATABASE_URL=${{ secrets.DATABASE_URL }} \
-              -e DATABASE_USERNAME=${{ secrets.DATABASE_ID }} \
-              -e DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }} \
-              -e BUCKET_NAME=${{secrets.BUCKET_NAME}} \
-              -e AWS_REGION=${{secrets.AWS_REGION}} \
-              -e ACCESS_KEY=${{secrets.AWS_ACCESS_KEY}} \
-              -e SECRET_KEY=${{secrets.AWS_SECRET_ACCESS_KEY}} \
-              -e TOSS_SECRET_KEY=${{secrets.TOSS_SECRET_KEY}}\
-              -e JWT_SECRET_KEY=${{secrets.JWT_SECRET_KEY}}\
-              -p 8080:8080 "${{secrets.DOCKER_HUB_REPOSITORY}}":main
+                --name server \
+                -e TZ=Asia/Seoul \
+                -e JPA_HIBERNATE_DDL=${{secrets.JPA_HIBERNATE_DDL}} \
+                -e DATABASE_URL=${{secrets.DATABASE_URL}} \
+                -e DATABASE_USERNAME=${{secrets.DATABASE_ID}} \
+                -e DATABASE_PASSWORD=${{secrets.DATABASE_PASSWORD}} \
+                -e BUCKET_NAME=${{secrets.BUCKET_NAME}} \
+                -e AWS_REGION=${{secrets.AWS_REGION}} \
+                -e ACCESS_KEY=${{secrets.AWS_ACCESS_KEY}} \
+                -e SECRET_KEY=${{secrets.AWS_SECRET_ACCESS_KEY}} \
+                -e TOSS_SECRET_KEY=${{secrets.TOSS_SECRET_KEY}} \
+                -e JWT_SECRET_KEY=${{secrets.JWT_SECRET_KEY}} \
+                -e RABBITMQ_HOST=${{secrets.RABBITMQ_HOST}} \
+                -e RABBITMQ_PORT=${{secrets.RABBITMQ_PORT}} \
+                -e RABBITMQ_USERNAME=${{secrets.RABBITMQ_USERNAME}} \
+                -e RABBITMQ_PASSWORD=${{secrets.RABBITMQ_PASSWORD}} \
+                -e REDIS_HOST=${{secrets.REDIS_HOST}} \
+                -p 8080:8080 "${{secrets.DOCKER_HUB_REPOSITORY}}:main"
+        
           
