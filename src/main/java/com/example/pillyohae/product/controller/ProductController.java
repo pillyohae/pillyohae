@@ -6,26 +6,41 @@ import com.example.pillyohae.product.dto.image.UpdateImageRequestDto;
 import com.example.pillyohae.product.dto.image.UpdateImageResponseDto;
 import com.example.pillyohae.product.dto.nutrient.NutrientCreateRequestDto;
 import com.example.pillyohae.product.dto.nutrient.NutrientResponseDto;
-import com.example.pillyohae.product.dto.product.*;
+import com.example.pillyohae.product.dto.product.ProductCreateRequestDto;
+import com.example.pillyohae.product.dto.product.ProductCreateResponseDto;
+import com.example.pillyohae.product.dto.product.ProductGetResponseDto;
+import com.example.pillyohae.product.dto.product.ProductRecommendationDto;
+import com.example.pillyohae.product.dto.product.ProductSearchResponseDto;
+import com.example.pillyohae.product.dto.product.ProductUpdateRequestDto;
+import com.example.pillyohae.product.dto.product.ProductUpdateResponseDto;
 import com.example.pillyohae.product.service.CategoryService;
 import com.example.pillyohae.product.service.NutrientService;
 import com.example.pillyohae.product.service.ProductService;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
 
 @RestController
 @RequestMapping
 @RequiredArgsConstructor
 public class ProductController {
+
     private final ProductService productService;
     private final NutrientService nutrientService;
     private final CategoryService categoryService;
@@ -42,7 +57,8 @@ public class ProductController {
         @AuthenticationPrincipal UserDetails userDetails,
         @Valid @RequestBody ProductCreateRequestDto requestDto
     ) {
-        ProductCreateResponseDto responseDto = productService.createProduct(requestDto, userDetails.getUsername());
+        ProductCreateResponseDto responseDto = productService.createProduct(requestDto,
+            userDetails.getUsername());
         return new ResponseEntity<>(responseDto, HttpStatus.CREATED);
     }
 
@@ -116,7 +132,8 @@ public class ProductController {
         @RequestParam(value = "isAsc", required = false, defaultValue = "false") boolean isAsc
     ) {
         page = page - 1;
-        Page<ProductSearchResponseDto> searchProducts = productService.searchAndConvertProducts(productName, companyName, category, page, size, sortBy, isAsc);
+        Page<ProductSearchResponseDto> searchProducts = productService.searchAndConvertProducts(
+            productName, companyName, category, page, size, sortBy, isAsc);
         return new ResponseEntity<>(searchProducts, HttpStatus.OK);
     }
 
@@ -139,7 +156,8 @@ public class ProductController {
         @RequestParam(value = "isAsc", required = false) boolean isAsc
     ) {
         page = page - 1;
-        Page<ProductSearchResponseDto> findSellersProducts = productService.findSellersProducts(userDetails.getUsername(), page, size, sortBy, isAsc);
+        Page<ProductSearchResponseDto> findSellersProducts = productService.findSellersProducts(
+            userDetails.getUsername(), page, size, sortBy, isAsc);
         return new ResponseEntity<>(findSellersProducts, HttpStatus.OK);
     }
 
@@ -191,7 +209,8 @@ public class ProductController {
         @PathVariable Long productId,
         @RequestBody UpdateImageRequestDto requestDto
     ) {
-        UpdateImageResponseDto updateImage = productService.updateImages(productId, requestDto, userDetails.getUsername());
+        UpdateImageResponseDto updateImage = productService.updateImages(productId, requestDto,
+            userDetails.getUsername());
         return new ResponseEntity<>(updateImage, HttpStatus.OK);
     }
 
@@ -207,7 +226,8 @@ public class ProductController {
         @AuthenticationPrincipal UserDetails userDetails,
         @PathVariable Long productId
     ) {
-        ImageUploadResponseDto imageUploadResponseDto = productService.setRepresentativeAiImage(productId, userDetails.getUsername());
+        ImageUploadResponseDto imageUploadResponseDto = productService.setRepresentativeAiImage(
+            productId, userDetails.getUsername());
         return new ResponseEntity<>(imageUploadResponseDto, HttpStatus.OK);
     }
 
@@ -223,7 +243,8 @@ public class ProductController {
         @PathVariable Long productId,
         @RequestPart(name = "image") MultipartFile mainImage
     ) {
-        ImageUploadResponseDto uploadImageToPositionOne = productService.uploadImageToPositionOne(productId, mainImage);
+        ImageUploadResponseDto uploadImageToPositionOne = productService.uploadImageToPositionOne(
+            productId, mainImage);
         return new ResponseEntity<>(uploadImageToPositionOne, HttpStatus.OK);
     }
 
@@ -263,6 +284,11 @@ public class ProductController {
     ) {
         List<CategoryResponseDto> categories = categoryService.findAll();
         return new ResponseEntity<>(categories, HttpStatus.OK);
+    }
+
+    @GetMapping("/products/all")
+    public ResponseEntity<List<ProductRecommendationDto>> getAllProducts() {
+        return new ResponseEntity<>(productService.getAllProductsWithNutrient(), HttpStatus.OK);
     }
 
 }

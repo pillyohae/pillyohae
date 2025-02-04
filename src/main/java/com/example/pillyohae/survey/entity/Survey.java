@@ -41,6 +41,8 @@ public class Survey extends BaseCreatedTimeEntity {
     // 생활습관 정보는 DB에 문자열로 저장 (예: JSON 또는 key=value 형식)
     private String lifestyle;
 
+    // 추가: 추천 이유 (한 설문당 하나)
+    private String recommendationReason;
 
     @OneToMany(mappedBy = "survey", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<Recommendation> recommendation = new ArrayList<>();
@@ -64,4 +66,7 @@ public class Survey extends BaseCreatedTimeEntity {
             ? requestDto.getLifestyle().toString() : "";
     }
 
+    public void updateRecommendationReason(String recommendationReason) {
+        this.recommendationReason = recommendationReason;
+    }
 }

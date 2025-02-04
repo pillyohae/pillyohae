@@ -12,14 +12,28 @@ import com.example.pillyohae.product.dto.image.ImageUploadResponseDto;
 import com.example.pillyohae.product.dto.image.UpdateImageRequestDto;
 import com.example.pillyohae.product.dto.image.UpdateImageResponseDto;
 import com.example.pillyohae.product.dto.nutrient.NutrientResponseDto;
-import com.example.pillyohae.product.dto.product.*;
+import com.example.pillyohae.product.dto.product.ProductCreateRequestDto;
+import com.example.pillyohae.product.dto.product.ProductCreateResponseDto;
+import com.example.pillyohae.product.dto.product.ProductGetResponseDto;
 import com.example.pillyohae.product.dto.product.ProductGetResponseDto.ImageResponseDto;
-import com.example.pillyohae.product.entity.*;
+import com.example.pillyohae.product.dto.product.ProductRecommendationDto;
+import com.example.pillyohae.product.dto.product.ProductSearchResponseDto;
+import com.example.pillyohae.product.dto.product.ProductUpdateRequestDto;
+import com.example.pillyohae.product.dto.product.ProductUpdateResponseDto;
+import com.example.pillyohae.product.entity.Category;
+import com.example.pillyohae.product.entity.Nutrient;
+import com.example.pillyohae.product.entity.PersonaMessage;
+import com.example.pillyohae.product.entity.Product;
+import com.example.pillyohae.product.entity.ProductImage;
 import com.example.pillyohae.product.entity.type.ProductStatus;
-import com.example.pillyohae.product.repository.*;
-import com.example.pillyohae.recommendation.dto.RecommendationKeywordDto;
+import com.example.pillyohae.product.repository.CategoryRepository;
+import com.example.pillyohae.product.repository.ImageStorageRepository;
+import com.example.pillyohae.product.repository.NutrientRepository;
+import com.example.pillyohae.product.repository.PersonaMessageRepository;
+import com.example.pillyohae.product.repository.ProductRepository;
 import com.example.pillyohae.user.entity.User;
 import com.example.pillyohae.user.service.UserService;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -30,8 +44,6 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -56,7 +68,8 @@ public class ProductService {
      * @return 정상처리 시 ProductCreateResponseDto
      */
     @Transactional
-    public ProductCreateResponseDto createProduct(ProductCreateRequestDto requestDto, String email) {
+    public ProductCreateResponseDto createProduct(ProductCreateRequestDto requestDto,
+        String email) {
 
         User findUser = userService.findByEmail(email);
 
@@ -66,7 +79,8 @@ public class ProductService {
         Category category = categoryRepository.findById(requestDto.getCategoryId())
             .orElseThrow(() -> new CustomResponseStatusException(ErrorCode.NOT_FOUND_CATEGORY));
 
-        Product savedProduct = productRepository.save(requestDto.toEntity(findUser, nutrient, category));
+        Product savedProduct = productRepository.save(
+            requestDto.toEntity(findUser, nutrient, category));
 
         // 페르소나 메시지 생성
         List<PersonaMessageCreateResponseDto> personaMessages =
@@ -84,7 +98,6 @@ public class ProductService {
         // 메시지 저장
         personaMessageRepository.saveAll(messageEntities);
 
-
         return new ProductCreateResponseDto(savedProduct);
 
     }
@@ -97,7 +110,8 @@ public class ProductService {
      * @return 정상 처리 시 ProductUpdateResponseDto
      */
     @Transactional
-    public ProductUpdateResponseDto updateProduct(Long productId, ProductUpdateRequestDto requestDto) {
+    public ProductUpdateResponseDto updateProduct(Long productId,
+        ProductUpdateRequestDto requestDto) {
 
         Product findProduct = findById(productId);
 
@@ -106,7 +120,6 @@ public class ProductService {
 
         Category category = categoryRepository.findById(requestDto.getCategoryId())
             .orElseThrow(() -> new CustomResponseStatusException(ErrorCode.NOT_FOUND_CATEGORY));
-
 
         if (requestDto.getStock() < 0) {
             throw new CustomResponseStatusException(ErrorCode.STOCK_CANNOTBE_NEGATIVE);
@@ -216,7 +229,8 @@ public class ProductService {
      * @return 정상 처리 시 Page<ProductSearchResponseDto> (페이지로 반환된 dto)
      */
     @Transactional
-    public Page<ProductSearchResponseDto> searchAndConvertProducts(String productName, String companyName, String categoryName, int page, int size, String sortBy, Boolean isAsc) {
+    public Page<ProductSearchResponseDto> searchAndConvertProducts(String productName,
+        String companyName, String categoryName, int page, int size, String sortBy, Boolean isAsc) {
 
         //정렬 방향과 속성 지정
         Sort.Direction direction = isAsc ? Sort.Direction.ASC : Sort.Direction.DESC;
@@ -224,7 +238,8 @@ public class ProductService {
         //페이징 객체 생성
         Pageable pageable = PageRequest.of(page, size, sort);
         //상품 조회
-        Page<Product> productsPage = productRepository.getAllProduct(productName, companyName, categoryName, pageable);
+        Page<Product> productsPage = productRepository.getAllProduct(productName, companyName,
+            categoryName, pageable);
 
         // Product 객체를 ProductSearchResponseDto로 변환 후 반환
         return productsPage.map(ProductSearchResponseDto::new);
@@ -241,7 +256,8 @@ public class ProductService {
      * @return 정상 처리 시 Page<ProductSearchResponseDto> (페이지로 반환된 dto)
      */
     @Transactional
-    public Page<ProductSearchResponseDto> findSellersProducts(String email, int page, int size, String sortBy, Boolean isAsc) {
+    public Page<ProductSearchResponseDto> findSellersProducts(String email, int page, int size,
+        String sortBy, Boolean isAsc) {
 
         User user = userService.findByEmail(email);
 
@@ -270,7 +286,8 @@ public class ProductService {
         // Product 조회
         Product findProduct = findById(productId);
 
-        int currentImageCount = imageStorageRepository.countByProduct_ProductId(findProduct.getProductId());
+        int currentImageCount = imageStorageRepository.countByProduct_ProductId(
+            findProduct.getProductId());
         if (currentImageCount >= 5) {
             throw new CustomResponseStatusException(ErrorCode.CANNOT_OVERLOAD_FILE);
         }
@@ -290,7 +307,8 @@ public class ProductService {
         imageStorageRepository.save(saveImage);
 
         // 업로드 결과 반환
-        return new ImageUploadResponseDto(saveImage.getId(), saveImage.getPosition(), saveImage.getFileUrl(), saveImage.getFileKey());
+        return new ImageUploadResponseDto(saveImage.getId(), saveImage.getPosition(),
+            saveImage.getFileUrl(), saveImage.getFileKey());
     }
 
 
@@ -319,7 +337,8 @@ public class ProductService {
             throw new CustomResponseStatusException(ErrorCode.INVALID_IMAGE_PRODUCT_MATCH);
         }
 
-        imageStorageRepository.deleteImageByIdAndPosition(productId, findImage.getPosition(), imageId);
+        imageStorageRepository.deleteImageByIdAndPosition(productId, findImage.getPosition(),
+            imageId);
 
         // position > 1인 경우 자리 재배치 / position <= 1인 경우 자리 재배치 X
         if (findImage.getPosition() > 1) {
@@ -337,7 +356,8 @@ public class ProductService {
      * @return UpdateImageResponseDto
      */
     @Transactional
-    public UpdateImageResponseDto updateImages(Long productId, UpdateImageRequestDto requestDto, String email) {
+    public UpdateImageResponseDto updateImages(Long productId, UpdateImageRequestDto requestDto,
+        String email) {
 
         Product findProduct = findById(productId);
         User user = userService.findByEmail(email);
@@ -429,7 +449,8 @@ public class ProductService {
         imageStorageRepository.save(aiImage);
         log.info("Representative AI image successfully saved for productId: {}", productId);
 
-        return new ImageUploadResponseDto(aiImage.getId(), aiImage.getPosition(), aiImage.getFileUrl(), aiImage.getFileKey());
+        return new ImageUploadResponseDto(aiImage.getId(), aiImage.getPosition(),
+            aiImage.getFileUrl(), aiImage.getFileKey());
     }
 
     /**
@@ -440,7 +461,8 @@ public class ProductService {
      * @return UploadFileInfo 반환되는 이미지 정보들
      */
     @Transactional
-    public ImageUploadResponseDto uploadImageToPositionOne(Long productId, MultipartFile mainImage) {
+    public ImageUploadResponseDto uploadImageToPositionOne(Long productId,
+        MultipartFile mainImage) {
 
         // Product 조회
         Product findProduct = findById(productId);
@@ -448,7 +470,8 @@ public class ProductService {
         // 파일 업로드 로직 호출
         UploadFileInfo firstImageInfo = s3Service.uploadFile(mainImage);
 
-        ProductImage originalMainImage = imageStorageRepository.findByProduct_ProductIdAndPosition(productId, 1);
+        ProductImage originalMainImage = imageStorageRepository.findByProduct_ProductIdAndPosition(
+            productId, 1);
 
         if (originalMainImage != null) {
             throw new CustomResponseStatusException(ErrorCode.IMAGE_ALREADY_EXIST);
@@ -464,7 +487,9 @@ public class ProductService {
         );
         imageStorageRepository.save(newPositionOneImage);
 
-        return new ImageUploadResponseDto(newPositionOneImage.getId(), newPositionOneImage.getPosition(), newPositionOneImage.getFileUrl(), newPositionOneImage.getFileKey());
+        return new ImageUploadResponseDto(newPositionOneImage.getId(),
+            newPositionOneImage.getPosition(), newPositionOneImage.getFileUrl(),
+            newPositionOneImage.getFileKey());
     }
 
     public Product findById(Long productId) {
@@ -480,8 +505,17 @@ public class ProductService {
      * @param recommendations 추천 키워드
      * @return 추천 상품 목록
      */
-    public List<Product> findByNameLike(RecommendationKeywordDto[] recommendations) {
-        return productRepository.findProductsByNameLike(recommendations);
+    public List<Product> findByNameLike(List<String> recommendedProductNames) {
+        return productRepository.findProductsByNameLike(recommendedProductNames);
+    }
+
+    /**
+     * 추천에 사용할 모든 상품의 이름과 영양성분을 List 로 반환하는 메서드
+     *
+     * @return ProductRecommendationDto
+     */
+    public List<ProductRecommendationDto> getAllProductsWithNutrient() {
+        return productRepository.findAllProductsName();
     }
 
 }
