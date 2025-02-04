@@ -5,8 +5,10 @@ import com.example.pillyohae.order.dto.OrderCreateRequestDto;
 import com.example.pillyohae.order.dto.OrderDetailResponseDto;
 import com.example.pillyohae.order.entity.Order;
 import com.example.pillyohae.order.repository.OrderRepository;
+import com.example.pillyohae.product.entity.Category;
+import com.example.pillyohae.product.entity.Nutrient;
 import com.example.pillyohae.product.entity.Product;
-import com.example.pillyohae.product.entity.type.ProductStatus;
+import com.example.pillyohae.product.repository.CategoryRepository;
 import com.example.pillyohae.product.repository.ProductRepository;
 import com.example.pillyohae.user.entity.User;
 import com.example.pillyohae.user.entity.type.Role;
@@ -35,12 +37,17 @@ class OrderServiceTest {
 
     private String email;
     private ShippingAddress address;
+    @Autowired
+    private CategoryRepository categoryRepository;
+
     @BeforeEach
     void setUp() {
         email = "Test@tester.com";
         address = new ShippingAddress("TestUser","010-0000-0000","test-zip","test-road","100-100");
         User testUser = new User("TestUser", email, "password123", address, Role.SELLER);
-        Product product = new Product(testUser, "product1", "test1", "test1", "test1", 10000L, ProductStatus.SELLING);
+        Category category = new Category(1L,"testCategory");
+        Nutrient nutrient = new Nutrient("Nutrient","Nutrient");
+        Product product = new Product(testUser,"product1",category ,"test1", "test1", 10000L, 100 , nutrient);
         userRepository.save(testUser);
         productRepository.save(product);
     }
