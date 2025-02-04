@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8" />
+  <script src="https://js.tosspayments.com/v2/standard"></script>
+</head>
+<body>
+<!-- 할인 쿠폰 -->
+<div>
+  <input type="checkbox" id="coupon-box" />
+  <label for="coupon-box"> 5,000원 쿠폰 적용 </label>
+</div>
+<!-- 결제 UI -->
+<div id="payment-method"></div>
+<!-- 이용약관 UI -->
+<div id="agreement"></div>
+<!-- 결제하기 버튼 -->
+<button class="button" id="payment-button" style="margin-top: 30px">결제하기</button>
+
+<script th:inline="javascript">
+  const orderInfo = {
+    orderId: /*[[${orderId}]]*/ null,
+    price: /*[[${price}]]*/ 0,
+    orderName: /*[[${orderName}]]*/ '',
+    customerEmail: /*[[${customerEmail}]]*/ '',
+    customerName: /*[[${customerName}]]*/ ''
+  };
+
+  main();
+
+  async function main() {
+    const button = document.getElementById("payment-button");
+    const coupon = document.getElementById("coupon-box");
+    const clientKey = "test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm";
+
+    const tossPayments = TossPayments(clientKey);
+    const customerKey = "vxkGzcNE9r_YudzBIOMfJas";
+    const widgets = tossPayments.widgets({
+      customerKey,
+    });
+
+    await widgets.setAmount({
+      currency: "KRW",
+      value: orderInfo.price
+    });
+
+    await Promise.all([
+      widgets.renderPaymentMethods({
+        selector: "#payment-method",
+        variantKey: "DEFAULT",
+      }),
+      widgets.renderAgreement({ selector: "#agreement", variantKey: "AGREEMENT" }),
+    ]);
+
+    coupon.addEventListener("change", async function () {
+      if (coupon.checked) {
+        await widgets.setAmount({
+          currency: "KRW",
+          value: orderInfo.price - 5000
+        });
+        return;
+      }
+
+      await widgets.setAmount({
+        currency: "KRW",
+        value: orderInfo.price
+      });
+    });
+
+    button.addEventListener("click", async function () {
+      try {
+        await widgets.requestPayment({
+          orderId: orderInfo.orderId,
+          orderName: orderInfo.orderName,
+          successUrl: window.location.origin + "/toss/success",
+          failUrl: window.location.origin + "/toss/fail",
+          customerEmail: orderInfo.customerEmail,
+          customerName: orderInfo.customerName,
+          customerMobilePhone: "01012341234",
+        });
+      } catch (error) {
+        console.error("Payment request failed:", error);
+      }
+    });
+  }
+</script>
+</body>
+</html>
