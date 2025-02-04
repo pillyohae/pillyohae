@@ -1,14 +1,12 @@
 package com.example.pillyohae.coupon.dto;
 
 import com.example.pillyohae.coupon.entity.CouponTemplate;
-import jakarta.validation.constraints.*;
-import lombok.Getter;
-import org.hibernate.validator.constraints.Length;
-
 import java.time.LocalDateTime;
+import lombok.Getter;
 
 @Getter
 public class CreateCouponTemplateResponseDto {
+
     private String couponName;
     private String couponDescription;
     private CouponTemplate.DiscountType discountType;
@@ -22,7 +20,11 @@ public class CreateCouponTemplateResponseDto {
     private LocalDateTime expiredAt;
     private Integer couponLifetime;
 
-    public CreateCouponTemplateResponseDto(String couponName, String couponDescription, CouponTemplate.DiscountType discountType, CouponTemplate.ExpiredType expiredType, Long fixedAmount, Long fixedRate, Long maxDiscountAmount, Long minimumPrice, Integer maxIssueCount, LocalDateTime startAt, LocalDateTime expiredAt, Integer couponLifetime) {
+    public CreateCouponTemplateResponseDto(String couponName, String couponDescription,
+        CouponTemplate.DiscountType discountType, CouponTemplate.ExpiredType expiredType,
+        Long fixedAmount, Long fixedRate, Long maxDiscountAmount, Long minimumPrice,
+        Integer maxIssueCount, LocalDateTime startAt, LocalDateTime expiredAt,
+        Integer couponLifetime) {
         this.couponName = couponName;
         this.couponDescription = couponDescription;
         this.discountType = discountType;
@@ -37,5 +39,6 @@ public class CreateCouponTemplateResponseDto {
         this.couponLifetime = couponLifetime;
     }
 
-    public CreateCouponTemplateResponseDto() {}
+    public CreateCouponTemplateResponseDto() {
+    }
 }

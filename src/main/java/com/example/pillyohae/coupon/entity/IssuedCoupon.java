@@ -17,11 +17,13 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.UUID;
-
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+/**
+ * 발급된 쿠폰 엔터티. 특정 사용자가 발급받은 쿠폰 정보를 관리한다.
+ */
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -31,7 +33,8 @@ import lombok.NoArgsConstructor;
 })
 public class IssuedCoupon {
 
-    @Id @GeneratedValue(strategy = GenerationType.UUID)
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @Column(nullable = false)
@@ -94,3 +97,4 @@ public class IssuedCoupon {
         USED,        // 사용됨
     }
 }
+

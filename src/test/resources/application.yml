@@ -1,4 +1,7 @@
 spring:
+  sql:
+    init:
+      mode: never
   application:
     name: pillyohae
 
@@ -61,17 +64,15 @@ spring:
     port: ${RABBITMQ_PORT}
     username: ${RABBITMQ_USERNAME}
     password: ${RABBITMQ_PASSWORD}
-  sql:
-    init:
-      mode: never
+
 
 rabbitmq:
-    queue:
-      name: order1
-    exchange:
-      name: exchange.direct
-    routing:
-      key: order
+  queue:
+    name: order1
+  exchange:
+    name: exchange.direct
+  routing:
+    key: order
 
 toss:
   secret-key: ${TOSS_SECRET_KEY}

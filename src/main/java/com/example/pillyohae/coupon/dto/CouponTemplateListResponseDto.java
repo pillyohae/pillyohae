@@ -2,26 +2,27 @@ package com.example.pillyohae.coupon.dto;
 
 import com.example.pillyohae.coupon.entity.CouponTemplate;
 import com.querydsl.core.annotations.QueryProjection;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-
 import java.time.LocalDateTime;
-import java.time.Period;
 import java.util.List;
 import java.util.UUID;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
 public class CouponTemplateListResponseDto {
+
     private List<CouponInfo> couponList;
 
-    public CouponTemplateListResponseDto(List<CouponTemplateListResponseDto.CouponInfo> couponList) {
+    public CouponTemplateListResponseDto(
+        List<CouponTemplateListResponseDto.CouponInfo> couponList) {
         this.couponList = couponList;
     }
 
     @Getter
     @NoArgsConstructor
-    public static class CouponInfo{
+    public static class CouponInfo {
+
         private UUID couponId;
         private String couponName;
         private String couponDescription;
@@ -36,7 +37,11 @@ public class CouponTemplateListResponseDto {
         private CouponTemplate.CouponStatus couponStatus;
 
         @QueryProjection
-        public CouponInfo(UUID couponId, String couponName, String couponDescription, CouponTemplate.DiscountType discountType, Long fixedAmount, Long fixedRate, Long maxDiscountAmount, Long minimumPrice, CouponTemplate.ExpiredType expiredType, LocalDateTime expiredAt, Integer couponLifetime, CouponTemplate.CouponStatus couponStatus) {
+        public CouponInfo(UUID couponId, String couponName, String couponDescription,
+            CouponTemplate.DiscountType discountType, Long fixedAmount, Long fixedRate,
+            Long maxDiscountAmount, Long minimumPrice, CouponTemplate.ExpiredType expiredType,
+            LocalDateTime expiredAt, Integer couponLifetime,
+            CouponTemplate.CouponStatus couponStatus) {
             this.couponId = couponId;
             this.couponName = couponName;
             this.couponDescription = couponDescription;
