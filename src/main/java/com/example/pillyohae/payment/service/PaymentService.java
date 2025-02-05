@@ -5,8 +5,6 @@ import com.example.pillyohae.global.message_queue.message.PaymentMessage;
 import com.example.pillyohae.global.message_queue.publisher.MessagePublisher;
 import com.example.pillyohae.order.dto.OrderProductFetchJoinProduct;
 import com.example.pillyohae.order.repository.OrderRepository;
-import java.util.List;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONObject;
@@ -15,6 +13,9 @@ import org.json.simple.parser.ParseException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  * 결제 처리 서비스
@@ -38,7 +39,7 @@ public class PaymentService {
      * @param jsonBody 클라이언트에서 전달된 결제 정보 (JSON 문자열)
      * @return TossPayments 결제 요청 JSON 객체
      */
-    @DistributedLock(key = "'order'", waitTime = 10L, leaseTime = 10L)
+    @DistributedLock(key = "'order'", waitTime = 60L, leaseTime = 60L)
     public JSONObject pay(String jsonBody) {
         // TossPayments 결제 요청 데이터 생성
         JSONObject tossRequest = makeTossRequest(jsonBody);
