@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8"/>
+</head>
+
+<body>
+<main class="error-container">
+    <h2 class="error-heading">결제 실패</h2>
+    <div class="error-details">
+        <p id="code" class="error-code"></p>
+        <p id="message" class="error-message"></p>
+    </div>
+    <div class="action-buttons">
+        <button onclick="window.history.back()" class="back-button">이전 페이지로 돌아가기</button>
+    </div>
+</main>
++
+<style>
+    .error-container {
+        padding: 20px;
+        text-align: center;
+    }
+
+    .error-heading {
+        color: #e74c3c;
+    }
+
+    .error-details {
+        margin: 20px 0;
+    }
+
+    .back-button {
+        padding: 10px 20px;
+        background-color: #3498db;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+</style>
+</body>
+</html>
+
+<script type="text/javascript">
+
+
+    function sanitizeInput(input) {
+        if (!input) return '알 수 없음';
+        return input.replace(/[<>]/g, '');
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const codeElement = document.getElementById("code");
+    const messageElement = document.getElementById("message");
+    try {
+        const code = sanitizeInput(urlParams.get("code"));
+        const message = sanitizeInput(urlParams.get("message"));
+
+        codeElement.textContent = "에러코드: " + code;
+        messageElement.textContent = "실패 사유: " + message;
+    } catch (error) {
+        console.error('Error processing payment failure details:', error);
+        codeElement.textContent = "에러코드: 시스템 오류";
+        messageElement.textContent = "실패 사유: 결제 처리 중 오류가 발생했습니다.";
+    }
+
+</script>

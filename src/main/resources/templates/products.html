@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <base th:href="@{/}">
+  <style>
+    /* CSS 스타일은 그대로 유지 */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f0f0f0;
+    }
+
+    /* 추가 스타일 */
+  </style>
+</head>
+<body>
+<div class="container" id="itemContainer"></div>
+<div class="cart-menu" id="cartMenu">
+  <h3>Shopping Cart</h3>
+  <div id="cartItems"></div>
+  <div class="cart-total">Total: $<span id="cartTotal">0</span></div>
+  <button class="purchase-btn" onclick="purchase()">Purchase</button>
+</div>
+
+<script th:inline="javascript">
+  /* JavaScript 코드 */
+
+  let globalCartData;
+
+  const token = localStorage.getItem('accessToken');
+
+  if (!token) {
+    alert('No access token found');
+    // 로그인으로 리다이렉트
+    window.location.href = 'http://localhost:8080/users/login';
+  }
+  updateCart();
+
+  function createItemCards() {
+    const container = document.getElementById('itemContainer');
+    //초기화
+    container.innerHTML = '';
+    items.forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'item-card';
+      card.innerHTML = `
+                <div class="item-image" style="background: ${item.color}">
+                    <svg width="50" height="50" viewBox="0 0 24 24">
+                        <path fill="white" d="M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2Z" />
+                    </svg>
+                </div>
+                <h3>${item.name}</h3>
+                <p>${item.price}원</p>
+                <button class="cart-btn" onclick="addToCart(${item.id})">Add to Cart</button>
+                `;
+      container.appendChild(card);
+    });
+  }
+
+  function addToCart(itemId) {
+    if (!itemId || !Number.isInteger(itemId) || itemId <= 0) {
+      console.error('Invalid item ID');
+      return;
+    }
+    const item = items.find(i => i.id === itemId);
+    if (!item) {
+      console.error('Item not found');
+      return;
+    }
+    quantity = 1;
+    // 요청 보낼 데이터 준비 (CartCreateRequestDto 형식에 맞춰야 함)
+    const requestData = {
+      productId: itemId,
+      quantity: quantity  // 수량 추가
+    };
+
+    fetch('/carts', {
+      method: 'POST',  // POST 메서드 추가
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(requestData)  // 요청 데이터를 JSON 문자열로 변환
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log('장바구니 추가 성공:', data);
+      updateCart();  // 장바구니 업데이트
+    })
+    .catch(error => {
+      console.error('장바구니 추가 실패:', error);
+    });
+  }
+
+  function updateCart() {
+    fetch('/carts', {
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
+    })
+    .then(response => response.json())
+    .then(cartData => {
+      globalCartData = cartData.products;
+      const cartItems = document.getElementById('cartItems'); // cart-items를 표시할 컨테이너
+      // 초기화
+      cartItems.innerHTML = '';
+      let total = 0;
+
+      cartData.products.forEach((item, index) => {
+        const cartItem = document.createElement('div');
+        cartItem.className = 'cart-item';
+        cartItem.innerHTML = `
+        <span>${item.name}</span>
+        <span>${item.price}원</span>
+        <span>수량: ${item.quantity}개</span>
+        <button onclick="removeFromCart(${item.productId})" style="color: red; border: none; background: none; cursor: pointer;">×</button>
+      `;
+        cartItems.appendChild(cartItem);
+        total += (item.price * item.quantity);  // 각 상품의 가격과 수량을 곱해서 더함
+      });
+
+      // 총 가격 표시 (서버에서 받아온 totalPrice 사용)
+      document.getElementById('cartTotal').textContent = `총 가격: ${cartData.totalPrice}원`;
+    })
+    .catch(error => {
+      console.error('장바구니 데이터 로딩 실패:', error);
+    });
+  }
+
+  // 삭제 함수도 productId를 사용하도록 수정
+  function removeFromCart(productId) {
+    // 상품 삭제 로직 구현
+    console.log(`상품 ID ${productId} 삭제`);
+  }
+
+  function purchase() {
+    if (globalCartData.length === 0) {
+      alert('Your cart is empty!');
+      return;
+    }
+    createOrderFromCart();
+    // cart 삭제 필요
+    updateCart();
+  }
+
+  function createOrderFromCart() {
+    fetch('/api/v1/orders/carts/create', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('주문 생성 실패');
+      }
+      return response.json();
+    })
+    .then(data => {
+      console.log('주문이 생성되었습니다. 주문 ID:', data.id);
+      // 주문 성공 후 추가 작업
+      // 예: 성공 메시지 표시, 주문 완료 페이지로 이동 등
+      alert('주문이 성공적으로 생성되었습니다.');
+      // 장바구니 비우기
+      checkout(data.id);
+      updateCart();  // 장바구니 UI 업데이트
+    })
+    .catch(error => {
+      console.error('주문 생성 중 오류 발생:', error);
+      alert('주문 생성 중 오류가 발생했습니다.');
+    });
+
+    updateCart()
+    // Initialize the page
+
+  }
+
+  function checkout(orderId) {
+    // 주문 생성 후 성공하면 결제로 이동
+    fetch(`http://localhost:8080/orders/${orderId}/toss/checkout`, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
+    })  // HTML 파일 URL 요청
+    .then(response => response.text())  // HTML 콘텐츠를 텍스트로 변환
+    .then(html => {
+      // 새 창을 열고 HTML을 표시
+      const newWindow = window.open();
+      newWindow.document.write(html);  // 새 창에 HTML 내용 삽입
+      newWindow.document.close();  // 창 닫기 (필수)
+    })
+    .catch(error => {
+      console.error('Error:', error);  // 오류 처리
+    });
+  }
+
+  createItemCards();
+
+
+</script>
+</body>
+</html>

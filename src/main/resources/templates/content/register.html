@@ -1,0 +1,21 @@
+<body class="text-center">
+<form class="form-signin" th:action="@{/account/register}" method="post" th:object="${accountRequestDto}"> <!-- 요청 보내기-->
+  <h1 class="h3 mb-3 font-weight-normal">회원가입</h1>
+
+  <label for="username" class="sr-only">username</label>
+  <input type="text" id="username" th:classappend="${#fields.hasErrors('username')} ? 'is-invalid'" name="username" class="form-control" required autofocus>
+  <div class="invalid-feedback" th:if="${#fields.hasErrors('username')}" th:errors="*{username}">
+    중복회원
+  </div>
+
+  <label for="password" class="sr-only">password</label>
+  <input type="password" id="password" th:classappend="${#fields.hasErrors('password')} ? 'is-invalid'" name="password" class="form-control" placeholder="password" required>
+  <div class="invalid-feedback" th:if="${#fields.hasErrors('password')}" th:errors="*{password}">
+    비밀번호 불일치
+  </div>
+
+  <label for="password" class="sr-only">password_confirm</label>
+  <input type="password" id="password_confirm" name="password_confirm" class="form-control" placeholder="password_confirm" required>
+
+  <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+</form>

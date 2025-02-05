@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Page</title>
+    <script>
+        // 로그인 요청 함수
+        function login() {
+            // 사용자 입력 값을 가져옵니다.
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            // 로그인 요청을 보내는 API URL
+            const loginUrl = 'http://localhost:8080/users/login';
+
+            // 로그인 데이터
+            const loginData = {
+                email: email,
+                password: password
+            };
+
+            // Fetch API를 사용하여 POST 요청 보내기
+            fetch(loginUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': ""
+                },
+                body: JSON.stringify(loginData)
+            })
+                .then(response => {
+                    // 응답 헤더에서 Authorization을 가져와서 토큰을 처리
+                    const accessToken = response.headers.get('Authorization');
+
+                    if (accessToken) {
+                        // Bearer 토큰 형식 분리
+                        const token = accessToken.replace('Bearer ', '').trim();
+
+                        // 토큰을 로컬 스토리지에 저장
+                        localStorage.setItem('accessToken', token);
+                        console.log('Access Token:', token); // 디버깅용
+                        alert('Login successful');
+                    } else {
+                        console.warn('Authorization header not found in response.');
+                        alert('Login failed');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred');
+                });
+        }
+
+        // 테스트용 - 토큰을 사용할 때
+        function testApi() {
+            const token = localStorage.getItem('accessToken');
+            if (!token) {
+                alert('No access token found');
+                return;
+            }
+            console.log(token);
+            // login -> 상품창으로 이동 후 cart에 물품 추가 -> cart에서 주문 -> 주문 -> 결제
+            const API_BASE_URL = window.location.origin;
+            fetch(`${API_BASE_URL}/products`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+                .then(response => {
+                    if (response.ok) {
+                        // 성공적인 응답이면 URL 리다이렉트
+                        window.location.href = 'http://localhost:8080/products';
+                    } else {
+                        console.error('Failed to fetch products:', response.status);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);  // 오류 처리
+                });
+
+
+        }
+    </script>
+</head>
+<body>
+<h2>Login</h2>
+
+<!-- 로그인 폼 -->
+<form onsubmit="event.preventDefault(); login();">
+    <label for="email">Email:</label><br>
+    <input type="email" id="email" name="email" required><br><br>
+
+    <label for="password">Password:</label><br>
+    <input type="password" id="password" name="password" required><br><br>
+
+    <button type="submit">Login</button>
+</form>
+
+<h2>Test API Request (Optional)</h2>
+<button onclick="testApi()">Test API with JWT Token</button>
+</body>
+</html>
