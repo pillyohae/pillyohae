@@ -225,6 +225,7 @@ public class RefreshTokenService {
             redisTemplate.hasKey(BLACKLIST_TOKEN_PREFIX + accessToken)
         );
 
+        log.info("블랙리스트 값 확인");
         blacklistCache.put(accessToken, isBlacklisted);
 
         return isBlacklisted;

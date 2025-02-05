@@ -62,7 +62,8 @@ public enum ErrorCode {
     /**
      * Jwt error
      */
-    UNAUTHORIZED_TOKEN(HttpStatus.UNAUTHORIZED, "토큰이 비어있거나 만료되었거나 지원하지않습니다.");
+    UNAUTHORIZED_TOKEN(HttpStatus.UNAUTHORIZED, "토큰이 비어있거나 만료되었거나 지원하지않습니다."),
+    BLACKLIST_TOKEN(HttpStatus.UNAUTHORIZED, "블랙리스트된 토큰입니다.");
 
     private final HttpStatus httpStatus;
     private final String message;

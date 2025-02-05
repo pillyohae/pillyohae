@@ -44,4 +44,5 @@ jacoco/
 
 AWS_TEST.http
 LOCAL_TEST.http
+*.http
 
