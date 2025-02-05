@@ -1,6 +1,8 @@
 package com.example.pillyohae.global.filter;
 
 import com.example.pillyohae.global.config.SecurityProperties;
+import com.example.pillyohae.global.exception.CustomResponseStatusException;
+import com.example.pillyohae.global.exception.code.ErrorCode;
 import com.example.pillyohae.global.util.AuthenticationScheme;
 import com.example.pillyohae.global.util.JwtProvider;
 import com.example.pillyohae.refresh.service.RefreshTokenService;
@@ -46,34 +48,41 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request,
         HttpServletResponse response,
-        FilterChain filterChain) throws ServletException, IOException {
+        FilterChain filterChain)
+        throws ServletException, IOException {
+        try {
+            // 요청 URI와 HTTP Method 가져오기
+            String requestUri = request.getRequestURI();
+            String method = request.getMethod();
 
-        // 요청 URI와 HTTP Method 가져오기
-        String requestUri = request.getRequestURI();
-        String method = request.getMethod();
-
-        // 1. 화이트리스트 확인: 해당 요청 URI가 화이트리스트에 포함되어 있으면 필터를 통과시킴
-        if (securityProperties.getWhiteList().stream()
-            .anyMatch(pattern -> pathMatcher.match(pattern, requestUri))) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        // 2. HTTP Method 및 특정 경로 패턴 확인
-        Map<HttpMethod, List<String>> methodPatterns = securityProperties.getMethodSpecificPatterns();
-        if (methodPatterns.containsKey(HttpMethod.valueOf(method))) {
-            if (methodPatterns.get(HttpMethod.valueOf(method)).stream()
+            // 1. 화이트리스트 확인: 해당 요청 URI가 화이트리스트에 포함되어 있으면 필터를 통과시킴
+            if (securityProperties.getWhiteList().stream()
                 .anyMatch(pattern -> pathMatcher.match(pattern, requestUri))) {
                 filterChain.doFilter(request, response);
                 return;
             }
+
+            // 2. HTTP Method 및 특정 경로 패턴 확인
+            Map<HttpMethod, List<String>> methodPatterns = securityProperties.getMethodSpecificPatterns();
+            if (methodPatterns.containsKey(HttpMethod.valueOf(method))) {
+                if (methodPatterns.get(HttpMethod.valueOf(method)).stream()
+                    .anyMatch(pattern -> pathMatcher.match(pattern, requestUri))) {
+                    filterChain.doFilter(request, response);
+                    return;
+                }
+            }
+
+            // 3. 인증 처리
+            this.authenticate(request);
+
+            // 4. 필터 체인 계속 실행
+            filterChain.doFilter(request, response);
+        } catch (CustomResponseStatusException ex) {
+            response.setStatus(ex.getErrorCode().getHttpStatus().value());
+            response.setContentType("application/json");
+            response.getWriter()
+                .write("{\"error\": \"" + ex.getErrorCode() + ex.getMessage() + "\"}");
         }
-
-        // 3. 인증 처리
-        this.authenticate(request);
-
-        // 4. 필터 체인 계속 실행
-        filterChain.doFilter(request, response);
     }
 
     /**
@@ -81,26 +90,30 @@ public class JwtAuthFilter extends OncePerRequestFilter {
      *
      * @param request HTTP 요청 객체
      */
-    private void authenticate(HttpServletRequest request) {
-        // 요청 헤더에서 토큰 추출
-        String token = this.getTokenFromRequest(request);
+    private void authenticate(HttpServletRequest request) throws CustomResponseStatusException {
+        try {
+            // 요청 헤더에서 토큰 추출
+            String token = this.getTokenFromRequest(request);
 
-        // 토큰이 유효하지 않으면 인증 처리하지 않음
-        if (token == null || !jwtProvider.validToken(token)) {
-            return;
+            // 토큰이 유효하지 않으면 인증 처리하지 않음
+            if (token == null || !jwtProvider.validToken(token)) {
+                return;
+            }
+
+            // 블랙리스트 토큰 검증 (예외 발생 시 catch 후 응답 처리)
+            if (refreshTokenService.isTokenBlacklisted(token)) {
+                throw new CustomResponseStatusException(ErrorCode.BLACKLIST_TOKEN);
+            }
+
+            // 유효한 토큰인 경우 사용자 정보를 가져와 인증 객체 생성
+            String username = jwtProvider.getUsername(token);
+            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
+            // SecurityContext에 인증 객체 저장
+            this.setAuthentication(request, userDetails);
+        } catch (CustomResponseStatusException ex) {
+            throw ex; // 예외를 필터에서 처리하도록 던짐
         }
-
-        // 토큰이 블랙리스트에 포함되어 있다면 인증 처리하지 않음
-        if (refreshTokenService.isTokenBlacklisted(token)) {
-            return;
-        }
-
-        // 유효한 토큰인 경우 사용자 정보를 가져와 인증 객체 생성
-        String username = jwtProvider.getUsername(token);
-        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-
-        // SecurityContext에 인증 객체 저장
-        this.setAuthentication(request, userDetails);
     }
 
     /**

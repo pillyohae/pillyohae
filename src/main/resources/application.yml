@@ -67,7 +67,7 @@ rabbitmq:
   exchange:
     name: exchange.direct
   routing:
-    key : order
+    key: order
 
   sql:
     init:
@@ -119,3 +119,4 @@ security: # SecurityProperties의 prefix와 일치
       - "/products"
       - "/coupons/available"
       - "/products/nutrients"
+
