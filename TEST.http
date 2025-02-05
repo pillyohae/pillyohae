@@ -1,5 +1,5 @@
 ###
-POST http://ec2-52-87-160-81.compute-1.amazonaws.com:8080/users/signup
+POST http://localhost:8080/users/signup
 Authorization:
 Content-Type: application/json
 
@@ -14,7 +14,7 @@ Content-Type: application/json
   "role": "seller"
 }
 ###
-POST http://ec2-52-87-160-81.compute-1.amazonaws.com:8080/users/signup
+POST http://localhost:8080/users/signup
 Authorization:
 Content-Type: application/json
 
@@ -29,7 +29,7 @@ Content-Type: application/json
   "role": "buyer"
 }
 ###
-POST http://ec2-52-87-160-81.compute-1.amazonaws.com:8080/users/signup
+POST http://localhost:8080/users/signup
 Authorization:
 Content-Type: application/json
 
@@ -46,7 +46,7 @@ Content-Type: application/json
 
 
 ### 판매자 로그인
-POST http://ec2-52-87-160-81.compute-1.amazonaws.com:8080/users/login
+POST http://localhost:8080/users/login
 Content-Type: application/json
 
 {
@@ -102,12 +102,12 @@ Content-Type: application/json
 %}
 
 ### 판매상품 생성
-POST http://ec2-52-87-160-81.compute-1.amazonaws.com:8080/products
+POST http://localhost:8080/products
 Authorization: Bearer {{accessToken}}
 Content-Type: application/json
 
 {
-  "productName": "약",
+  "productName": "영양제",
   "category": "asdf@naver.com",
   "description": "Asdf1234@",
   "companyName": "a",
@@ -212,7 +212,7 @@ if (response.status === 200) {
 ###
 
 // buyer 로그인
-POST http://localhost:8080/users/login
+POST http://ec2-35-170-248-75.compute-1.amazonaws.com:8080/users/login
 Content-Type: application/json
 
 {
@@ -270,7 +270,7 @@ GET http://localhost:8080/coupons
 Authorization: Bearer {{accessToken}}
 
 ### 주문생성
-POST http://localhost:8080/orders
+POST http://ec2-35-170-248-75.compute-1.amazonaws.com:8080/orders
 Authorization: Bearer {{accessToken}}
 content-Type: application/json
 
@@ -279,9 +279,18 @@ content-Type: application/json
     {
       "productId": 1,
       "quantity": 3
-    },
+    }
+  ]
+}
+### 주문생성
+POST http://ec2-52-87-160-81.compute-1.amazonaws.com:8080/orders
+Authorization: Bearer {{accessToken}}
+content-Type: application/json
+
+{
+  "productInfos": [
     {
-      "productId": 2,
+      "productId": 1,
       "quantity": 3
     }
   ]
@@ -301,8 +310,6 @@ Content-Type: application/json
   ],
   "couponIds": [1]
 }
-
-
 
 ### 판매자 주문 조회
 GET http://localhost:8080/users/sellers/orders?pageNumber=0

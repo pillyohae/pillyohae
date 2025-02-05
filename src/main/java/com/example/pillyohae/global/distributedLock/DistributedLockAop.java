@@ -1,8 +1,5 @@
 package com.example.pillyohae.global.distributedLock;
 
-import static com.example.pillyohae.global.distributedLock.KeyValueProcessor.kv;
-
-import java.lang.reflect.Method;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -12,6 +9,10 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Component;
+
+import java.lang.reflect.Method;
+
+import static com.example.pillyohae.global.distributedLock.KeyValueProcessor.kv;
 
 /**
  * @DistributedLock 어노테이션이 적용된 메서드에 대해 Redisson 기반의 분산 락을 적용하는 AOP 클래스.
@@ -41,6 +42,7 @@ public class DistributedLockAop {
         DistributedLock distributedLock = method.getAnnotation(DistributedLock.class);
 
         // 락의 고유 키를 생성 (ex: "LOCK:orderId_1234")
+
         String key = REDISSON_LOCK_PREFIX + CustomSpringELParser.getDynamicValue(
             signature.getParameterNames(), joinPoint.getArgs(), distributedLock.key());
         RLock rLock = redissonClient.getLock(key);
