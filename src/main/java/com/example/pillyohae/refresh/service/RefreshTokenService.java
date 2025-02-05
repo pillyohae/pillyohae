@@ -214,10 +214,10 @@ public class RefreshTokenService {
      */
     public boolean isTokenBlacklisted(String accessToken) {
         // 로컬 캐시 확인
-//        Boolean cacheResult = blacklistCache.getIfPresent(accessToken);
-//        if (cacheResult != null) {
-//            return cacheResult;
-//        }
+        Boolean cacheResult = blacklistCache.getIfPresent(accessToken);
+        if (cacheResult != null) {
+            return cacheResult;
+        }
 
         //캐시에 없으면 Redis에서 BL:<액세스 토큰> 키가 존재하는지 확인
         //존재한다면 true 가 리턴될 것이고 캐시에도 해당 토큰이 블랙리스트라는 정보가 들어감
@@ -225,8 +225,8 @@ public class RefreshTokenService {
             redisTemplate.hasKey(BLACKLIST_TOKEN_PREFIX + accessToken)
         );
 
-//        log.info("블랙리스트 값 확인");
-//        blacklistCache.put(accessToken, isBlacklisted);
+        log.info("블랙리스트 값 확인");
+        blacklistCache.put(accessToken, isBlacklisted);
 
         return isBlacklisted;
     }
