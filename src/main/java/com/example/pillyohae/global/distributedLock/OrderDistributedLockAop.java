@@ -3,12 +3,14 @@ package com.example.pillyohae.global.distributedLock;
 import com.example.pillyohae.order.entity.Order;
 import com.example.pillyohae.order.entity.OrderProduct;
 import com.example.pillyohae.order.repository.OrderRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.json.simple.JSONObject;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Component;
@@ -30,6 +32,7 @@ public class OrderDistributedLockAop {
     private final RedissonClient redissonClient;
     private final AopForTransaction aopForTransaction;
     private final OrderRepository orderRepository;
+    private final ObjectMapper objectMapper;
 
     /**
      * 분산 락이 적용된 메서드 실행 시 락을 획득하고, 메서드 실행 후 락을 해제하는 메서드.
@@ -42,10 +45,11 @@ public class OrderDistributedLockAop {
     public Object lock(final ProceedingJoinPoint joinPoint) throws Throwable {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         Method method = signature.getMethod();
-        DistributedLock distributedLock = method.getAnnotation(DistributedLock.class);
-
-        String orderId = CustomSpringELParser.getDynamicValue(
-                signature.getParameterNames(), joinPoint.getArgs(), distributedLock.key()) + "";
+        OrderDistributedLock orderDistributedLock = method.getAnnotation(OrderDistributedLock.class);
+        Object object = CustomSpringELParser.getDynamicValue(
+                signature.getParameterNames(), joinPoint.getArgs(), orderDistributedLock.key());
+        JSONObject jsonObject = objectMapper.readValue(object.toString(), JSONObject.class);
+        String orderId = jsonObject.get("orderId").toString();
         Order order = orderRepository.findByOrderIdWithOrderProducts(UUID.fromString(orderId))
                 .orElseThrow(
                         () -> new RuntimeException("Order not found")
@@ -62,8 +66,8 @@ public class OrderDistributedLockAop {
             boolean available;
             // 락 획득 시도 (대기 시간 및 임대 시간 적용)
             for(RLock rLock : rLockList) {
-                available = rLock.tryLock(distributedLock.waitTime(),
-                        distributedLock.leaseTime(), distributedLock.timeUnit());
+                available = rLock.tryLock(orderDistributedLock.waitTime(),
+                        orderDistributedLock.leaseTime(), orderDistributedLock.timeUnit());
                 if(!available) {
                     return false;
                 }

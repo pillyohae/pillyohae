@@ -1,6 +1,6 @@
 package com.example.pillyohae.payment.service;
 
-import com.example.pillyohae.global.distributedLock.DistributedLock;
+import com.example.pillyohae.global.distributedLock.OrderDistributedLock;
 import com.example.pillyohae.global.message_queue.message.PaymentMessage;
 import com.example.pillyohae.global.message_queue.publisher.MessagePublisher;
 import com.example.pillyohae.order.dto.OrderProductFetchJoinProduct;
@@ -39,7 +39,7 @@ public class PaymentService {
      * @param jsonBody 클라이언트에서 전달된 결제 정보 (JSON 문자열)
      * @return TossPayments 결제 요청 JSON 객체
      */
-    @DistributedLock(key = "'order'", waitTime = 60L, leaseTime = 60L)
+    @OrderDistributedLock(key = "#jsonBody", waitTime = 60L, leaseTime = 60L)
     public JSONObject pay(String jsonBody) {
         // TossPayments 결제 요청 데이터 생성
         JSONObject tossRequest = makeTossRequest(jsonBody);
