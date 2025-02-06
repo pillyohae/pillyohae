@@ -108,6 +108,6 @@ jobs:
                 -e REDIS_HOST=${{secrets.REDIS_HOST}} \
                 -e OPENAI_API_KEY=${{secrets.OPENAI_API_KEY}} \
                 -e SERVER_PORT=${{secrets.SERVER_PORT}} \
-                -p 443:8080 "${{secrets.DOCKER_HUB_REPOSITORY}}:main"
+                -p 8080:8080 "${{secrets.DOCKER_HUB_REPOSITORY}}:main"
         
           
