@@ -107,6 +107,7 @@ jobs:
                 -e RABBITMQ_PASSWORD=${{secrets.RABBITMQ_PASSWORD}} \
                 -e REDIS_HOST=${{secrets.REDIS_HOST}} \
                 -e OPENAI_API_KEY=${{secrets.OPENAI_API_KEY}} \
-                -p 8080:8080 "${{secrets.DOCKER_HUB_REPOSITORY}}:main"
+                -e SERVER_PORT=${{secrets.SERVER_PORT}} \
+                -p 80:8080 "${{secrets.DOCKER_HUB_REPOSITORY}}:main"
         
           
