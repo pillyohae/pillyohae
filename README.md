@@ -16,29 +16,13 @@
 
 ## 🛠️ Tools
 
-<img alt="Java" src ="https://img.shields.io/badge/Java-007396.svg?&style=for-the-badge&logo=Java&logoColor=white"/>
-<img alt="Java" src ="https://img.shields.io/badge/intellijidea-000000.svg?&style=for-the-badge&logo=intellijidea&logoColor=white"/>
-<img src="https://img.shields.io/badge/springboot-6DB33F?style=for-the-badge&logo=springboot&logoColor=white">
-<img src="https://img.shields.io/badge/mysql-4479A1?style=for-the-badge&logo=mysql&logoColor=white">
-<img alt="Redis" src ="https://img.shields.io/badge/Redis-FF4438.svg?&style=for-the-badge&logo=Java&logoColor=white"/>
-<img alt="RabbitMQ" src ="https://img.shields.io/badge/rabbitmq-FF6600.svg?&style=for-the-badge&logo=rabbitmq&logoColor=white"/>
-<img alt="springsecurity" src ="https://img.shields.io/badge/springsecurity-6DB33F.svg?&style=for-the-badge&logo=springsecurity&logoColor=white"/> 
-<img alt="jsonwebtokens" src ="https://img.shields.io/badge/jsonwebtokens-000000.svg?&style=for-the-badge&logo=jsonwebtokens&logoColor=white"/>  
-<img alt="gradle" src ="https://img.shields.io/badge/gradle-02303A.svg?&style=for-the-badge&logo=gradle&logoColor=white"/> 
-<img alt="githubactions" src ="https://img.shields.io/badge/githubactions-2088FF.svg?&style=for-the-badge&logo=githubactions&logoColor=white"/> 
-<img alt="docker" src ="https://img.shields.io/badge/docker-2496ED.svg?&style=for-the-badge&logo=docker&logoColor=white"/> 
-<img alt="amazonec2" src ="https://img.shields.io/badge/amazonec2-FF9900.svg?&style=for-the-badge&logo=amazonec2&logoColor=white"/>
-<img alt="git" src ="https://img.shields.io/badge/git-F05032.svg?&style=for-the-badge&logo=git&logoColor=white"/> 
-<img alt="github" src ="https://img.shields.io/badge/github-181717.svg?&style=for-the-badge&logo=github&logoColor=white"/> 
-<img alt="tosspay" src ="https://img.shields.io/badge/tosspay-0170CE.svg?&style=for-the-badge&logo=tosspay&logoColor=white"/> 
-<img src="https://img.shields.io/badge/openai-412991?style=for-the-badge&logo=openai&logoColor=white">
-<img alt="amazons3" src ="https://img.shields.io/badge/amazons3-569A31.svg?&style=for-the-badge&logo=amazons3&logoColor=white"/> 
+<img alt="Java" src ="https://img.shields.io/badge/Java-007396.svg?&style=for-the-badge&logo=Java&logoColor=white"><img alt="Java" src ="https://img.shields.io/badge/intellijidea-000000.svg?&style=for-the-badge&logo=intellijidea&logoColor=white"><img src="https://img.shields.io/badge/springboot-6DB33F?style=for-the-badge&logo=springboot&logoColor=white"><img src="https://img.shields.io/badge/mysql-4479A1?style=for-the-badge&logo=mysql&logoColor=white"><img alt="Redis" src ="https://img.shields.io/badge/Redis-FF4438.svg?&style=for-the-badge&logo=Java&logoColor=white"><img alt="RabbitMQ" src ="https://img.shields.io/badge/rabbitmq-FF6600.svg?&style=for-the-badge&logo=rabbitmq&logoColor=white"/><img alt="springsecurity" src ="https://img.shields.io/badge/springsecurity-6DB33F.svg?&style=for-the-badge&logo=springsecurity&logoColor=white"/><img alt="jsonwebtokens" src ="https://img.shields.io/badge/jsonwebtokens-000000.svg?&style=for-the-badge&logo=jsonwebtokens&logoColor=white"/><img alt="gradle" src ="https://img.shields.io/badge/gradle-02303A.svg?&style=for-the-badge&logo=gradle&logoColor=white"/><img alt="githubactions" src ="https://img.shields.io/badge/githubactions-2088FF.svg?&style=for-the-badge&logo=githubactions&logoColor=white"/><img alt="docker" src ="https://img.shields.io/badge/docker-2496ED.svg?&style=for-the-badge&logo=docker&logoColor=white"/><img alt="amazonec2" src ="https://img.shields.io/badge/amazonec2-FF9900.svg?&style=for-the-badge&logo=amazonec2&logoColor=white"/><img alt="git" src ="https://img.shields.io/badge/git-F05032.svg?&style=for-the-badge&logo=git&logoColor=white"/><img alt="github" src ="https://img.shields.io/badge/github-181717.svg?&style=for-the-badge&logo=github&logoColor=white"/><img alt="tosspay" src ="https://img.shields.io/badge/tosspay-0170CE.svg?&style=for-the-badge&logo=tosspay&logoColor=white"/><img src="https://img.shields.io/badge/openai-412991?style=for-the-badge&logo=openai&logoColor=white"><img alt="amazons3" src ="https://img.shields.io/badge/amazons3-569A31.svg?&style=for-the-badge&logo=amazons3&logoColor=white"/>
 
 ---
 
 ## ‍👨‍💻 인프라 설계도
 
-![img_9.png](img_9.png)
+![Image](https://github.com/user-attachments/assets/fab941a4-3d78-437b-b6ba-8a7917674b3a)
 
 
 ---
@@ -57,28 +41,28 @@
 
 ## 👨‍💻 ERD
 
-![img.png](img.png)
+![Image](https://github.com/user-attachments/assets/ce39bd9e-5ee3-473a-a037-93190802c334)
 
 ---
 
 ## 👨‍💻 API명세서
 
-회원
-![img_1.png](img_1.png)
-상품
-![img_2.png](img_2.png)
-장바구니
-![img_3.png](img_3.png)
-주문
-![img_4.png](img_4.png)
-설문
-![img_5.png](img_5.png)
-추천
-![img_6.png](img_6.png)
-쿠폰
-![img_7.png](img_7.png)
-페르소나(AI 이미지/메세지)
-![img_8.png](img_8.png)
+회원<br>
+![Image](https://github.com/user-attachments/assets/d924412a-a7cb-4d93-b428-04603295632a)<br>
+상품<br>
+![Image](https://github.com/user-attachments/assets/02ce0d3b-1f3b-468d-a9c9-55ac0f6c772c)<br>
+장바구니<br>
+![Image](https://github.com/user-attachments/assets/6f011046-e3d3-48b9-923d-151a74957efb)<br>
+주문<br>
+![Image](https://github.com/user-attachments/assets/ddbf917c-d50d-459e-8571-37d7dd086537)<br>
+설문<br>
+![Image](https://github.com/user-attachments/assets/1d43c44e-fc27-4f5f-a0a3-690cb9058a04)<br>
+추천<br>
+![Image](https://github.com/user-attachments/assets/47dac33d-4bc8-466f-a16b-dbb4e4841af9)<br>
+쿠폰<br>
+![Image](https://github.com/user-attachments/assets/645e7d04-c852-4b09-bc74-9bac9b2a8fa4)<br>
+페르소나(AI 이미지/메세지)<br>
+![Image](https://github.com/user-attachments/assets/a4c38091-b67a-4d52-bec3-74b7fa4f264a)<br>
 
 ---
 
