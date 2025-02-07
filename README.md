@@ -57,7 +57,7 @@
 
 ## ‍👨‍💻 인프라 설계도
 
-![Image](https://github.com/user-attachments/assets/fab941a4-3d78-437b-b6ba-8a7917674b3a)
+[![Image](https://github.com/user-attachments/assets/fab941a4-3d78-437b-b6ba-8a7917674b3a)](https://github.com/user-attachments/assets/fab941a4-3d78-437b-b6ba-8a7917674b3a)
 
 
 ---
@@ -151,28 +151,28 @@ docker run -it --rm --name rabbitmq -p 0000:0000 -p 0000:00000 rabbitmq:4.0-mana
 
 ## 👨‍💻 ERD
 
-![Image](https://github.com/user-attachments/assets/ce39bd9e-5ee3-473a-a037-93190802c334)
+[![Image](https://github.com/user-attachments/assets/2211c2a2-75e9-43c2-bca2-c236cf2f34cf)](https://github.com/user-attachments/assets/2211c2a2-75e9-43c2-bca2-c236cf2f34cf)
 ### [Pill요해? ERD 바로가기](https://www.erdcloud.com/d/MwZ2z3BRAQSmeHNdg)
 ---
 
 ## 👨‍💻 API명세서
 
 회원<br>
-![Image](https://github.com/user-attachments/assets/d924412a-a7cb-4d93-b428-04603295632a)<br>
+[![Image](https://github.com/user-attachments/assets/d924412a-a7cb-4d93-b428-04603295632a)](https://github.com/user-attachments/assets/d924412a-a7cb-4d93-b428-04603295632a)<br>
 상품<br>
-![Image](https://github.com/user-attachments/assets/02ce0d3b-1f3b-468d-a9c9-55ac0f6c772c)<br>
+[![Image](https://github.com/user-attachments/assets/02ce0d3b-1f3b-468d-a9c9-55ac0f6c772c)](https://github.com/user-attachments/assets/02ce0d3b-1f3b-468d-a9c9-55ac0f6c772c)<br>
 장바구니<br>
-![Image](https://github.com/user-attachments/assets/6f011046-e3d3-48b9-923d-151a74957efb)<br>
+[![Image](https://github.com/user-attachments/assets/6f011046-e3d3-48b9-923d-151a74957efb)](https://github.com/user-attachments/assets/6f011046-e3d3-48b9-923d-151a74957efb)<br>
 주문<br>
-![Image](https://github.com/user-attachments/assets/ddbf917c-d50d-459e-8571-37d7dd086537)<br>
+[![Image](https://github.com/user-attachments/assets/ddbf917c-d50d-459e-8571-37d7dd086537)](https://github.com/user-attachments/assets/ddbf917c-d50d-459e-8571-37d7dd086537)<br>
 설문<br>
-![Image](https://github.com/user-attachments/assets/1d43c44e-fc27-4f5f-a0a3-690cb9058a04)<br>
+[![Image](https://github.com/user-attachments/assets/1d43c44e-fc27-4f5f-a0a3-690cb9058a04)](https://github.com/user-attachments/assets/1d43c44e-fc27-4f5f-a0a3-690cb9058a04))<br>
 추천<br>
-![Image](https://github.com/user-attachments/assets/47dac33d-4bc8-466f-a16b-dbb4e4841af9)<br>
+[![Image](https://github.com/user-attachments/assets/47dac33d-4bc8-466f-a16b-dbb4e4841af9)](https://github.com/user-attachments/assets/47dac33d-4bc8-466f-a16b-dbb4e4841af9)<br>
 쿠폰<br>
-![Image](https://github.com/user-attachments/assets/645e7d04-c852-4b09-bc74-9bac9b2a8fa4)<br>
+[![Image](https://github.com/user-attachments/assets/645e7d04-c852-4b09-bc74-9bac9b2a8fa4)](https://github.com/user-attachments/assets/645e7d04-c852-4b09-bc74-9bac9b2a8fa4)<br>
 페르소나(AI 이미지/메세지)<br>
-![Image](https://github.com/user-attachments/assets/a4c38091-b67a-4d52-bec3-74b7fa4f264a)<br>
+[![Image](https://github.com/user-attachments/assets/a4c38091-b67a-4d52-bec3-74b7fa4f264a)](https://github.com/user-attachments/assets/a4c38091-b67a-4d52-bec3-74b7fa4f264a)<br>
 
 ---
 
