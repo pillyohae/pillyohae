@@ -151,7 +151,7 @@ docker run -it --rm --name rabbitmq -p 0000:0000 -p 0000:00000 rabbitmq:4.0-mana
 
 ## 👨‍💻 ERD
 
-![Image](https://github.com/user-attachments/assets/ce39bd9e-5ee3-473a-a037-93190802c334)
+[![Image](https://github.com/user-attachments/assets/2211c2a2-75e9-43c2-bca2-c236cf2f34cf)](https://github.com/user-attachments/assets/2211c2a2-75e9-43c2-bca2-c236cf2f34cf)
 ### [Pill요해? ERD 바로가기](https://www.erdcloud.com/d/MwZ2z3BRAQSmeHNdg)
 ---
 
