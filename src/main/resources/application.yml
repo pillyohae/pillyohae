@@ -116,7 +116,7 @@ security: # SecurityProperties의 prefix와 일치
     - "/products/nutrients"
   method-specific-patterns:
     GET:
-      - "/products/*"
+      - "/products/**"
       - "/products"
       - "/coupons/available"
       - "/products/nutrients"
