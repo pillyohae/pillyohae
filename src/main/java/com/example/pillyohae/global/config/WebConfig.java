@@ -3,7 +3,6 @@ package com.example.pillyohae.global.config;
 import com.example.pillyohae.global.filter.JwtAuthFilter;
 import com.example.pillyohae.user.entity.type.Role;
 import jakarta.servlet.DispatcherType;
-import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
@@ -21,6 +20,8 @@ import org.springframework.security.web.access.ExceptionTranslationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.Arrays;
 
 
 /**
@@ -71,7 +72,7 @@ public class WebConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(securityProperties.getWhiteList().toArray(new String[0]))
                 .permitAll() // 화이트 리스트 경로 허용
-                .requestMatchers(HttpMethod.GET, "/products/*").permitAll() // 개별 제품 조회 허용
+                .requestMatchers(HttpMethod.GET, "/products/**").permitAll() // 개별 제품 조회 허용
                 .requestMatchers(HttpMethod.GET, "/products").permitAll() // 전체 제품 목록 조회 허용
                 .requestMatchers(HttpMethod.POST, "/persona/*").permitAll() // 특정 API 허용
                 .requestMatchers(HttpMethod.POST, "/refresh").permitAll() // JWT 토큰 갱신 허용
