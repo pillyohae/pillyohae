@@ -6,6 +6,8 @@
 
 ### 사용자의  건강 상태와 생활 패턴을 분석해 꼭 맞는 영양제를 추천해주는 영양제 이커머스
 
+#### pillyohae 바로가기: https://www.pillyohae.store/
+
 - 사용자 설문 기반 영양제 추천 서비스
 - 영양제 판매 및 구매
 - 상품 구매 유도를 위한 상품 관련 AI 메세지 자동생성
@@ -57,7 +59,7 @@
 
 ## ‍👨‍💻 인프라 설계도
 
-[![Image](https://github.com/user-attachments/assets/fab941a4-3d78-437b-b6ba-8a7917674b3a)](https://github.com/user-attachments/assets/fab941a4-3d78-437b-b6ba-8a7917674b3a)
+[![Image](https://github.com/user-attachments/assets/ef16b78e-50e4-48e1-86fc-e7792f14fb69)](https://github.com/user-attachments/assets/ef16b78e-50e4-48e1-86fc-e7792f14fb69)
 
 
 ---
