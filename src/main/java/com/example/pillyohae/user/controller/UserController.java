@@ -293,7 +293,6 @@ public class UserController {
     // 상태에 따른 쿠폰 조회 (관리자만 조회 가능)
     @GetMapping("/admin/coupons")
     public ResponseEntity<CouponTemplateListResponseDto> getAvailableCoupons(
-        Authentication authentication,
         @RequestParam(required = false) CouponTemplate.CouponStatus couponStatus) {
         return ResponseEntity.ok(couponService.findCouponList(couponStatus));
     }
@@ -301,15 +300,13 @@ public class UserController {
     /**
      * 관리자의 쿠폰 상태 업데이트
      *
-     * @param authentication
      * @param couponStatus     변경할 쿠폰 상태 ACTIVE OR INACTIVE
      * @param couponTemplateId 수정할 쿠폰 식별자
      * @return 쿠폰 식별자 및 상태
      */
     @PutMapping("/admin/coupons/{couponTemplateId}/status")
     public ResponseEntity<CouponUpdateStatusResponseDto> updateCouponStatus(
-        Authentication authentication,
-        @RequestParam(required = true) CouponTemplate.CouponStatus couponStatus,
+        @RequestParam CouponTemplate.CouponStatus couponStatus,
         @PathVariable(name = "couponTemplateId") UUID couponTemplateId) {
         return ResponseEntity.ok(couponService.updateCouponStatus(couponTemplateId, couponStatus));
     }
@@ -317,16 +314,14 @@ public class UserController {
     /**
      * 관리자의 쿠폰 soft 삭제
      *
-     * @param authentication
      * @param couponTemplateId 삭제할 쿠폰 식별자
      * @return
      */
     @DeleteMapping("/admin/coupons/{couponTemplateId}")
-    public ResponseEntity<Void> deleteCoupon(Authentication authentication,
+    public ResponseEntity<Void> deleteCoupon(
         @PathVariable(name = "couponTemplateId") UUID couponTemplateId) {
         couponService.deleteCoupon(couponTemplateId);
         return ResponseEntity.ok().build();
     }
-
 
 }

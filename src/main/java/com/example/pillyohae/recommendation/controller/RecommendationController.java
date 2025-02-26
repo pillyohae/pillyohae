@@ -35,7 +35,8 @@ public class RecommendationController {
         @PathVariable Long surveyId
     ) {
 
-        return new ResponseEntity<>(recommendationService.create(userDetails.getUsername(), surveyId), HttpStatus.CREATED);
+        return new ResponseEntity<>(
+            recommendationService.create(userDetails.getUsername(), surveyId), HttpStatus.CREATED);
     }
 
     /**
@@ -50,7 +51,8 @@ public class RecommendationController {
         @AuthenticationPrincipal UserDetails userDetails,
         @PathVariable Long surveyId
     ) {
-        return ResponseEntity.ok(recommendationService.getRecommendations(userDetails.getUsername(), surveyId));
+        return ResponseEntity.ok(
+            recommendationService.getRecommendations(userDetails.getUsername(), surveyId));
     }
 
 }

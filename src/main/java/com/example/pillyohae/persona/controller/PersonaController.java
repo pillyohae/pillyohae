@@ -24,7 +24,8 @@ public class PersonaController {
     private final PersonaService personaService;
 
     @PostMapping("/image")
-    public ResponseEntity<Image> generatePersonaImage(@RequestParam("imageUrl") String productImageUrl) {
+    public ResponseEntity<Image> generatePersonaImage(
+        @RequestParam("imageUrl") String productImageUrl) {
         try {
             var personaImageUrl = personaService.generatePersonaFromProduct(productImageUrl);
             return ResponseEntity.ok(personaImageUrl);
@@ -34,9 +35,11 @@ public class PersonaController {
     }
 
     @PostMapping("/message")
-    public ResponseEntity<List<PersonaMessageCreateResponseDto>> generatePersonaMessage(@Valid @RequestBody PersonaMessageCreateRequestDto requestDto) {
+    public ResponseEntity<List<PersonaMessageCreateResponseDto>> generatePersonaMessage(
+        @Valid @RequestBody PersonaMessageCreateRequestDto requestDto) {
         try {
-            return ResponseEntity.ok(personaService.createPersonaMessageFromProduct(requestDto.getIngredient()));
+            return ResponseEntity.ok(
+                personaService.createPersonaMessageFromProduct(requestDto.getIngredient()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }

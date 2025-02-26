@@ -11,7 +11,8 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -51,15 +52,15 @@ public class CouponController {
      * 특정 쿠폰을 사용자에게 발급하는 API
      *
      * @param couponTemplateId 쿠폰 템플릿 ID
-     * @param authentication   현재 로그인한 사용자 정보
+     * @param userDetails      사용자 정보
      * @return 발급된 쿠폰 정보 응답 DTO
      */
     @PostMapping("/{couponTemplateId}/issue")
     public ResponseEntity<CouponGiveResponseDto> giveCoupon(
         @PathVariable(name = "couponTemplateId") UUID couponTemplateId,
-        Authentication authentication) {
+        @AuthenticationPrincipal UserDetails userDetails) {
         return ResponseEntity.status(HttpStatus.CREATED)
-            .body(couponService.giveCoupon(authentication.getName(), couponTemplateId));
+            .body(couponService.giveCoupon(userDetails.getUsername(), couponTemplateId));
     }
 
     /**
