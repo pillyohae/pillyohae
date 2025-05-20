@@ -8,9 +8,9 @@ spring:
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://mysql:3306/mainDB
-    username: user
-    password: 1234
+    url: ${DATABASE_URL}
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
 
   sql:
     init:
@@ -21,7 +21,7 @@ spring:
     database-platform: org.hibernate.dialect.MySQL8Dialect
     database: mysql
     hibernate:
-      ddl-auto: update
+      ddl-auto: ${JPA_HIBERNATE_DDL}
       naming:
         physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
     generate-ddl: true
@@ -36,6 +36,8 @@ spring:
           order_inserts: true
           order_updates: true
           generate_statistics: true
+  config:
+    import: optional:file:.env[.properties]
   ai:
     openai:
       api-key: ${OPENAI_API_KEY}
