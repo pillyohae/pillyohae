@@ -1,10 +1,10 @@
-#on:
-#  push:
-#    branches:
-#      - main
-#  pull_request:
-#    branches:
-#      - main
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 jobs:
   build:
     name: Build and Test
@@ -45,10 +45,10 @@ jobs:
           DATABASE_ID: ${{ secrets.DATABASE_ID }}
           DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
           DOCKER_HUB_REPOSITORY: ${{ secrets.DOCKER_HUB_REPOSITORY }}
-#          BUCKET_NAME: ${{secrets.BUCKET_NAME}}
-#          AWS_REGION: ${{secrets.AWS_REGION}}
-#          ACCESS_KEY: ${{secrets.AWS_ACCESS_KEY}}
-#          SECRET_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+        #          BUCKET_NAME: ${{secrets.BUCKET_NAME}}
+        #          AWS_REGION: ${{secrets.AWS_REGION}}
+        #          ACCESS_KEY: ${{secrets.AWS_ACCESS_KEY}}
+        #          SECRET_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
 
         run: |
           echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
@@ -84,25 +84,28 @@ jobs:
             echo "$DOCKER_PASS" | sudo docker login -u "$DOCKER_USER" --password-stdin
             sudo docker rm -f server 
             sudo docker pull "${{secrets.DOCKER_HUB_REPOSITORY}}:pillyohae"
-            sudo docker run -d \
-                --name server \
-                -e TZ=Asia/Seoul \
-                -e JPA_HIBERNATE_DDL=${{secrets.JPA_HIBERNATE_DDL}} \
-                -e DATABASE_URL=${{secrets.DATABASE_URL}} \
-                -e DATABASE_USERNAME=${{secrets.DATABASE_ID}} \
-                -e DATABASE_PASSWORD=${{secrets.DATABASE_PASSWORD}} \
-                -e BUCKET_NAME=${{secrets.BUCKET_NAME}} \
-                -e AWS_REGION=${{secrets.AWS_REGION}} \
-                -e ACCESS_KEY=${{secrets.AWS_ACCESS_KEY}} \
-                -e SECRET_KEY=${{secrets.AWS_SECRET_ACCESS_KEY}} \
-                -e TOSS_SECRET_KEY=${{secrets.TOSS_SECRET_KEY}} \
-                -e JWT_SECRET_KEY=${{secrets.JWT_SECRET_KEY}} \
-                -e RABBITMQ_HOST=${{secrets.RABBITMQ_HOST}} \
-                -e RABBITMQ_PORT=${{secrets.RABBITMQ_PORT}} \
-                -e RABBITMQ_USERNAME=${{secrets.RABBITMQ_USERNAME}} \
-                -e RABBITMQ_PASSWORD=${{secrets.RABBITMQ_PASSWORD}} \
-                -e REDIS_HOST=${{secrets.REDIS_HOST}} \
-                -e OPENAI_API_KEY=${{secrets.OPENAI_API_KEY}} \
-                -p 8080:8080 "${{secrets.DOCKER_HUB_REPOSITORY}}:pillyohae"
-        
+            
+            export TZ=Asia/Seoul \
+            export JPA_HIBERNATE_DDL=${{secrets.JPA_HIBERNATE_DDL}} \
+            export DATABASE_URL=${{secrets.DATABASE_URL}} \
+            export DATABASE_USERNAME=${{secrets.DATABASE_ID}} \
+            export DATABASE_PASSWORD=${{secrets.DATABASE_PASSWORD}} \
+            export BUCKET_NAME=${{secrets.BUCKET_NAME}} \
+            export AWS_REGION=${{secrets.AWS_REGION}} \
+            export ACCESS_KEY=${{secrets.AWS_ACCESS_KEY}} \
+            export SECRET_KEY=${{secrets.AWS_SECRET_ACCESS_KEY}} \
+            export TOSS_SECRET_KEY=${{secrets.TOSS_SECRET_KEY}} \
+            export JWT_SECRET_KEY=${{secrets.JWT_SECRET_KEY}} \
+            export RABBITMQ_HOST=${{secrets.RABBITMQ_HOST}} \
+            export RABBITMQ_PORT=${{secrets.RABBITMQ_PORT}} \
+            export RABBITMQ_USERNAME=${{secrets.RABBITMQ_USERNAME}} \
+            export RABBITMQ_PASSWORD=${{secrets.RABBITMQ_PASSWORD}} \
+            export REDIS_HOST=${{secrets.REDIS_HOST}} \
+            export OPENAI_API_KEY=${{secrets.OPENAI_API_KEY}} \
+            export DOCKER_IMAGE= ${{secrets.DOCKER_HUB_REPOSITORY}}:pillyohae"
+
+            cd ~/app
+            docker-compose pull
+            docker-compose up -d --remove-orphans
+     
           
