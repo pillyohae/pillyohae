@@ -1,3 +1,5 @@
+version: "3.8"
+
 services:
   mysql:
     image: mysql:8.0
@@ -10,8 +12,11 @@ services:
       - mysql_data:/var/lib/mysql
     networks:
       - backend
+
   app:
-    image: ${DOCKER_IMAGE}
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: server
     depends_on:
       - mysql
@@ -37,10 +42,10 @@ services:
       OPENAI_API_KEY: ${OPENAI_API_KEY}
     networks:
       - backend
-    entrypoint: ["/wait-for-it.sh", "mysql:3306", "--timeout=60", "--strict", "--", "java", "-jar", "app.jar"]
 
 volumes:
   mysql_data:
+
 networks:
   backend:
     driver: bridge
