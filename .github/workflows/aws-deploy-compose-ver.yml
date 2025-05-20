@@ -96,7 +96,6 @@ jobs:
             echo "$DOCKER_PASS" | sudo docker login -u "$DOCKER_USER" --password-stdin
             cd ~/app
             sudo docker rm -f server || true
-            sudo docker rm -f mysql || true
             sudo docker compose pull
             sudo docker compose up -d --remove-orphans
 
