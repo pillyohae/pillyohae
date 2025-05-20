@@ -99,9 +99,7 @@ jobs:
           username: ${{ secrets.AWS_SSH_USERNAME }}
           key: ${{ secrets.AWS_SSH_KEY }}
           port: 22
-          source: |
-            ./docker-compose.yml        
-            ./.env
+          source: "./docker-compose.yml, ./.env"
 
           target: "~/app/"                 # 서버 내 원하는 경로
       # 9. AWS 배포
