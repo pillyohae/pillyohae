@@ -20,7 +20,7 @@ services:
     environment:
       TZ: Asia/Seoul
       JPA_HIBERNATE_DDL: ${JPA_HIBERNATE_DDL}
-      DATABASE_URL: ${DATABASE_URL}
+      DATABASE_URL: jdbc:mysql://mysql:3306/mainDB
       DATABASE_USERNAME: ${DATABASE_USERNAME}
       DATABASE_PASSWORD: ${DATABASE_PASSWORD}
       BUCKET_NAME: ${BUCKET_NAME}
