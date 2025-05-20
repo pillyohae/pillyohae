@@ -4,19 +4,15 @@ import com.example.pillyohae.persona.dto.PersonaMessageCreateResponseDto;
 import com.example.pillyohae.persona.dto.PersonaMessageDto;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Arrays;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.Prompt;
+import org.springframework.ai.content.Media;
 import org.springframework.ai.image.Image;
 import org.springframework.ai.image.ImagePrompt;
 import org.springframework.ai.image.ImageResponse;
-import org.springframework.ai.model.Media;
 import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.openai.OpenAiChatOptions;
 import org.springframework.ai.openai.OpenAiImageModel;
@@ -24,8 +20,17 @@ import org.springframework.ai.openai.OpenAiImageOptions;
 import org.springframework.ai.openai.api.OpenAiApi;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.util.MimeType;
 import org.springframework.util.MimeTypeUtils;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URLConnection;
+import java.util.Arrays;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -51,10 +56,34 @@ public class PersonaService {
     private String analyzeProductImage(String imageUrl) {
         // Vision API를 사용하여 상품 이미지 분석
         UserMessage userMessage;
+
         try {
-            userMessage = new UserMessage("Please explain the main characteristics by analyzing only the product excluding the background from the product image.",
-                new Media(MimeTypeUtils.IMAGE_PNG, new URL(imageUrl)));
+            URI uri = new URI(imageUrl);
+
+            // 이미지 MIME 타입 추정 (간단하게 확장자 기반 추정 가능)
+            String fileName = imageUrl.toLowerCase();
+            MimeType mimeType;
+            URLConnection connection = uri.toURL().openConnection();
+            String contentType = connection.getContentType();
+            if(contentType.startsWith("image/")) {
+                mimeType = MimeTypeUtils.parseMimeType(contentType);
+            } else {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid image format");
+            }
+
+            Media media = new Media(mimeType, uri);
+
+
+            userMessage = UserMessage.builder()
+                    .text("Please describe the key features of the product shown in the image. Focus only on the main product, and ignore any background elements.")
+                    .media(media) // or .media(List.of(media)) if needed
+                    .build();
+            connection.getInputStream().close();
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
         } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
 

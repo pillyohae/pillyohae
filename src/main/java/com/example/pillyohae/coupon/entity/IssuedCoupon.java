@@ -2,24 +2,13 @@ package com.example.pillyohae.coupon.entity;
 
 import com.example.pillyohae.order.entity.Order;
 import com.example.pillyohae.user.entity.User;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Index;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
-import java.time.LocalDateTime;
-import java.util.UUID;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 /**
  * 발급된 쿠폰 엔터티. 특정 사용자가 발급받은 쿠폰 정보를 관리한다.
@@ -69,6 +58,7 @@ public class IssuedCoupon {
         validateExpireAt();
     }
 
+    // 쿠폰을 사용할 때 만료여부 확인
     public void validateExpireAt() {
         if (expiredAt == null) {
 

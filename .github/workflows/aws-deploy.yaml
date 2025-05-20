@@ -87,7 +87,7 @@ jobs:
           script: |
             echo "$DOCKER_PASS" | sudo docker login -u "$DOCKER_USER" --password-stdin
             sudo docker rm -f server 
-            sudo docker pull "${{secrets.DOCKER_HUB_REPOSITORY}}:main"
+            sudo docker pull "${{secrets.DOCKER_HUB_REPOSITORY}}:pillyohae"
             sudo docker run -d \
                 --name server \
                 -e TZ=Asia/Seoul \
@@ -107,7 +107,8 @@ jobs:
                 -e RABBITMQ_PASSWORD=${{secrets.RABBITMQ_PASSWORD}} \
                 -e REDIS_HOST=${{secrets.REDIS_HOST}} \
                 -e OPENAI_API_KEY=${{secrets.OPENAI_API_KEY}} \
+                -p 8080:8080 "${{secrets.DOCKER_HUB_REPOSITORY}}:pillyohae"
                 -e SERVER_PORT=${{secrets.SERVER_PORT}} \
-                -p 8080:8080 "${{secrets.DOCKER_HUB_REPOSITORY}}:main"
+
         
           

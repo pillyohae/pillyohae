@@ -32,7 +32,6 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.time.Duration;
 import java.util.List;
 
@@ -428,7 +427,9 @@ public class ProductService {
      */
     @Transactional
     public ImageUploadResponseDto setRepresentativeAiImage(Long productId, String email) {
-
+        
+        log.info("ai이미지 생성");
+        
         Product findProduct = findById(productId);
         User user = userService.findByEmail(email);
 
@@ -483,8 +484,10 @@ public class ProductService {
      * @return UploadFileInfo 반환되는 이미지 정보들
      */
     @Transactional
-    public ImageUploadResponseDto uploadImageToPositionOne(Long productId, MultipartFile mainImage) {
 
+    public ImageUploadResponseDto uploadImageToPositionOne(Long productId,
+        MultipartFile mainImage) {
+        log.info("이미지 생성 시도" + mainImage.getOriginalFilename() + "productId:" + productId);
         // Product 조회
         Product findProduct = findById(productId);
 
