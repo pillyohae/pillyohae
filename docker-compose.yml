@@ -4,6 +4,7 @@ services:
     container_name: mysql
     environment:
       MYSQL_ROOT_PASSWORD: 1234
+
     ports:
       - "3306:3306"
     volumes:
@@ -22,7 +23,7 @@ services:
       TZ: Asia/Seoul
       JPA_HIBERNATE_DDL: update
       DATABASE_URL: jdbc:mysql://mysql:3306/mainDB
-      DATABASE_USERNAME: root
+      DATABASE_USERNAME: user
       DATABASE_PASSWORD: 1234
       BUCKET_NAME: ${BUCKET_NAME}
       AWS_REGION: ${AWS_REGION}
