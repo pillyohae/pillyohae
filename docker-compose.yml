@@ -22,7 +22,7 @@ services:
     environment:
       TZ: Asia/Seoul
       JPA_HIBERNATE_DDL: update
-      DATABASE_URL: jdbc:mysql://localhost:3306/mainDB
+      DATABASE_URL: jdbc:mysql://127.0.0.1:3306/mainDB
       DATABASE_USERNAME: user
       DATABASE_PASSWORD: 1234
       BUCKET_NAME: ${BUCKET_NAME}
