@@ -112,9 +112,9 @@ jobs:
             RABBITMQ_PASSWORD="${{secrets.RABBITMQ_PASSWORD}}" \
             REDIS_HOST="${{secrets.REDIS_HOST}}" \
             OPENAI_API_KEY="${{secrets.OPENAI_API_KEY}}" && \
-
-            cd ~/app
-            docker compose pull
+            
+            cd ~/app && \
+            docker compose pull && \
             docker compose up -d --remove-orphans
      
           
