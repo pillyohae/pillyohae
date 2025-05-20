@@ -26,7 +26,7 @@ public class OrderMessagePublisher implements MessagePublisher {
      */
     @Override
     public void directSendMessage(Message messageDto) {
-        log.info("Direct Exchange 방식으로 메시지 전송: {}", messageDto);
+//        log.info("Direct Exchange 방식으로 메시지 전송: {}", messageDto);
         rabbitTemplate.convertAndSend("exchange.direct", "order", messageDto);
     }
 }

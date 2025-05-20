@@ -31,7 +31,6 @@ public class PaymentService {
     private final MessagePublisher orderMessagePublisher;
     private final OrderRepository orderRepository;
 
-    JSONParser parser = new JSONParser();
 
     /**
      * 결제 요청을 처리하는 메서드
@@ -39,7 +38,8 @@ public class PaymentService {
      * @param jsonBody 클라이언트에서 전달된 결제 정보 (JSON 문자열)
      * @return TossPayments 결제 요청 JSON 객체
      */
-    @OrderDistributedLock(key = "#jsonBody", waitTime = 60L, leaseTime = 60L)
+    @OrderDistributedLock(key = "#jsonBody", waitTime = 2L, leaseTime = 10L)
+//    @DistributedLock(key = "'order'",waitTime = 2L, leaseTime = 10L)
     public JSONObject pay(String jsonBody) {
         // TossPayments 결제 요청 데이터 생성
         JSONObject tossRequest = makeTossRequest(jsonBody);
@@ -78,6 +78,7 @@ public class PaymentService {
      */
     private JSONObject makeTossRequest(String jsonBody) {
         try {
+            JSONParser parser = new JSONParser();
             JSONObject requestData = (JSONObject) parser.parse(jsonBody);
             JSONObject obj = new JSONObject();
             obj.put("orderId", requestData.get("orderId"));
@@ -85,6 +86,8 @@ public class PaymentService {
             obj.put("paymentKey", requestData.get("paymentKey"));
             return obj;
         } catch (ParseException e) {
+            log.info("jsonBody: {}", jsonBody);
+            log.info(e.getMessage());
             throw new RuntimeException("결제 요청 JSON 파싱 실패", e);
         }
     }
