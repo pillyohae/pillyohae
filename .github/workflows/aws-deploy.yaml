@@ -76,19 +76,15 @@ jobs:
           username: ${{ secrets.AWS_SSH_USERNAME }}
           key: ${{ secrets.AWS_SSH_KEY }}
           port: 22
+          source: "./docker-compose.yml"   # 워크플로우 루트 기준 경로
+          target: "~/app/"                 # 서버 내 원하는 경로
           DOCKER_USER: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASS: ${{ secrets.DOCKER_PASSWORD }}
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          DATABASE_USERNAME: ${{ secrets.DATABASE_ID }}
-          DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
-          BUCKET_NAME: ${{secrets.BUCKET_NAME}}
-          AWS_REGION: ${{secrets.AWS_REGION}}
-          ACCESS_KEY: ${{secrets.AWS_ACCESS_KEY}}
-          SECRET_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
-          TOSS_SECRET_KEY: ${{secrets.TOSS_SECRET_KEY}}
-          JWT_SECRET_KEY: ${{secrets.JWT_SECRET_KEY}}
           script: |
             echo "$DOCKER_PASS" | sudo docker login -u "$DOCKER_USER" --password-stdin
+            cd ~/app
+            docker-compose pull
+            docker-compose up -d --remove-orphans
             sudo docker rm -f server 
             sudo docker pull "${{secrets.DOCKER_HUB_REPOSITORY}}:pillyohae"
             sudo docker run -d \
