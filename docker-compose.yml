@@ -40,7 +40,6 @@ services:
       OPENAI_API_KEY: ${OPENAI_API_KEY}
     networks:
       - backend
-    entrypoint: ["tail", "-f", "/dev/null"]
 
 volumes:
   mysql_data:
