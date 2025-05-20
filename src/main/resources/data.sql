@@ -82,5 +82,4 @@ INSERT IGNORE INTO categories (name) VALUES ('다이어트');
 INSERT IGNORE INTO categories (name) VALUES ('피로회복');
 INSERT IGNORE INTO categories (name) VALUES ('수면');
 INSERT IGNORE INTO categories (name) VALUES ('간');
-INSERT IGNORE INTO categories (name) VALUES ('피부');
 INSERT IGNORE INTO categories (name) VALUES ('대장');
