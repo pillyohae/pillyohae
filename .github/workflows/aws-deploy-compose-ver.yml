@@ -132,7 +132,8 @@ jobs:
           port: 22
           script: |
               echo "$DOCKER_PASS" | sudo docker login -u "$DOCKER_USER" --password-stdin
-              sudo docker rm -f server 
+              sudo docker rm -f server || true
+              sudo docker rm -f mysql || true
               sudo docker pull "${{secrets.DOCKER_HUB_REPOSITORY}}:pillyohae"
               cd ~/app
               sudo docker compose pull
