@@ -83,8 +83,11 @@ jobs:
           script: |
             echo "$DOCKER_PASS" | sudo docker login -u "$DOCKER_USER" --password-stdin
             cd ~/app
+            export DATABASE_URL=${{ secrets.DATABASE_URL }}
+            export DATABASE_USERNAME=${{ secrets.DATABASE_ID }}
+            export DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}
             docker-compose pull
-            docker-compose up -d --remove-orphans
+            docker-compose up -d --remove-orphans \
             sudo docker rm -f server 
             sudo docker pull "${{secrets.DOCKER_HUB_REPOSITORY}}:pillyohae"
             sudo docker run -d \
