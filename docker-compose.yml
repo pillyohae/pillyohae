@@ -37,6 +37,8 @@ services:
       OPENAI_API_KEY: ${OPENAI_API_KEY}
     networks:
       - backend
+    entrypoint: ["/wait-for-it.sh", "mysql:3306", "--timeout=60", "--strict", "--", "java", "-jar", "app.jar"]
+
 volumes:
   mysql_data:
 networks:

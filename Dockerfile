@@ -16,3 +16,6 @@ EXPOSE 8080
 # 애플리케이션을 실행하기 위한 엔트리포인트 정의
 ENTRYPOINT ["java", "-jar", "/apps/app.jar"]
 
+# wait-for-it 복사
+COPY wait-for-it.sh /wait-for-it.sh
+RUN chmod +x /wait-for-it.sh
