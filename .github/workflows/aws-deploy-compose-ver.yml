@@ -90,31 +90,29 @@ jobs:
         env:
           DOCKER_USER: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASS: ${{ secrets.DOCKER_PASSWORD }}
+          DOCKER_IMAGE: ${{ secrets.DOCKER_HUB_REPOSITORY }}:pillyohae
+          DATABASE_USERNAME: ${{ secrets.DATABASE_ID }}
+          DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
+          JPA_HIBERNATE_DDL: ${{ secrets.JPA_HIBERNATE_DDL }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          BUCKET_NAME: ${{ secrets.BUCKET_NAME }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
+          SECRET_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          TOSS_SECRET_KEY: ${{ secrets.TOSS_SECRET_KEY }}
+          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+          RABBITMQ_HOST: ${{ secrets.RABBITMQ_HOST }}
+          RABBITMQ_PORT: ${{ secrets.RABBITMQ_PORT }}
+          RABBITMQ_USERNAME: ${{ secrets.RABBITMQ_USERNAME }}
+          RABBITMQ_PASSWORD: ${{ secrets.RABBITMQ_PASSWORD }}
+          REDIS_HOST: ${{ secrets.REDIS_HOST }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           script: |
             echo "$DOCKER_PASS" | sudo docker login -u "$DOCKER_USER" --password-stdin
             sudo docker rm -f server 
             sudo docker pull "${{secrets.DOCKER_HUB_REPOSITORY}}:pillyohae"
-            
-            export DOCKER_IMAGE="${{secrets.DOCKER_HUB_REPOSITORY}}:pillyohae" \
-            DATABASE_USERNAME="${{secrets.DATABASE_ID}}" \
-            DATABASE_PASSWORD="${{secrets.DATABASE_PASSWORD}}" \
-            JPA_HIBERNATE_DDL="${{secrets.JPA_HIBERNATE_DDL}}" \
-            DATABASE_URL="${{secrets.DATABASE_URL}}" \
-            BUCKET_NAME="${{secrets.BUCKET_NAME}}" \
-            AWS_REGION="${{secrets.AWS_REGION}}" \
-            ACCESS_KEY="${{secrets.AWS_ACCESS_KEY}}" \
-            SECRET_KEY="${{secrets.AWS_SECRET_ACCESS_KEY}}" \
-            TOSS_SECRET_KEY="${{secrets.TOSS_SECRET_KEY}}" \
-            JWT_SECRET_KEY="${{secrets.JWT_SECRET_KEY}}" \
-            RABBITMQ_HOST="${{secrets.RABBITMQ_HOST}}" \
-            RABBITMQ_PORT="${{secrets.RABBITMQ_PORT}}" \
-            RABBITMQ_USERNAME="${{secrets.RABBITMQ_USERNAME}}" \
-            RABBITMQ_PASSWORD="${{secrets.RABBITMQ_PASSWORD}}" \
-            REDIS_HOST="${{secrets.REDIS_HOST}}" \
-            OPENAI_API_KEY="${{secrets.OPENAI_API_KEY}}" && \
-            
-            cd ~/app && \
-            docker compose pull && \
-            docker compose up -d --remove-orphans
+            cd ~/app
+            sudo docker compose pull
+            sudo docker compose up -d --remove-orphans
      
           
