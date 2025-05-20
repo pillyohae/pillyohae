@@ -10,7 +10,6 @@ services:
       - mysql_data:/var/lib/mysql
     networks:
       - backend
-
   app:
     image: ${DOCKER_IMAGE}
     container_name: server
@@ -38,7 +37,8 @@ services:
       OPENAI_API_KEY: ${OPENAI_API_KEY}
     networks:
       - backend
-
+volumes:
+  mysql_data:
 networks:
   backend:
     driver: bridge
