@@ -102,7 +102,7 @@ jobs:
             export RABBITMQ_PASSWORD=${{secrets.RABBITMQ_PASSWORD}} \
             export REDIS_HOST=${{secrets.REDIS_HOST}} \
             export OPENAI_API_KEY=${{secrets.OPENAI_API_KEY}} \
-            export DOCKER_IMAGE= ${{secrets.DOCKER_HUB_REPOSITORY}}:pillyohae"
+            export DOCKER_IMAGE= "${{secrets.DOCKER_HUB_REPOSITORY}}:pillyohae"
 
             cd ~/app
             docker-compose pull
