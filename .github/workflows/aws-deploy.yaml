@@ -53,8 +53,8 @@ jobs:
             --build-arg DATABASE_URL="$DATABASE_URL" \
             --build-arg DATABASE_ID="$DATABASE_ID" \
             --build-arg DATABASE_PASSWORD="$DATABASE_PASSWORD" \
-            -t "$DOCKER_HUB_REPOSITORY":main .
-          docker push "$DOCKER_HUB_REPOSITORY":main
+            -t "$DOCKER_HUB_REPOSITORY":pillyohae .
+          docker push "$DOCKER_HUB_REPOSITORY":pillyohae
       
 
       # 6. AWS 인증
