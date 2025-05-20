@@ -1,7 +1,5 @@
 package com.example.pillyohae.user.controller;
 
-import static com.example.pillyohae.global.constant.TokenPrefix.TOKEN_PREFIX;
-
 import com.example.pillyohae.coupon.dto.CouponListResponseDto;
 import com.example.pillyohae.coupon.dto.CouponTemplateListResponseDto;
 import com.example.pillyohae.coupon.dto.CouponUpdateStatusResponseDto;
@@ -12,13 +10,7 @@ import com.example.pillyohae.order.dto.OrderInfoDto;
 import com.example.pillyohae.order.dto.OrderSellerInfoDto;
 import com.example.pillyohae.order.service.OrderService;
 import com.example.pillyohae.refresh.service.RefreshTokenService;
-import com.example.pillyohae.user.dto.TokenResponse;
-import com.example.pillyohae.user.dto.UserCreateRequestDto;
-import com.example.pillyohae.user.dto.UserCreateResponseDto;
-import com.example.pillyohae.user.dto.UserDeleteRequestDto;
-import com.example.pillyohae.user.dto.UserLoginRequestDto;
-import com.example.pillyohae.user.dto.UserProfileResponseDto;
-import com.example.pillyohae.user.dto.UserProfileUpdateRequestDto;
+import com.example.pillyohae.user.dto.*;
 import com.example.pillyohae.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -38,17 +30,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
-import org.springframework.web.bind.annotation.CookieValue;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+import static com.example.pillyohae.global.constant.TokenPrefix.TOKEN_PREFIX;
 
 @Slf4j
 @RestController

@@ -52,14 +52,14 @@ jobs:
           echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
           
           if [ "${{ github.base_ref }}" = "develop" ]; then
-            DOCKER_TAG="develop"
+            DOCKER_TAG="pillyohae-develop"
           fi
         
           docker build \
             --build-arg DATABASE_URL="$DATABASE_URL" \
             --build-arg DATABASE_ID="$DATABASE_ID" \
             --build-arg DATABASE_PASSWORD="$DATABASE_PASSWORD" \
-            -t "$DOCKER_HUB_REPOSITORY:$DOCKER_TAG" .
+            -t "$DOCKER_HUB_REPOSITORY:$DOCKER_TAGp" .
           docker push "$DOCKER_HUB_REPOSITORY:$DOCKER_TAG"
       
 

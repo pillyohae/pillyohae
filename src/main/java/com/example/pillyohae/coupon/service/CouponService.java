@@ -1,11 +1,6 @@
 package com.example.pillyohae.coupon.service;
 
-import com.example.pillyohae.coupon.dto.CouponGiveResponseDto;
-import com.example.pillyohae.coupon.dto.CouponListResponseDto;
-import com.example.pillyohae.coupon.dto.CouponTemplateCreateRequestDto;
-import com.example.pillyohae.coupon.dto.CouponTemplateListResponseDto;
-import com.example.pillyohae.coupon.dto.CouponUpdateStatusResponseDto;
-import com.example.pillyohae.coupon.dto.CreateCouponTemplateResponseDto;
+import com.example.pillyohae.coupon.dto.*;
 import com.example.pillyohae.coupon.entity.CouponTemplate;
 import com.example.pillyohae.coupon.entity.IssuedCoupon;
 import com.example.pillyohae.coupon.repository.CouponTemplateRepository;
@@ -13,17 +8,16 @@ import com.example.pillyohae.coupon.repository.IssuedCouponRepository;
 import com.example.pillyohae.global.distributedLock.DistributedLock;
 import com.example.pillyohae.user.entity.User;
 import com.example.pillyohae.user.service.UserService;
-import java.io.IOException;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.TimeoutException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * 쿠폰 관련 비즈니스 로직을 처리하는 서비스 클래스. 쿠폰 템플릿 생성, 쿠폰 발급, 쿠폰 사용, 쿠폰 상태 변경 등의 기능을 수행함.
@@ -158,8 +152,7 @@ public class CouponService {
      * @param email            사용자 이메일
      * @return 발급된 쿠폰 객체
      */
-    protected IssuedCoupon issueCoupon(UUID couponTemplateId, String email)
-        throws IOException, TimeoutException {
+    protected IssuedCoupon issueCoupon(UUID couponTemplateId, String email) {
         User user = userService.findByEmail(email);
 
         List<IssuedCoupon> userIssuedCoupons = issuedCouponRepository.findIssuedCouponsWithTemplateByUserId(

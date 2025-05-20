@@ -12,28 +12,13 @@ import com.example.pillyohae.product.dto.image.ImageUploadResponseDto;
 import com.example.pillyohae.product.dto.image.UpdateImageRequestDto;
 import com.example.pillyohae.product.dto.image.UpdateImageResponseDto;
 import com.example.pillyohae.product.dto.nutrient.NutrientResponseDto;
-import com.example.pillyohae.product.dto.product.ProductCreateRequestDto;
-import com.example.pillyohae.product.dto.product.ProductCreateResponseDto;
-import com.example.pillyohae.product.dto.product.ProductGetResponseDto;
+import com.example.pillyohae.product.dto.product.*;
 import com.example.pillyohae.product.dto.product.ProductGetResponseDto.ImageResponseDto;
-import com.example.pillyohae.product.dto.product.ProductRecommendationDto;
-import com.example.pillyohae.product.dto.product.ProductSearchResponseDto;
-import com.example.pillyohae.product.dto.product.ProductUpdateRequestDto;
-import com.example.pillyohae.product.dto.product.ProductUpdateResponseDto;
-import com.example.pillyohae.product.entity.Category;
-import com.example.pillyohae.product.entity.Nutrient;
-import com.example.pillyohae.product.entity.PersonaMessage;
-import com.example.pillyohae.product.entity.Product;
-import com.example.pillyohae.product.entity.ProductImage;
+import com.example.pillyohae.product.entity.*;
 import com.example.pillyohae.product.entity.type.ProductStatus;
-import com.example.pillyohae.product.repository.CategoryRepository;
-import com.example.pillyohae.product.repository.ImageStorageRepository;
-import com.example.pillyohae.product.repository.NutrientRepository;
-import com.example.pillyohae.product.repository.PersonaMessageRepository;
-import com.example.pillyohae.product.repository.ProductRepository;
+import com.example.pillyohae.product.repository.*;
 import com.example.pillyohae.user.entity.User;
 import com.example.pillyohae.user.service.UserService;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -44,6 +29,8 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -406,7 +393,9 @@ public class ProductService {
      */
     @Transactional
     public ImageUploadResponseDto setRepresentativeAiImage(Long productId, String email) {
-
+        
+        log.info("ai이미지 생성");
+        
         Product findProduct = findById(productId);
         User user = userService.findByEmail(email);
 
@@ -463,7 +452,7 @@ public class ProductService {
     @Transactional
     public ImageUploadResponseDto uploadImageToPositionOne(Long productId,
         MultipartFile mainImage) {
-
+        log.info("이미지 생성 시도" + mainImage.getOriginalFilename() + "productId:" + productId);
         // Product 조회
         Product findProduct = findById(productId);
 
