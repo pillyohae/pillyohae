@@ -68,8 +68,30 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-northeast-2
 
-
-      # 7.docker compose 파일 복사 script가 없어야함
+      # 7. .env 파일을 로컬 워크플로우 환경에 생성
+      - name: Create .env file
+        run: |
+          cat <<EOF > .env
+          DOCKER_IMAGE=${{ secrets.DOCKER_HUB_REPOSITORY }}:pillyohae
+          DATABASE_USERNAME=${{ secrets.DATABASE_ID }}
+          DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}
+          DATABASE_URL=${{ secrets.DATABASE_URL }}
+          JPA_HIBERNATE_DDL=${{ secrets.JPA_HIBERNATE_DDL }}
+          BUCKET_NAME=${{ secrets.BUCKET_NAME }}
+          AWS_REGION=${{ secrets.AWS_REGION }}
+          ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY }}
+          SECRET_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          TOSS_SECRET_KEY=${{ secrets.TOSS_SECRET_KEY }}
+          JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
+          RABBITMQ_HOST=${{ secrets.RABBITMQ_HOST }}
+          RABBITMQ_PORT=${{ secrets.RABBITMQ_PORT }}
+          RABBITMQ_USERNAME=${{ secrets.RABBITMQ_USERNAME }}
+          RABBITMQ_PASSWORD=${{ secrets.RABBITMQ_PASSWORD }}
+          REDIS_HOST=${{ secrets.REDIS_HOST }}
+          OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
+          TZ=Asia/Seoul
+          EOF
+      # 8.docker compose 파일 복사 script가 없어야함
       - name: Copy files to server
         uses: appleboy/scp-action@master
         with:
@@ -77,9 +99,12 @@ jobs:
           username: ${{ secrets.AWS_SSH_USERNAME }}
           key: ${{ secrets.AWS_SSH_KEY }}
           port: 22
-          source: "./docker-compose.yml"   # 워크플로우 루트 기준 경로
+          source: |
+            ./docker-compose.yml        
+            ./.env
+
           target: "~/app/"                 # 서버 내 원하는 경로
-      # 8. AWS 배포
+      # 9. AWS 배포
       - name: SSH Connection and Deploy to Server
         uses: appleboy/ssh-action@master
         env:
