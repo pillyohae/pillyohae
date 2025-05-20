@@ -82,11 +82,6 @@ jobs:
       # 8. AWS 배포
       - name: SSH Connection and Deploy to Server
         uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.AWS_SSH_HOST }}
-          username: ${{ secrets.AWS_SSH_USERNAME }}
-          key: ${{ secrets.AWS_SSH_KEY }}
-          port: 22
         env:
           DOCKER_USER: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASS: ${{ secrets.DOCKER_PASSWORD }}
@@ -107,12 +102,17 @@ jobs:
           RABBITMQ_PASSWORD: ${{ secrets.RABBITMQ_PASSWORD }}
           REDIS_HOST: ${{ secrets.REDIS_HOST }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        script: |
-            echo "$DOCKER_PASS" | sudo docker login -u "$DOCKER_USER" --password-stdin
-            sudo docker rm -f server 
-            sudo docker pull "${{secrets.DOCKER_HUB_REPOSITORY}}:pillyohae"
-            cd ~/app
-            sudo docker compose pull
-            sudo docker compose up -d --remove-orphans
+        with:
+          host: ${{ secrets.AWS_SSH_HOST }}
+          username: ${{ secrets.AWS_SSH_USERNAME }}
+          key: ${{ secrets.AWS_SSH_KEY }}
+          port: 22
+          script: |
+              echo "$DOCKER_PASS" | sudo docker login -u "$DOCKER_USER" --password-stdin
+              sudo docker rm -f server 
+              sudo docker pull "${{secrets.DOCKER_HUB_REPOSITORY}}:pillyohae"
+              cd ~/app
+              sudo docker compose pull
+              sudo docker compose up -d --remove-orphans
      
           
