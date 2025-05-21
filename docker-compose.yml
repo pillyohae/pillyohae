@@ -29,7 +29,7 @@ services:
 
 
   app:
-    image: jhsong8034/tutorial:pillyohae
+    image: ${DOCKER_IMAGE}
     container_name: server
     depends_on:
       - mysql
