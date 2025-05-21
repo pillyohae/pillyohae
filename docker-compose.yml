@@ -13,11 +13,27 @@ services:
     networks:
       - backend
 
+
+  redis:
+    image: redis:7
+    container_name: redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - backend
+    volumes:
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+      - redis_data:/data
+    command: [ "redis-server", "/usr/local/etc/redis/redis.conf" ]
+
+
   app:
     image: ${DOCKER_IMAGE}
     container_name: server
     depends_on:
       - mysql
+      - redis
     ports:
       - "8080:8080"
     environment:
@@ -43,6 +59,7 @@ services:
 
 volumes:
   mysql_data:
+  redis_data:
 
 networks:
   backend:
