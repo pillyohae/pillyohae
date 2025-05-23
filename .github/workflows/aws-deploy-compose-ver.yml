@@ -89,7 +89,7 @@ jobs:
           username: ${{ secrets.AWS_SSH_USERNAME }}
           key: ${{ secrets.AWS_SSH_KEY }}
           port: 22
-          source: "./main-server/docker-compose.yml,./main-server/.env
+          source: "./main-server/docker-compose.yml,./main-server/.env"
           target: "~/app/"
           strip_components: 1  # main-server/ 경로 제거
 
@@ -100,7 +100,7 @@ jobs:
           username: ${{ secrets.AWS_SSH_USERNAME }}
           key: ${{ secrets.AWS_SSH_KEY }}
           port: 22
-          source: "./payment-server/docker-compose.yml,./payment-server/.env
+          source: "./payment-server/docker-compose.yml,./payment-server/.env"
           target: "~/app/"
           strip_components: 1
 
