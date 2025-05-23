@@ -109,7 +109,6 @@ jobs:
         env:
           DOCKER_USER: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASS: ${{ secrets.DOCKER_PASSWORD }}
-          DOCKER_IMAGE: ${{ secrets.DOCKER_HUB_REPOSITORY }}:pillyohae
         with:
           host: ${{ secrets.AWS_MAIN_SERVER_SSH_HOST }}
           username: ${{ secrets.AWS_SSH_USERNAME }}
@@ -128,7 +127,6 @@ jobs:
         env:
           DOCKER_USER: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASS: ${{ secrets.DOCKER_PASSWORD }}
-          DOCKER_IMAGE: ${{ secrets.DOCKER_HUB_REPOSITORY }}:payment
         with:
           host: ${{ secrets.AWS_PAYMENT_SERVER_SSH_HOST }}
           username: ${{ secrets.AWS_SSH_USERNAME }}
