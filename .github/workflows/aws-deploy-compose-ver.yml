@@ -38,7 +38,7 @@ jobs:
           DOCKER_HUB_REPOSITORY: ${{ secrets.DOCKER_HUB_REPOSITORY }}
         run: |
           echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-          docker build -t "$DOCKER_HUB_REPOSITORY":pillyohae -f main-server/Dockerfile .
+          docker build -t "$DOCKER_HUB_REPOSITORY":pillyohae -f main-server/Dockerfile ./main-server
           docker push "$DOCKER_HUB_REPOSITORY":pillyohae
 
       - name: Docker Build and Push payment server image
@@ -49,7 +49,7 @@ jobs:
           DOCKER_HUB_REPOSITORY: ${{ secrets.DOCKER_HUB_REPOSITORY }}
         run: |
           echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-          docker build -t "$DOCKER_HUB_REPOSITORY":payment -f payment-server/Dockerfile .
+          docker build -t "$DOCKER_HUB_REPOSITORY":payment -f payment-server/Dockerfile ./payment-server
           docker push "$DOCKER_HUB_REPOSITORY":payment
 
       - name: Configure AWS credentials
