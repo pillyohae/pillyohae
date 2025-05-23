@@ -111,7 +111,7 @@ jobs:
           DOCKER_PASS: ${{ secrets.DOCKER_PASSWORD }}
           DOCKER_IMAGE: ${{ secrets.DOCKER_HUB_REPOSITORY }}:pillyohae
         with:
-          host: ${{ secrets.AWS_SSH_MAIN_SERVER_HOST }}
+          host: ${{ secrets.AWS_MAIN_SERVER_SSH_HOST }}
           username: ${{ secrets.AWS_SSH_USERNAME }}
           key: ${{ secrets.AWS_SSH_KEY }}
           port: 22
@@ -130,7 +130,7 @@ jobs:
           DOCKER_PASS: ${{ secrets.DOCKER_PASSWORD }}
           DOCKER_IMAGE: ${{ secrets.DOCKER_HUB_REPOSITORY }}:payment
         with:
-          host: ${{ secrets.AWS_SSH_PAYMENT_SERVER_HOST }}
+          host: ${{ secrets.AWS_PAYMENT_SERVER_SSH_HOST }}
           username: ${{ secrets.AWS_SSH_USERNAME }}
           key: ${{ secrets.AWS_SSH_KEY }}
           port: 22
