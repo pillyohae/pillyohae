@@ -1,0 +1,100 @@
+spring:
+  application:
+    name: pillyohae
+
+  servlet:
+    multipart:
+      max-file-size: 5MB  # 파일 하나의 최대 크기
+
+  datasource:
+    driver-class-name: ${TEST_DATABASE}
+    url: ${TEST_DATABASE_URL}
+    username: ${TEST_DATABASE_USERNAME}
+    password: ${TEST_DATABASE_PASSWORD}
+    hikari:
+      maximum-pool-size: 50
+
+  jpa:
+    show-sql: false
+    database-platform: org.hibernate.dialect.H2Dialect
+    database: h2
+    hibernate:
+      ddl-auto: create-drop
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
+    generate-ddl: false
+    properties:
+      hibernate:
+        format_sql: false
+        enable_lazy_load_no_trans: true
+        globally_quoted_identifiers: true
+
+
+      ## batch 전략
+      jdbc:
+        batch_size: 30
+        order_inserts: true
+        order_updates: true
+        generate_statistics: true
+
+  config:
+    import: optional:file:.env[.properties]
+
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      image:
+        options:
+          model: dall-e-3  # 기본 이미지 모델 설정
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      lettuce:
+        pool:
+          max-active: 8  # 최대 연결 수
+          max-idle: 8    # 유휴 연결 수
+          min-idle: 0    # 최소 유휴 연결 수
+
+
+toss:
+  secret-key: ${TOSS_SECRET_KEY}
+
+
+jwt:
+  secret: ${JWT_SECRET_KEY}
+  expiry-millis: 300000 # 10분
+  refresh-expiry-millis: 604800000 #7일
+
+cloud:
+  aws:
+    s3:
+      bucket: ${BUCKET_NAME}
+      base-url: ${BASE_URL}
+    region:
+      static: ${AWS_REGION:us-east-1}
+    stack:
+      auto: false
+    # AWS_REGION 없으면 ap-northeast-2 사용
+    credentials:
+      access-key: ${ACCESS_KEY}
+      secret-key: ${SECRET_KEY}
+
+security: # SecurityProperties의 prefix와 일치
+  white-list: # SecurityProperties의 whiteList 필드와 매핑
+    - "/refresh"
+    - "/users/login"
+    - "/users/signup"
+    - "/toss/fail"
+    - "/toss/success"
+    - "/toss/confirm"
+  seller-auth-list:
+    - "/users/sellers/**"
+    - "/products"
+    - "/products/**"
+  method-specific-patterns:
+    GET:
+      - "/products/*"
+      - "/products"
+
