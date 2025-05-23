@@ -1,0 +1,16 @@
+// common/build.gradle
+// Spring Boot 플러그인은 적용하지 않음 (라이브러리 모듈이므로)
+
+// JAR 생성 설정 (실행 가능한 JAR 생성 안함)
+jar {
+    enabled = true
+    archiveClassifier = '' // 기본 JAR 파일 생성
+}
+
+// Spring Boot의 bootJar 태스크는 비활성화 (실행 불가능한 라이브러리)
+
+dependencies {
+    // 필요한 경우만
+}
+
+

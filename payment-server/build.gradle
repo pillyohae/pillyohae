@@ -1,0 +1,23 @@
+// main-server/build.gradle
+// Spring Boot 애플리케이션이므로 플러그인 적용
+apply plugin: 'org.springframework.boot'
+
+dependencies {
+    implementation project(':common')  // common 모듈 사용
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+
+
+}
+
+tasks.named('bootJar') {
+    archiveFileName = 'app.jar'
+}
+bootJar {
+    enabled = true
+    archiveClassifier = '' // main-server-0.0.1-SNAPSHOT.jar
+}
+
+// 일반 JAR는 생성하지 않음
+jar {
+    enabled = false
+}

@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: payment
+  rabbitmq:
+    host: ${RABBITMQ_HOST}
+    port: ${RABBITMQ_PORT}
+    username: ${RABBITMQ_USERNAME}
+    password: ${RABBITMQ_PASSWORD}
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${DATABASE_URL}
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
+  config:
+    import: optional:file:.env[.properties]
+server:
+  port: 8080
+
+rabbitmq:
+  queue:
+    name: order1
+  exchange:
+    name: exchange.direct
+  routing:
+    key : order
+
+toss:
+  secret-key: ${TOSS_SECRET_KEY}

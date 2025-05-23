@@ -1,1 +1,3 @@
 rootProject.name = 'pillyohae'
+include 'common', 'main-server', 'payment-server'
+
