@@ -79,19 +79,7 @@ jobs:
           OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
           TZ=Asia/Seoul
           EOF
-      - name: List files in repo root
-        run: ls -R
 
-      - name: Copy docker files to main server
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.AWS_MAIN_SERVER_SSH_HOST }}
-          username: ${{ secrets.AWS_SSH_USERNAME }}
-          key: ${{ secrets.AWS_SSH_KEY }}
-          port: 22
-          source: "./main-server/docker-compose.yml,./main-server/.env"
-          target: "~/app/"
-          strip_components: 1  # main-server/ 경로 제거
 
       - name: Copy docker files to payment server
         uses: appleboy/scp-action@master
@@ -102,7 +90,19 @@ jobs:
           port: 22
           source: "./payment-server/docker-compose.yml,./payment-server/.env"
           target: "~/app/"
-          strip_components: 1
+
+
+      - name: Copy docker files to main server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.AWS_MAIN_SERVER_SSH_HOST }}
+          username: ${{ secrets.AWS_SSH_USERNAME }}
+          key: ${{ secrets.AWS_SSH_KEY }}
+          port: 22
+          source: "./main-server/docker-compose.yml,./main-server/.env"
+          target: "~/app/"
+
+
 
       - name: SSH into server and deploy main server
         uses: appleboy/ssh-action@master
