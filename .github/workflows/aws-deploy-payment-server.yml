@@ -29,14 +29,20 @@ jobs:
 
       - name: Grant execute permission for Gradle
         run: chmod +x ./gradlew
+
       - name: Clean Gradle cache
         run: |
-          ./gradlew clean
+          ./gradlew clean --no-daemon
+          ./gradlew --stop
           rm -rf ~/.gradle/caches/
+          rm -rf ~/.gradle/wrapper/
           rm -rf .gradle/
+          find . -name "build" -type d -exec rm -rf {} + || true
 
       - name: Build with Gradle
-        run: ./gradlew bootJar
+        run: |
+          ./gradlew bootJar --refresh-dependencies --no-daemon --stacktrace --info
+      
 
       - name: Docker Build and Push payment server image
         env:
