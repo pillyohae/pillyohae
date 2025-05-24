@@ -88,7 +88,7 @@ jobs:
           username: ${{ secrets.AWS_SSH_USERNAME }}
           key: ${{ secrets.AWS_SSH_KEY }}
           port: 22
-          source: "./payment-server/docker-compose.yml, ./.env"
+          source: "./payment-server/docker-compose.yml, .env"
           target: "~/app/"
 
 
@@ -99,7 +99,7 @@ jobs:
           username: ${{ secrets.AWS_SSH_USERNAME }}
           key: ${{ secrets.AWS_SSH_KEY }}
           port: 22
-          source: "./main-server/docker-compose.yml, ./.env"
+          source: "./main-server/docker-compose.yml, .env"
           target: "~/app/"
 
 
