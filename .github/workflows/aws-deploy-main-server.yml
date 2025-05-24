@@ -83,15 +83,25 @@ jobs:
           TZ=Asia/Seoul
           EOF
 
-      - name: Copy docker files to main server
+      - name: Copy env files to main server
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.AWS_MAIN_SERVER_SSH_HOST }}
           username: ${{ secrets.AWS_SSH_USERNAME }}
           key: ${{ secrets.AWS_SSH_KEY }}
           port: 22
-          source: "./main-server/docker-compose.yml, ./.env"
+          source: "./.env"
           target: "~/app/"
+
+      - name: Copy docker-compose file to main server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.AWS_MAIN_SERVER_SSH_HOST }}
+          username: ${{ secrets.AWS_SSH_USERNAME }}
+          key: ${{ secrets.AWS_SSH_KEY }}
+          port: 22
+          source: "./main-server/docker-compose.yml"
+          target: "~/app/docker-compose.yml"
 
       - name: SSH into server and deploy main server
         uses: appleboy/ssh-action@master
@@ -109,12 +119,10 @@ jobs:
             sleep 5
             echo "=== 파일 확인 ==="
             ls -la ~/app/
-            cat ~/app/main-server/docker-compose.yml
+            cat ~/app/docker-compose.yml || echo "docker-compose.yml not found"
             cat ~/app/.env
             echo "=== Docker Compose 실행 ==="
             cd ~/app
-            sudo docker compose -f main-server/docker-compose.yml down || true
-            sudo docker compose -f main-server/docker-compose.yml pull
-            sudo docker compose -f main-server/docker-compose.yml up -d --remove-orphans
-        
-
+            sudo docker compose down || true
+            sudo docker compose pull
+            sudo docker compose up -d --remove-orphans
