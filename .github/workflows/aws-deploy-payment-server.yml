@@ -30,16 +30,6 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew bootJar
 
-      - name: Docker Build and Push main server image
-        env:
-          DOCKER_USER: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASS: ${{ secrets.DOCKER_PASSWORD }}
-          DOCKER_HUB_REPOSITORY: ${{ secrets.DOCKER_HUB_REPOSITORY }}
-        run: |
-          echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-          docker build -t "$DOCKER_HUB_REPOSITORY":pillyohae -f main-server/Dockerfile ./main-server
-          docker push "$DOCKER_HUB_REPOSITORY":pillyohae
-
       - name: Docker Build and Push payment server image
         env:
           DOCKER_USER: ${{ secrets.DOCKER_USERNAME }}
@@ -90,37 +80,6 @@ jobs:
           port: 22
           source: "./payment-server/docker-compose.yml, .env"
           target: "~/app/"
-
-
-      - name: Copy docker files to main server
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.AWS_MAIN_SERVER_SSH_HOST }}
-          username: ${{ secrets.AWS_SSH_USERNAME }}
-          key: ${{ secrets.AWS_SSH_KEY }}
-          port: 22
-          source: "./main-server/docker-compose.yml, .env"
-          target: "~/app/"
-
-
-
-      - name: SSH into server and deploy main server
-        uses: appleboy/ssh-action@master
-        env:
-          DOCKER_USER: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASS: ${{ secrets.DOCKER_PASSWORD }}
-        with:
-          host: ${{ secrets.AWS_MAIN_SERVER_SSH_HOST }}
-          username: ${{ secrets.AWS_SSH_USERNAME }}
-          key: ${{ secrets.AWS_SSH_KEY }}
-          port: 22
-          script: |
-            echo "$DOCKER_PASS" | sudo docker login -u "$DOCKER_USER" --password-stdin
-            cd ~/app
-            sudo docker rm -f server || true
-            sudo docker compose pull
-            sudo docker compose up -d --remove-orphans
-          
 
       - name: SSH into server and deploy payment server
         uses: appleboy/ssh-action@master
