@@ -60,7 +60,7 @@ jobs:
           DOCKER_HUB_REPOSITORY: ${{ secrets.DOCKER_HUB_REPOSITORY }}
         run: |
           echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-          docker build --no-cache -t "$DOCKER_HUB_REPOSITORY":payment -f payment-server/Dockerfile ./main-server
+          docker build --no-cache -t "$DOCKER_HUB_REPOSITORY":payment -f payment-server/Dockerfile ./payment-server
           docker push "$DOCKER_HUB_REPOSITORY":payment
 
       - name: Configure AWS credentials
