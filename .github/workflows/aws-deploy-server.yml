@@ -53,15 +53,15 @@ jobs:
           docker build --no-cache -t "$DOCKER_HUB_REPOSITORY":pillyohae -f main-server/Dockerfile ./main-server
           docker push "$DOCKER_HUB_REPOSITORY":pillyohae
 
-      - name: Docker Build and Push paymnet server image
+      - name: Docker Build and Push payment server image
         env:
           DOCKER_USER: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASS: ${{ secrets.DOCKER_PASSWORD }}
           DOCKER_HUB_REPOSITORY: ${{ secrets.DOCKER_HUB_REPOSITORY }}
         run: |
           echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-          docker build --no-cache -t "$DOCKER_HUB_REPOSITORY":paymnet -f paymnet-server/Dockerfile ./main-server
-          docker push "$DOCKER_HUB_REPOSITORY":paymnet
+          docker build --no-cache -t "$DOCKER_HUB_REPOSITORY":payment -f payment-server/Dockerfile ./main-server
+          docker push "$DOCKER_HUB_REPOSITORY":payment
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
