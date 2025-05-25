@@ -63,6 +63,7 @@ public class MessageService {
         paymentRepository.save(payment);
 
         Order order = orderRepository.findById(payment.getOrderId()).orElse(null);
+        log.info("success order{}", order);
         if (order == null) {
             throw new CustomResponseStatusException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
