@@ -67,6 +67,7 @@ public class MessageService {
         if (order == null) {
             throw new CustomResponseStatusException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
+        order.paid();
         orderRepository.save(order);
 
     }
