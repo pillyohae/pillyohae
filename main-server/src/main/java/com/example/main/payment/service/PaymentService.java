@@ -64,6 +64,7 @@ public class PaymentService {
 
         // 결제 메시지를 생성하여 발행
         PaymentMessage paymentMessage = new PaymentMessage(tossRequest, "payment");
+        log.info("메세지 생성{}", paymentMessage);
         orderMessagePublisher.directSendMessage(paymentMessage);
 
         // 결제 요청 반환 (클라이언트에 성공 응답)
