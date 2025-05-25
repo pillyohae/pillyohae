@@ -42,6 +42,7 @@ public class PaymentService {
 //    @DistributedLock(key = "'order'",waitTime = 2L, leaseTime = 10L)
     public JSONObject pay(String jsonBody) {
         // TossPayments 결제 요청 데이터 생성
+        log.info("pay jsonBody:{}", jsonBody);
         JSONObject tossRequest = makeTossRequest(jsonBody);
 
         // 주문 정보 조회 및 재고 확인
@@ -64,6 +65,7 @@ public class PaymentService {
 
         // 결제 메시지를 생성하여 발행
         PaymentMessage paymentMessage = new PaymentMessage(tossRequest, "payment");
+        log.info("메세지 생성{}", paymentMessage);
         orderMessagePublisher.directSendMessage(paymentMessage);
 
         // 결제 요청 반환 (클라이언트에 성공 응답)

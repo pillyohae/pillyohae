@@ -14,7 +14,6 @@ spring:
     password: ${DATABASE_PASSWORD}
   config:
     import: optional:file:.env[.properties]
-server:
   port: 8080
 
 rabbitmq:
@@ -24,6 +23,7 @@ rabbitmq:
     name: exchange.direct
   routing:
     key : order
+
 
 toss:
   secret-key: ${TOSS_SECRET_KEY}
