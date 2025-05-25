@@ -47,7 +47,9 @@ public class MessageService {
      * 성공할 경우 주문 저장
      * @param tossResult
      */
-    private void success(JSONObject tossResult){
+    @Transactional
+    public void success(JSONObject tossResult){
+        log.info("success");
         Payment payment = new Payment(
                 (String) tossResult.get(TossPaymentsVariables.MID.getValue()),
                 (String) tossResult.get(TossPaymentsVariables.VERSION.getValue()),
@@ -68,15 +70,13 @@ public class MessageService {
             throw new CustomResponseStatusException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
         order.paid();
-        orderRepository.save(order);
-
     }
 
     /**
      * 실패할 경우 주문 삭제 및 실패 로그 저장
      * @param tossResult
      */
-
+    @Transactional
     public void fail(JSONObject tossResult, UUID orderId){
 
         PaymentFailLog paymentFailLog = new PaymentFailLog(
@@ -118,8 +118,8 @@ public class MessageService {
 
     // 토스페이먼츠 API는 시크릿 키를 사용자 ID로 사용하고, 비밀번호는 사용하지 않습니다.
     // 비밀번호가 없다는 것을 알리기 위해 시크릿 키 뒤에 콜론을 추가합니다.
-
-    private HttpURLConnection getTossResult(JSONObject tossRequest) throws IOException {
+    @Transactional
+    public HttpURLConnection getTossResult(JSONObject tossRequest) throws IOException {
         String widgetSecretKey = TOSS_SECRET_KEY;
         Base64.Encoder encoder = Base64.getEncoder();
         byte[] encodedBytes = encoder.encode((widgetSecretKey + ":").getBytes(StandardCharsets.UTF_8));
