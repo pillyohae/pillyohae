@@ -22,6 +22,7 @@ import java.util.UUID;
 
 @Getter
 @Entity
+@Table(name = "`order`")
 @DynamicUpdate
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Order extends BaseTimeEntity {
