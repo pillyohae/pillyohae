@@ -38,7 +38,7 @@ out/
 
 *.env
 
-.gitmessage.txt
+# .gitmessage.txt (제거 - 커밋 템플릿은 포함)
 
 jacoco/
 

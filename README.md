@@ -78,14 +78,40 @@
 
 ## ‍👨‍💻 프로젝트 서버 설치방법
 
-### 1. 프로젝트 클론
+> 📚 **상세한 초기 설정 가이드**: [INITIAL_SETUP.md](INITIAL_SETUP.md) 문서를 참조하세요!
 
+### 🚀 빠른 시작 (자동 설정)
+
+```bash
+git clone https://github.com/pillyohae/pillyohae.git
+cd pillyohae
+chmod +x setup.sh
+./setup.sh
 ```
+
+### 📖 수동 설정
+
+#### 1. 프로젝트 클론
+
+```bash
 git clone https://github.com/pillyohae/pillyohae.git
 cd pillyohae
 ```
 
-### 2. .env (환경변수 설정)
+#### 2. 초기 설정 및 권한 부여
+
+```bash
+# Gradle wrapper 권한 부여
+chmod +x gradlew
+
+# Git 커밋 메시지 템플릿 설정
+git config commit.template .gitmessage
+
+# 프로젝트 빌드
+./gradlew clean build
+```
+
+#### 3. .env (환경변수 설정)
 
 ```
 # 데이터베이스 설정
@@ -116,7 +142,7 @@ RABBITMQ_PORT =
 REDIS_HOST = localhost
 ```
 
-### 3. Redis 설치
+#### 4. Redis 설치
 
 ```
 1. Homebrew 설치 (이미 설치되어 있다면 이 단계는 건너뛰어도 됩니다)
@@ -141,7 +167,7 @@ $ brew services stop redis
 $ redis-cli
 ```
 
-### 4. RabbitMQ Docker 실행
+#### 5. RabbitMQ Docker 실행
 
 ```
 // Docker로 RabbitMQ 실행
