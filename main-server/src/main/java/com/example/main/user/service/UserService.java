@@ -189,4 +189,15 @@ public class UserService {
             .orElseThrow(() -> new UsernameNotFoundException("이메일에 해당하는 사용자가 존재하지 않습니다."));
     }
 
+    /**
+     * ID를 통해 사용자 조회하는 메서드
+     *
+     * @param id 조회할 사용자 ID
+     * @return 조회된 User 객체
+     */
+    public User findById(Long id) {
+        return userRepository.findById(id)
+            .orElseThrow(() -> new UsernameNotFoundException("해당 ID의 사용자가 존재하지 않습니다."));
+    }
+
 }
